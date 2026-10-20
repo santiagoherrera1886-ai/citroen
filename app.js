@@ -129,7 +129,7 @@
   function toast(message){$('toast').textContent=message;$('toast').classList.add('show');clearTimeout(toastId);toastId=setTimeout(()=>$('toast').classList.remove('show'),4000);}
   function kpis(rows){
     const a=aggregate(rows);
-    const items=[['Inversión',money(a.inversion),'COP · gasto registrado','↗'],['Leads',num(a.leads),'Oportunidades registradas','◎'],['Costo por lead',money(a.cpl),'Inversión / leads','◇'],['Impresiones',num(a.impresiones),'Entrega de anuncios','◫'],['Clics',num(a.clics),'Interacciones de pauta','↗'],['CTR',percent(a.ctr),'Clics / impresiones','%'],['CPM',money(a.cpm),'Costo por mil impresiones','⌁'],['Alcance reportado*',num(a.alcance),'Suma sin desduplicación','◉']];
+    const items=[['Inversión',money(a.inversion),'COP · gasto registrado','↗'],['Leads',num(a.leads),'Oportunidades registradas','◎'],[state.source.startsWith('Meta Ads')?'Gasto / formulario*':'Costo por lead',money(a.cpl),state.source.startsWith('Meta Ads')?'Ratio mixto: incluye gasto WhatsApp · ver módulo Meta':'Inversión / leads','◇'],['Impresiones',num(a.impresiones),'Entrega de anuncios','◫'],['Clics',num(a.clics),'Interacciones de pauta','↗'],['CTR',percent(a.ctr),'Clics / impresiones','%'],['CPM',money(a.cpm),'Costo por mil impresiones','⌁'],['Alcance reportado*',num(a.alcance),'Suma sin desduplicación','◉']];
     $('kpiGrid').innerHTML=items.map(x=>`<article class="kpi"><div class="kpi-top"><span class="kpi-label">${x[0]}</span><span class="kpi-icon">${x[3]}</span></div><div class="kpi-value">${x[1]}</div><div class="kpi-sub">${x[2]}</div></article>`).join('');
   }
   function bars(groups,key,format=num,red=false){
@@ -196,7 +196,7 @@
     $('reportBullet').classList.toggle('verified',has);$('sourceTag').textContent=has?'IMPORTADO':'PENDIENTE';$('sourceRows').textContent=num(state.rows.length);
     goto();
   }
-  function render(){state.filtered=filterData();status(state.filtered);kpis(state.filtered);trend(state.filtered);insights(state.filtered);renderModels(state.filtered);analytics(state.filtered);campaigns(state.filtered);creatives(state.filtered);document.dispatchEvent(new CustomEvent('citroen:real-data',{detail:{rows:state.rows}}));}
+  function render(){state.filtered=filterData();status(state.filtered);kpis(state.filtered);trend(state.filtered);insights(state.filtered);renderModels(state.filtered);analytics(state.filtered);campaigns(state.filtered);creatives(state.filtered);document.dispatchEvent(new CustomEvent('citroen:real-data',{detail:{rows:state.rows,source:state.source,partialScope:state.source.startsWith('Meta Ads')}}));}
   function install(raw,name){
     const parsed=normalize(raw);state.rows=parsed.rows;state.supported=parsed.supported;state.warnings=parsed.warnings;state.source=name;state.loaded=new Date().toLocaleString('es-CO');
     ['filterModel','filterPlatform','filterCity','filterFrom','filterTo'].forEach(id=>$(id).value='');updateFilters();render();
@@ -230,6 +230,14 @@
     const style=document.createElement('style');style.textContent='.hero-art img{object-fit:cover;mix-blend-mode:normal;border-radius:18px;mask-image:linear-gradient(to right,transparent,black 24%);-webkit-mask-image:linear-gradient(to right,transparent,black 24%)}';document.head.appendChild(style);
     updateFilters();render();
     let anchor=location.hash.slice(1);if($(anchor)&&document.querySelector(`.nav-link[data-target="${anchor}"]`))setTimeout(()=>nav(anchor),120);
+    // Imported Meta Ads actuals are pre-aggregated from 27,840 daily ad records.
+    // The global dashboard receives only one summary dataset to avoid double counting.
+    document.addEventListener('citroen:meta-import',e=>{
+      if(!e.detail||!Array.isArray(e.detail.rows))return;
+      if(state.rows.length&&state.source&&!state.source.startsWith('Meta Ads'))return;
+      try{install(e.detail.rows,e.detail.source||'Meta Ads · real 2026');}
+      catch(error){console.error('Meta integration error',error);toast('No fue posible usar la fuente Meta en el resumen.');}
+    });
     loadRepoJson();
   }
   document.addEventListener('DOMContentLoaded',wire);
