@@ -69,3 +69,17 @@ assert.ok(fs.readFileSync('planning.js','utf8').includes('realPartial'),'Meta pa
 console.log('PASS: Citroen, 10 projected months, 27,840 Meta actuals, 3 accounts, 164 campaigns, 578 ad sets, 434 creative names. No double count.');
 
 
+
+
+const c3=fs.readFileSync('concept3.js','utf8'),c3css=fs.readFileSync('concept3.css','utf8');
+for(const id of ['c3Dashboard','c3Month','c3Model','c3Territory','c3Kpis','c3CompareChart','c3Funnel','c3Models','c3Campaigns','c3Insights']){
+ assert.ok(ids.has(id),'Concept 3 DOM ID missing: '+id);
+}
+assert.ok(html.includes('class="c3-dashboard"'),'Approved concept 3 markup missing');
+assert.ok(html.includes('concept3.css')&&html.includes('concept3.js'),'Concept 3 assets not loaded');
+assert.ok(c3css.includes('.c3-middle-grid')&&c3css.includes('.c3-bottom-grid'),'Concept 3 layout incomplete');
+assert.ok(c3.includes('data-c3-metric')&&c3.includes('planValue')&&c3.includes('meta_2026_daily.json'),'Functional comparatives missing');
+assert.ok(!/Math\\.random\\s*\\(/.test(c3),'Synthetic metrics detected');
+const c3Ids=[...c3.matchAll(/\\$\\('([^']+)'\\)/g)].map(m=>m[1]);
+for(const id of c3Ids)assert.ok(ids.has(id),'Missing element for concept 3 JS: '+id);
+console.log('PASS: approved concept 3 layout and JavaScript bindings.');
