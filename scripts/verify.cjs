@@ -1,0 +1,17 @@
+const fs=require('node:fs');
+const assert=require('node:assert/strict');
+const html=fs.readFileSync('index.html','utf8');
+const script=fs.readFileSync('app.js','utf8');
+const css=fs.readFileSync('styles.css','utf8');
+const ids=new Set([...html.matchAll(/id="([^"]+)"/g)].map(x=>x[1]));
+const refs=[...script.matchAll(/\$\('([^']+)'\)/g)].map(x=>x[1]);
+const miss=refs.filter(x=>!ids.has(x));
+assert.equal(miss.length,0,'IDs missing from index.html: '+miss.join(', '));
+for(const section of ['resumen','modelos','medios','territorios','campanas','creativos','datos'])assert.ok(ids.has(section),'Missing section '+section);
+assert.ok(script.includes("citroen-data.json"),'Optional verified-data JSON not supported');
+assert.ok(script.includes('parseCsv'),'Import CSV missing');
+assert.ok(script.includes('No especificado'),'Empty states missing');
+assert.ok(!/Math\.random\s*\(/.test(script),'Random performance numbers are forbidden');
+assert.ok(!/(mockData|demoData|seedData)\s*=/.test(script),'Seeded performance data are forbidden');
+assert.ok(css.includes('--navy:#0b2944'),'Montecarlo theme is missing');
+console.log('PASS: static dashboard structure, 7 panels, data integrity and source-safe metrics.');
