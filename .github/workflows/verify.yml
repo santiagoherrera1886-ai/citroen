@@ -17,5 +17,6 @@ jobs:
           node --check app.js
           node --check planning.js
           node --check meta.js
+          node --check concept3.js
       - name: Verify structure and no simulated data
         run: node scripts/verify.cjs
