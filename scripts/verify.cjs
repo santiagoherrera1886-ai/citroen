@@ -39,5 +39,33 @@ for(let month=0;month<10;month++){
 for(const id of ['planKpis','planTimeline','planModelsChart','planRegionsChart','planTypeChart','planComparison','planDetailRows','planAlerts'])
   assert.ok(ids.has(id),'Missing planning component '+id);
 assert.ok(script.includes("citroen:real-data"),'Plan vs real bridge missing');
-console.log('PASS: Citroen dashboard, 10 original plans, 60 model-month rows, 551 distribution lines, no double counting.');
+
+for(const id of ['metaMonth','metaModel','metaAccount','metaTerritory','metaKpis','metaTrend','metaModels','metaCampaignRows','metaAdRows','metaQuality'])
+  assert.ok(ids.has(id),'Meta dashboard UI missing: '+id);
+for(const path of ['data/meta_2026_daily.json','data/meta_2026_detail.json'])
+  assert.ok(fs.existsSync(path),'Missing source file '+path);
+const md=JSON.parse(fs.readFileSync('data/meta_2026_daily.json','utf8'));
+const mc=JSON.parse(fs.readFileSync('data/meta_2026_detail.json','utf8'));
+assert.equal(md.schema,'citroen-meta-actuals/2026-v1');
+assert.equal(mc.schema,md.schema);
+assert.equal(md.rows_source,27840);
+assert.equal(mc.rows_source,27840);
+assert.equal(md.date_min,'2026-01-01');
+assert.equal(md.date_max,'2026-10-20');
+assert.equal(md.daily.length,8032);
+assert.equal(mc.creatives.length,1803);
+assert.equal(mc.campaigns.length,564);
+assert.equal(mc.dictionaries.campaigns.length,164);
+assert.equal(mc.dictionaries.adsets.length,578);
+assert.equal(mc.dictionaries.ads.length,434);
+assert.deepEqual(md.totals,[909508844,96217,54916,145525157,1973315,2597585,113191745]);
+assert.deepEqual(mc.totals,md.totals);
+const sums=(records,prefix)=>[0,1,2,3,4,5,6].map(i=>records.reduce((sum,r)=>sum+r[prefix+i],0));
+assert.deepEqual(sums(md.daily,4),md.totals,'Daily rollups disagree with raw source');
+assert.deepEqual(sums(mc.campaigns,5),md.totals,'Campaign rollups disagree with raw source');
+assert.deepEqual(sums(mc.creatives,7),md.totals,'Ad creative rollups disagree with raw source');
+assert.ok(script.includes('citroen:meta-import'),'Global dashboard Meta bridge missing');
+assert.ok(fs.readFileSync('planning.js','utf8').includes('realPartial'),'Meta partial coverage guard missing');
+console.log('PASS: Citroen, 10 projected months, 27,840 Meta actuals, 3 accounts, 164 campaigns, 578 ad sets, 434 creative names. No double count.');
+
 
