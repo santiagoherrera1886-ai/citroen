@@ -35,7 +35,7 @@
   const metricKeys=['inversion','impresiones','alcance','clics','leads'];
   const state={rows:[],filtered:[],source:'',loaded:'',supported:new Set(),warnings:[],search:''};
   const cleanKey=x=>String(x||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
-  function normModel(x){let s=cleanKey(x);if(s.includes('aircross'))return 'Aircross';if(s.includes('basalt'))return 'Basalt';if(s==='c3'||s.startsWith('c3_')||s.includes('citroen_c3'))return 'C3';return String(x||'No especificado').trim();}
+  function normModel(x){let s=cleanKey(x);if(s.includes('aircross')&&s.includes('max'))return 'AIRCROSS MAX';if(s.includes('c3')&&s.includes('max'))return 'C3 MAX';if(s.includes('berlingo'))return 'BERLINGO';if(s.includes('aircross'))return 'Aircross';if(s.includes('basalt'))return 'Basalt';if(s==='c3'||s.startsWith('c3_')||s.includes('citroen_c3'))return 'C3';return String(x||'No especificado').trim();}
   function normPlatform(x){let s=cleanKey(x);if(/facebook|instagram|meta/.test(s))return 'Meta Ads';if(/google|youtube|pmax|^search$/.test(s))return 'Google Ads';if(s.includes('tiktok'))return 'TikTok Ads';return String(x||'No especificada').trim();}
   function parseNumber(x){
     if(x==null||String(x).trim()==='')return null;
