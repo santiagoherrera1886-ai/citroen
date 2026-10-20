@@ -43,6 +43,7 @@
     <div class="nav-caption">WORKSPACE</div>
     <nav class="nav" aria-label="Secciones del dashboard">
       <button class="nav-link active" data-target="resumen"><svg><use href="#i-dashboard"/></svg> Visión general <span>01</span></button>
+      <button class="nav-link" data-target="planeacion"><svg><use href="#i-chart"/></svg> Planeación 2026 <span>02</span></button>
       <button class="nav-link" data-target="modelos"><svg><use href="#i-car"/></svg> Portafolio <span>02</span></button>
       <button class="nav-link" data-target="medios"><svg><use href="#i-chart"/></svg> Ecosistema de medios <span>03</span></button>
       <button class="nav-link" data-target="territorios"><svg><use href="#i-pin"/></svg> Territorios <span>04</span></button>
@@ -83,6 +84,7 @@
           <div class="hero-art"><img id="heroCar" src="https://citroenderco.vteximg.com.br/arquivos/ids/157771/live-pack-gris-grafito-main.jpg?v=638845873268330000" alt="Citroën Basalt, imagen de catálogo oficial" loading="eager"><div class="hero-art-backup">CITROËN<br><strong>BASALT</strong><small>Explorar SUV ↗</small></div></div>
           <span class="hero-serial">01 — NEW PERSPECTIVES</span>
         </div>
+        <div class="planning-preview" id="planPreview"><div><span class="plan-preview-overline">PLAN DE MEDIOS · ENE–OCT 2026</span><strong id="planPreviewTotal">—</strong><small>Presupuesto base proyectado / No ejecutado</small></div><button data-goto="planeacion">Explorar planeación <svg><use href="#i-arrow"/></svg></button></div>
         <div class="section-header filter-heading"><div><div class="section-overline">PERFORMANCE SNAPSHOT</div><h2>El pulso de tus campañas</h2><p id="filterExplanation">Selecciona tus filtros para analizar los datos cuando estén disponibles.</p></div><button id="resetFilters" class="quiet-button"><svg><use href="#i-refresh"/></svg> Restablecer</button></div>
         <div class="filters" aria-label="Filtros globales">
           <label><span>MODELO</span><select id="filterModel"><option value="">Todos los modelos</option></select></label>
@@ -99,7 +101,47 @@
           <article class="panel panel-summary"><div class="panel-head"><div><div class="section-overline">READING THE SIGNALS</div><h3>Lo que nos dice la data</h3></div><span class="spark-star">✳</span></div><div id="insightList"></div></article>
         </div>
       </section>
-      <section id="modelos" class="page-section">
+      
+<section id="planeacion" class="page-section planning-section">
+  <div class="section-header">
+    <div><div class="section-overline">MEDIA PLANNING / 2026</div><h2>Planeación de medios Citroën</h2>
+    <p>Presupuestos y metas proyectados de enero a octubre · 10 Excel originales · sin resultados inventados.</p></div>
+    <button class="secondary-button" id="planExport"><svg><use href="#i-download"/></svg> Exportar desglose</button>
+  </div>
+  <div class="planning-intro"><div class="plan-intro-icon">ë</div>
+    <div><b>Proyectado ≠ ejecutado</b><p>La inversión y los leads planificados se mantienen separados de los datos de ejecución. Berlingo se cuenta una sola vez.</p></div>
+    <span>BASE AUDITADA · COP</span></div>
+  <div class="plan-filters">
+    <label>MES <select id="planMonth"><option value="">Enero – Octubre</option></select></label>
+    <label>MODELO <select id="planModel"><option value="">Todo el portafolio</option></select></label>
+    <label>REGIÓN DECLARADA <select id="planRegion"><option value="">Todas las regiones</option></select></label>
+    <label>TIPO DEL PLAN <select id="planType"><option value="">Todos los tipos</option></select></label>
+    <button id="planReset" class="quiet-button"><svg><use href="#i-refresh"/></svg> Limpiar</button>
+  </div>
+  <div id="planOverviewNote" class="plan-small-note">Cargando proyecciones auditadas…</div>
+  <div class="plan-kpis" id="planKpis"></div>
+  <div class="planning-charts">
+    <article class="panel"><div class="panel-head"><div><div class="section-overline">MONTHLY RUN RATE</div><h3>Presupuesto proyectado por mes</h3></div><span class="mini-pill">COP · NO EJECUTADO</span></div><div id="planTimeline"></div></article>
+    <article class="panel"><div class="panel-head"><div><div class="section-overline">MODEL ALLOCATION</div><h3>Inversión por modelo</h3></div><span class="mini-pill">PRESUPUESTO BASE</span></div><div id="planModelsChart"></div></article>
+  </div>
+  <div class="planning-charts">
+    <article class="panel"><div class="panel-head"><div><div class="section-overline">TERRITORIAL PLANNING</div><h3>Regiones en la estructura</h3></div><span class="mini-pill">DESGLOSE DECLARADO</span></div><div id="planRegionsChart"></div></article>
+    <article class="panel"><div class="panel-head"><div><div class="section-overline">CAMPAIGN STRUCTURE</div><h3>Tipos de distribución</h3></div><span class="mini-pill">FILAS DE PLAN</span></div><div id="planTypeChart"></div></article>
+  </div>
+  <article class="panel plan-vs-real">
+    <div class="panel-head"><div><div class="section-overline">PLAN VS. EXECUTION</div><h3>Metas vs. resultados reales</h3></div><span id="planRealState" class="mini-pill">REAL SIN FUENTE</span></div>
+    <div class="table-scroll"><table><thead><tr><th>MES</th><th>PLAN DE INVERSIÓN</th><th>INVERSIÓN REAL</th><th>VARIACIÓN</th><th>LEADS META CONOCIDOS</th><th>LEADS REALES</th><th>CPL PLAN*</th><th>CPL REAL</th></tr></thead><tbody id="planComparison"></tbody></table></div>
+    <p class="plan-footnote">* CPL del plan solo se muestra cuando hay leads informados para todo el alcance seleccionado. Los reales proceden exclusivamente del archivo cargado en «Datos & fuentes».</p>
+  </article>
+  <article class="panel plan-detail">
+    <div class="panel-head"><div><div class="section-overline">551 SOURCE LINES</div><h3>Distribución detallada del plan</h3><p>Con trazabilidad de hoja y celda original; los filtros de región y tipo afectan este desglose, no alteran el presupuesto global.</p></div><span id="planDetailCount" class="mini-pill">551 FILAS</span></div>
+    <div class="table-toolbar"><label class="table-search"><svg><use href="#i-search"/></svg><input id="planSearch" placeholder="Buscar campaña, región, conjunto…" aria-label="Buscar distribución del plan"></label><span id="planDetailBudget"></span></div>
+    <div class="table-scroll"><table><thead><tr><th>MES</th><th>CAMPAÑA</th><th>TIPO</th><th>REGIÓN</th><th>CONJUNTO / ÁMBITO</th><th>MODELO</th><th>PRESUPUESTO</th><th>ORIGEN</th></tr></thead><tbody id="planDetailRows"></tbody></table></div>
+    <div class="plan-table-foot">Mostrando un máximo de 120 filas en pantalla; la exportación contiene todas las filas filtradas. Los importes por región no representan alcance geográfico único.</div>
+  </article>
+  <article class="panel plan-qa"><div class="panel-head"><div><div class="section-overline">DATA GOVERNANCE</div><h3>Controles de conciliación</h3></div><span class="mini-pill">AUDITORÍA</span></div><div id="planAlerts"></div></article>
+</section>
+<section id="modelos" class="page-section">
         <div class="section-header"><div><div class="section-overline">THE CITROËN FAMILY</div><h2>Un modelo. Una oportunidad.</h2><p>Portafolio verificado en Citroën Colombia. La eficiencia de medios depende del archivo cargado.</p></div><a class="text-link" href="https://www.citroen.com.co/" target="_blank" rel="noopener noreferrer">Sitio oficial ↗</a></div>
         <div id="modelGrid" class="model-grid"></div>
       </section>
@@ -132,4 +174,6 @@
 </div>
 <div id="toast" role="status" aria-live="polite" class="toast"></div>
 <script src="./app.js" defer></script>
+<script src="./data/proyecciones_2026.js" defer></script>
+<script src="./planning.js" defer></script>
 </body></html>
