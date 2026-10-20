@@ -10,6 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css">
+<link rel="stylesheet" href="./concept3.css">
 </head>
 <body>
 <svg xmlns="http://www.w3.org/2000/svg" class="symbols" aria-hidden="true">
@@ -31,7 +32,7 @@
   <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
   <symbol id="i-close" viewBox="0 0 24 24"><path d="M5 5l14 14M19 5 5 19"/></symbol>
 </svg>
-<div class="shell">
+<div class="shell concept3-shell">
   <aside class="sidebar" id="sidebar">
     <div class="logo-wrap">
       <a class="brand" href="#resumen" aria-label="Ir al resumen">
@@ -40,16 +41,16 @@
       </a>
       <button id="closeMenu" class="mobile-close icon-only" aria-label="Cerrar menú"><svg><use href="#i-close"/></svg></button>
     </div>
-    <div class="nav-caption">WORKSPACE</div>
+    <div class="nav-caption">WORKSPACE / COLOMBIA</div>
     <nav class="nav" aria-label="Secciones del dashboard">
-      <button class="nav-link active" data-target="resumen"><svg><use href="#i-dashboard"/></svg> Visión general <span>01</span></button>
+      <button class="nav-link active" data-target="resumen"><svg><use href="#i-dashboard"/></svg> Resumen <span>01</span></button>
       <button class="nav-link" data-target="planeacion"><svg><use href="#i-chart"/></svg> Planeación 2026 <span>02</span></button>
       <button class="nav-link" data-target="meta"><svg><use href="#i-chart"/></svg> Meta Ads · Real <span>03</span></button>
-      <button class="nav-link" data-target="modelos"><svg><use href="#i-car"/></svg> Portafolio <span>02</span></button>
-      <button class="nav-link" data-target="medios"><svg><use href="#i-chart"/></svg> Ecosistema de medios <span>03</span></button>
-      <button class="nav-link" data-target="territorios"><svg><use href="#i-pin"/></svg> Territorios <span>04</span></button>
+      <button class="nav-link" data-target="modelos"><svg><use href="#i-car"/></svg> Modelos <span>04</span></button>
+      <button class="nav-link" data-target="medios"><svg><use href="#i-chart"/></svg> Medios <span>05</span></button>
+      <button class="nav-link" data-target="territorios"><svg><use href="#i-pin"/></svg> Geografía <span>06</span></button>
       <button class="nav-link" data-target="campanas"><svg><use href="#i-layers"/></svg> Campañas <span>05</span></button>
-      <button class="nav-link" data-target="creativos"><svg><use href="#i-image"/></svg> Creative gallery <span>06</span></button>
+      <button class="nav-link" data-target="creativos"><svg><use href="#i-image"/></svg> Creativos <span>08</span></button>
       <button class="nav-link" data-target="datos"><svg><use href="#i-db"/></svg> Datos & fuentes <span>07</span></button>
     </nav>
     <div class="sidebar-bottom">
@@ -70,6 +71,58 @@
     </header>
     <main class="content">
       <section id="resumen" class="page-section">
+
+<div class="c3-dashboard" id="c3Dashboard">
+  <div class="c3-header">
+    <div><div class="c3-kicker">DASHBOARD ESTRATÉGICO <span>/ PERFORMANCE INTELLIGENCE</span></div><h1>Marketing &amp; movilidad</h1><p>Performance, medios y negocio automotriz · Colombia</p></div>
+    <div class="c3-header-controls">
+      <label class="c3-select"><span class="sr-only">Período</span><select id="c3Month"><option value="">2026 · Ene–Oct</option></select></label>
+      <label class="c3-select"><span class="sr-only">Territorio</span><select id="c3Territory"><option value="">Todos los territorios</option></select></label>
+      <label class="c3-select"><span class="sr-only">Modelo</span><select id="c3Model"><option value="">Todos los modelos</option></select></label>
+      <span class="c3-source-pill"><span class="c3-live-dot"></span> META REAL + PLAN 2026</span>
+    </div>
+  </div>
+  <div class="c3-hero">
+    <div class="c3-hero-photo" aria-hidden="true"></div>
+    <div class="c3-hero-copy"><div class="c3-hero-eyebrow">CITROËN COLOMBIA · PERFORMANCE INTELLIGENCE</div><h2>Más personas en movimiento,<br><span>más historias por contar.</span></h2>
+      <p>Convierte la inversión en oportunidades reales de negocio. Una visión clara del desempeño, comparando lo planeado con lo ejecutado.</p>
+      <button class="c3-primary-btn" id="c3Explore">Explorar desempeño <svg><use href="#i-arrow"/></svg></button>
+    </div>
+    <div class="c3-hero-vehicle"><img id="c3HeroCar" alt="Citroën Aircross, fotografía de vehículo real" loading="eager" decoding="async"><span class="c3-car-fallback">CITROËN<br>AIRCROSS</span></div>
+    <div class="c3-hero-model"><b>C3 AIRCROSS</b><span>Espacio para<br>todas tus historias.</span></div>
+  </div>
+  <div class="c3-context-line" id="c3Context">Conciliando presupuesto planeado y ejecución Meta Ads del período...</div>
+  <div class="c3-kpi-grid" id="c3Kpis" aria-live="polite"></div>
+  <div class="c3-middle-grid">
+    <article class="c3-panel c3-compare-panel" id="c3ComparePanel">
+      <div class="c3-panel-heading"><div><h3>Planeado vs Ejecutado</h3><p>Inversión y generación de oportunidades · 2026</p></div>
+      <div class="c3-chart-controls" role="group" aria-label="Métrica del comparativo">
+        <button type="button" class="active" data-c3-metric="investment">Inversión</button>
+        <button type="button" data-c3-metric="leads">Leads</button>
+        <button type="button" data-c3-metric="cpl">CPL</button>
+      </div></div>
+      <div class="c3-legend"><span><i class="c3-dot planned"></i> Planeado (plan completo)</span><span><i class="c3-dot actual"></i> Ejecutado (Meta Ads)</span><span class="c3-hatched"><i></i> Oct. parcial</span></div>
+      <div id="c3CompareChart" class="c3-comparison-chart" aria-live="polite"></div>
+      <p class="c3-chart-footnote" id="c3CompareNote">Meta Ads es solo una parte de la ejecución. Las barras no equivalen al cumplimiento de todos los medios.</p>
+    </article>
+    <article class="c3-panel c3-funnel-panel">
+      <div class="c3-panel-heading"><div><h3>Funnel de conversión</h3><p>Del anuncio a la acción · Meta Ads</p></div><span class="c3-mini-tag">DATOS REALES</span></div>
+      <div id="c3Funnel" class="c3-funnel-body" aria-live="polite"></div>
+      <p class="c3-funnel-foot">Formularios y conversaciones son resultados paralelos: no se deben sumar como leads únicos.</p>
+    </article>
+  </div>
+  <div class="c3-bottom-grid">
+    <article class="c3-panel c3-models-panel"><div class="c3-panel-heading"><h3>Desempeño por modelo</h3><button class="c3-text-link" data-c3-jump="modelos">Ver todos los modelos →</button></div>
+      <div class="c3-models-grid" id="c3Models"></div>
+    </article>
+    <article class="c3-panel c3-campaign-panel"><div class="c3-panel-heading"><h3>Campañas principales</h3><button class="c3-text-link" data-c3-jump="meta">Ver todas →</button></div>
+      <div class="c3-campaign-table-wrap"><table class="c3-campaign-table"><thead><tr><th>Campaña</th><th>Modelo</th><th>Inversión</th><th>Form.</th><th>Costo/form.</th></tr></thead><tbody id="c3Campaigns"></tbody></table></div>
+    </article>
+    <article class="c3-panel c3-insight-panel"><div class="c3-panel-heading"><h3><span class="c3-bulb">✳</span> Hallazgos clave</h3></div><div id="c3Insights" class="c3-insights"></div></article>
+  </div>
+  <div class="c3-honesty">FUENTES · Proyecciones enero–octubre 2026 de 10 libros Excel · Ejecución Meta Ads del 1 de enero al 20 de octubre de 2026 (3 cuentas). Los territorios se infieren de nombres de campañas. Moneda de Meta asumida COP, pendiente de verificación contable. <button data-c3-jump="datos">Revisar fuentes ↗</button></div>
+</div>
+<div class="c3-legacy" aria-hidden="true">
         <div class="intro-line"><div><div class="eyebrow"><span class="eyebrow-dot"></span> MARKETING COMMAND CENTER <span class="slash">/</span> COLOMBIA</div><h1>Más que un dashboard.<br><em>Una nueva perspectiva.</em></h1><p class="intro-copy">Inteligencia de medios y performance para el portafolio Citroën.</p></div><div class="intro-decor" aria-hidden="true">ë</div></div>
         <div class="hero">
           <div class="hero-inner">
@@ -101,7 +154,7 @@
           <article class="panel panel-trend"><div class="panel-head"><div><div class="section-overline">EVOLUCIÓN</div><h3>Tendencia de inversión y leads</h3></div><span class="mini-pill">DATOS POR FECHA</span></div><div id="trendChart" class="trend-chart"></div></article>
           <article class="panel panel-summary"><div class="panel-head"><div><div class="section-overline">READING THE SIGNALS</div><h3>Lo que nos dice la data</h3></div><span class="spark-star">✳</span></div><div id="insightList"></div></article>
         </div>
-      </section>
+      </div></section>
       
 <section id="planeacion" class="page-section planning-section">
   <div class="section-header">
@@ -217,4 +270,5 @@
 <script src="./data/proyecciones_2026.js" defer></script>
 <script src="./planning.js" defer></script>
 <script src="./meta.js" defer></script>
+<script src="./concept3.js" defer></script>
 </body></html>
