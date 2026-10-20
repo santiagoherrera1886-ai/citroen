@@ -6,7 +6,7 @@
   const num=x=>x==null?'—':fmt.format(x),money=x=>x==null?'—':cop.format(x);
   const short=x=>x==null?'—':x>=1000000?fmt.format(x/1000000)+' M':fmt.format(x/1000)+' mil';
   const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  let data=null,filteredLines=[],realRows=[];
+  let data=null,filteredLines=[],realRows=[],realSource='',realPartial=false;
   const dictionaryIndexes=[1,3,4,5,6,7,9];
   async function unpack(){
     const encoded=String(window.CITROEN_PLAN_PACKED||'').replace(/\s/g,'');
@@ -86,12 +86,12 @@
   }
   function comparison(filter){
     const t=totals(filter);
-    $('planRealState').textContent=realRows.length?'REALES IMPORTADOS · NO AUDITADOS':'REAL SIN FUENTE';
+    $('planRealState').textContent=realRows.length?(realPartial?'EJECUTADO META · COBERTURA PARCIAL':'REALES IMPORTADOS · NO AUDITADOS'):'REAL SIN FUENTE';
     $('planComparison').innerHTML=t.months.map(m=>{
       const i=data.months.indexOf(m),models=t.models.filter(r=>r[0]===i);
       const plan=filter.model?sum(models,2):m[2],lead=sum(models,3),complete=!models.some(x=>x[3]===null);
-      const real=realForMonth(filter,m[0]),delta=real.spend!=null&&plan>0?(real.spend/plan-1)*100:null;
-      const cp=complete&&lead>0?plan/lead:null,cr=real.spend!=null&&real.leads>0?real.spend/real.leads:null;
+      const real=realForMonth(filter,m[0]),delta=!realPartial&&real.spend!=null&&plan>0?(real.spend/plan-1)*100:null;
+      const cp=complete&&lead>0?plan/lead:null,cr=!realPartial&&real.spend!=null&&real.leads>0?real.spend/real.leads:null;
       return '<tr><td>'+esc(m[1])+'</td><td>'+money(plan)+'</td><td>'+money(real.spend)+'</td><td>'+(delta==null?'—':(delta>0?'+':'')+delta.toFixed(1)+' %')+'</td><td>'+num(lead)+(complete?'':' *')+'</td><td>'+num(real.leads)+'</td><td>'+money(cp)+'</td><td>'+money(cr)+'</td></tr>';
     }).join('');
   }
@@ -119,7 +119,7 @@
     $('planSearch').oninput=render;
     $('planReset').onclick=()=>{['planMonth','planModel','planRegion','planType','planSearch'].forEach(id=>$(id).value='');render();};
     $('planExport').onclick=exportFiltered;
-    document.addEventListener('citroen:real-data',e=>{realRows=Array.isArray(e.detail?.rows)?e.detail.rows:[];render();});
+    document.addEventListener('citroen:real-data',e=>{realRows=Array.isArray(e.detail?.rows)?e.detail.rows:[];realSource=String(e.detail?.source||'');realPartial=!!e.detail?.partialScope||realSource.startsWith('Meta Ads');render();});
     unpack().then(v=>{data=v;initFilters();render();}).catch(e=>{
       $('planOverviewNote').textContent='No fue posible abrir los presupuestos: '+e.message;
       for(const id of ['planKpis','planTimeline','planModelsChart','planRegionsChart','planTypeChart','planComparison','planDetailRows','planAlerts'])$(id).innerHTML='<div class="empty-state"><b>Paquete de datos no disponible</b><span>Revisa la carga de data/proyecciones_2026.js.</span></div>';
