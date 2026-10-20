@@ -193,7 +193,7 @@
     $('reportBullet').classList.toggle('verified',has);$('sourceTag').textContent=has?'IMPORTADO':'PENDIENTE';$('sourceRows').textContent=num(state.rows.length);
     goto();
   }
-  function render(){state.filtered=filterData();status(state.filtered);kpis(state.filtered);trend(state.filtered);insights(state.filtered);renderModels(state.filtered);analytics(state.filtered);campaigns(state.filtered);creatives(state.filtered);}
+  function render(){state.filtered=filterData();status(state.filtered);kpis(state.filtered);trend(state.filtered);insights(state.filtered);renderModels(state.filtered);analytics(state.filtered);campaigns(state.filtered);creatives(state.filtered);document.dispatchEvent(new CustomEvent('citroen:real-data',{detail:{rows:state.rows}}));}
   function install(raw,name){
     const parsed=normalize(raw);state.rows=parsed.rows;state.supported=parsed.supported;state.warnings=parsed.warnings;state.source=name;state.loaded=new Date().toLocaleString('es-CO');
     ['filterModel','filterPlatform','filterCity','filterFrom','filterTo'].forEach(id=>$(id).value='');updateFilters();render();
