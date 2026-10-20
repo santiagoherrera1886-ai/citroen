@@ -12,7 +12,10 @@
   const models=[
     {name:'C3',tag:'URBAN EXPLORER',desc:'Carácter SUV y practicidad para descubrir cada rincón de la ciudad.',photo:'https://www.citroen.com.co/content/dam/citroen/colombia/home/C3v2.jpg?imwidth=768',url:'https://www.citroen.com.co/modelos/nueva-c3.html'},
     {name:'Aircross',tag:'FAMILY ADVENTURE',desc:'Versatilidad y espacio para viajar con toda la familia.',photo:'https://citroenderco.vteximg.com.br/arquivos/ids/157467-1000-500/Shine-Rojo-ruby-main.jpg?v=638635747121730000',url:'https://www.citroen.com.co/modelos/nueva-aircross-suv.html'},
-    {name:'Basalt',tag:'NEW GENERATION',desc:'Diseño coupé-SUV y líneas dinámicas que reinventan el confort.',photo:'https://citroenderco.vteximg.com.br/arquivos/ids/157771/live-pack-gris-grafito-main.jpg?v=638845873268330000',url:'https://www.citroen.com.co/modelos/basalt.html'}
+    {name:'Basalt',tag:'NEW GENERATION',desc:'Diseño coupé-SUV y líneas dinámicas que reinventan el confort.',photo:'https://citroenderco.vteximg.com.br/arquivos/ids/157771/live-pack-gris-grafito-main.jpg?v=638845873268330000',url:'https://www.citroen.com.co/modelos/basalt.html'},
+    {name:'C3 MAX',tag:'HYBRID EDITION',desc:'Variante MAX presente en la planeación; foto de familia C3 como referencia, no del acabado específico.',photo:'https://www.citroen.com.co/content/dam/citroen/colombia/home/C3v2.jpg?imwidth=768',url:'https://www.citroen.com.co/modelos/nueva-c3-max.html'},
+    {name:'AIRCROSS MAX',tag:'HYBRID EDITION',desc:'Variante MAX en los proyectados; imagen de la familia Aircross como referencia, no del acabado específico.',photo:'https://citroenderco.vteximg.com.br/arquivos/ids/157467-1000-500/Shine-Rojo-ruby-main.jpg?v=638635747121730000',url:'https://www.citroen.com.co/modelos/nueva-aircross-max.html'},
+    {name:'BERLINGO',tag:'PROFESSIONAL',desc:'Línea profesional contemplada en el plan de medios. Foto específica pendiente de validación.',photo:'',url:'https://www.citroen.com.co/modelos/nueva-berlingo-van.html'}
   ];
   const aliases={
     fecha:'fecha date dia day reporting_start date_start start_date',
