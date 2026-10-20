@@ -44,6 +44,7 @@
     <nav class="nav" aria-label="Secciones del dashboard">
       <button class="nav-link active" data-target="resumen"><svg><use href="#i-dashboard"/></svg> Visión general <span>01</span></button>
       <button class="nav-link" data-target="planeacion"><svg><use href="#i-chart"/></svg> Planeación 2026 <span>02</span></button>
+      <button class="nav-link" data-target="meta"><svg><use href="#i-chart"/></svg> Meta Ads · Real <span>03</span></button>
       <button class="nav-link" data-target="modelos"><svg><use href="#i-car"/></svg> Portafolio <span>02</span></button>
       <button class="nav-link" data-target="medios"><svg><use href="#i-chart"/></svg> Ecosistema de medios <span>03</span></button>
       <button class="nav-link" data-target="territorios"><svg><use href="#i-pin"/></svg> Territorios <span>04</span></button>
@@ -141,6 +142,45 @@
   </article>
   <article class="panel plan-qa"><div class="panel-head"><div><div class="section-overline">DATA GOVERNANCE</div><h3>Controles de conciliación</h3></div><span class="mini-pill">AUDITORÍA</span></div><div id="planAlerts"></div></article>
 </section>
+
+<section id="meta" class="page-section meta-page">
+  <div class="section-header"><div><div class="section-overline">META ADS / REAL PERFORMANCE / 2026</div><h2>Resultados reales de campañas Meta</h2><p>Datos diarios de tres cuentas · 1 ene – 20 oct 2026 · formularios y conversaciones por separado.</p></div><span class="mini-pill">FUENTE: EXPORTACIÓN META · NO API EN VIVO</span></div>
+  <div class="meta-notice"><svg><use href="#i-info"/></svg><span><b>Resultados reales, no proyectados.</b> El archivo contiene anuncios de Meta Ads. Los leads en Facebook y las conversaciones de WhatsApp no son equivalentes ni deben interpretarse como personas únicas. El alcance de varias filas tampoco se puede desduplicar.</span></div>
+  <div class="meta-filters">
+    <label>MES<select id="metaMonth"><option value="">Enero a octubre</option></select></label>
+    <label>MODELO<select id="metaModel"><option value="">Todos los modelos</option></select></label>
+    <label>CUENTA<select id="metaAccount"><option value="">Todas las cuentas</option></select></label>
+    <label>TERRITORIO INFERIDO<select id="metaTerritory"><option value="">Todos los territorios</option></select></label>
+    <button id="metaReset" class="quiet-button"><svg><use href="#i-refresh"/></svg> Restablecer</button>
+  </div>
+  <div id="metaFilterContext" class="plan-small-note">Cargando registros del reporte de Meta Ads…</div>
+  <div id="metaKpis" class="meta-kpis"></div>
+  <div class="planning-charts">
+    <article class="panel"><div class="panel-head"><div><div class="section-overline">MENSUAL / REAL</div><h3>Inversión ejecutada en Meta</h3></div><span class="mini-pill">ENE–OCT 20</span></div><div id="metaTrend"></div></article>
+    <article class="panel"><div class="panel-head"><div><div class="section-overline">PORTAFOLIO</div><h3>Inversión real por modelo</h3></div><span class="mini-pill">META ADS</span></div><div id="metaModels"></div></article>
+  </div>
+  <div class="planning-charts">
+    <article class="panel"><div class="panel-head"><h3>Origen por cuenta publicitaria</h3><span class="mini-pill">3 CUENTAS</span></div><div id="metaAccounts"></div></article>
+    <article class="panel"><div class="panel-head"><h3>Geografía según nomenclatura</h3><span class="mini-pill">INFERENCIA, NO GEO-REPORT</span></div><div id="metaTerritories"></div></article>
+  </div>
+  <div class="planning-charts">
+    <article class="panel"><div class="panel-head"><h3>Formatos creativos</h3><span class="mini-pill">NOMBRE DEL ANUNCIO</span></div><div id="metaFormats"></div></article>
+    <article class="panel"><div class="panel-head"><h3>Embudo y acciones reportadas</h3><span class="mini-pill">NO DEDUPLICADO</span></div><div id="metaOutcomes"></div></article>
+  </div>
+  <article class="panel meta-report-table">
+    <div class="panel-head"><div><div class="section-overline">CAMPAIGN INTELLIGENCE</div><h3>Rendimiento por campaña</h3><p>Filtra por mes, cuenta, modelo y territorio; campaña real preservada del reporte.</p></div><button class="secondary-button" id="metaExportCampaigns"><svg><use href="#i-download"/></svg> Exportar campañas</button></div>
+    <div class="table-toolbar"><label class="table-search"><svg><use href="#i-search"/></svg><input id="metaCampaignSearch" placeholder="Buscar campaña…" aria-label="Buscar campañas de Meta"></label><span id="metaCampaignCount"></span></div>
+    <div class="table-scroll"><table><thead><tr><th>MES</th><th>CUENTA</th><th>MODELO</th><th>CAMPAÑA ORIGINAL</th><th>GASTO</th><th>LEADS FORM.</th><th>CONV. INICIADAS</th><th>IMPRESIONES</th><th>CLICS ENLACE</th><th>CPL FORM.*</th></tr></thead><tbody id="metaCampaignRows"></tbody></table></div>
+    <p class="plan-footnote">* Gasto de cada campaña dividido por sus formularios; no incluye conversaciones como leads. Una campaña puede tener varios objetivos según nomenclatura y las métricas no sustituyen una validación de negocio.</p>
+  </article>
+  <article class="panel meta-report-table">
+    <div class="panel-head"><div><div class="section-overline">AD CREATIVE INTELLIGENCE</div><h3>Detalle por conjunto y anuncio</h3><p>1.803 agrupaciones mensuales de piezas; no se inventaron thumbnails ni URLs.</p></div><button class="secondary-button" id="metaExportAds"><svg><use href="#i-download"/></svg> Exportar anuncios</button></div>
+    <div class="table-toolbar"><label class="table-search"><svg><use href="#i-search"/></svg><input id="metaAdSearch" placeholder="Buscar conjunto, anuncio o campaña…" aria-label="Buscar anuncios de Meta"></label><span id="metaAdCount"></span></div>
+    <div class="table-scroll"><table><thead><tr><th>MES</th><th>MODELO</th><th>CAMPAÑA</th><th>CONJUNTO</th><th>ANUNCIO</th><th>GASTO</th><th>FORMULARIOS</th><th>CONVERSACIONES</th><th>IMPRESIONES</th><th>CLICS</th></tr></thead><tbody id="metaAdRows"></tbody></table></div>
+    <p class="plan-footnote">Los nombres de las piezas permiten clasificar carrusel, estática y video, pero la fuente no incluye imágenes publicitarias ni URLs verificables.</p>
+  </article>
+  <article class="panel meta-quality"><div class="panel-head"><div><div class="section-overline">DATA QUALITY</div><h3>Control de fuente y conciliación</h3></div><span class="mini-pill">SUPERFICIE DE AUDITORÍA</span></div><div id="metaQuality"></div></article>
+</section>
 <section id="modelos" class="page-section">
         <div class="section-header"><div><div class="section-overline">THE CITROËN FAMILY</div><h2>Un modelo. Una oportunidad.</h2><p>Portafolio verificado en Citroën Colombia. La eficiencia de medios depende del archivo cargado.</p></div><a class="text-link" href="https://www.citroen.com.co/" target="_blank" rel="noopener noreferrer">Sitio oficial ↗</a></div>
         <div id="modelGrid" class="model-grid"></div>
@@ -176,4 +216,5 @@
 <script src="./app.js" defer></script>
 <script src="./data/proyecciones_2026.js" defer></script>
 <script src="./planning.js" defer></script>
+<script src="./meta.js" defer></script>
 </body></html>
