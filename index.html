@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b2944">
+  <meta name="description" content="Citroën Performance Intelligence. Dashboard de marketing automotriz con trazabilidad de fuentes.">
+  <title>Citroën · Performance Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" class="symbols" aria-hidden="true">
+  <symbol id="i-dashboard" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></symbol>
+  <symbol id="i-car" viewBox="0 0 24 24"><path d="M4 15l1.6-6a3 3 0 0 1 2.9-2.2h7A3 3 0 0 1 18.4 9L20 15v4h-2v-2H6v2H4z"/><path d="M4 13h16M7 15h1m8 0h1"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V4M4 20h16M8 16l4-5 4 2 4-7"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5ZM3 12l9 5 9-5M3 16l9 5 9-5"/></symbol>
+  <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m4 18 5-5 3 3 3-5 5 7"/></symbol>
+  <symbol id="i-db" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v7c0 1.7 4 3 9 3s9-1.3 9-3V5M3 12v7c0 1.7 4 3 9 3s9-1.3 9-3v-7"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 18v3h16v-3"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h16m-6-6 6 6-6 6"/></symbol>
+  <symbol id="i-filter" viewBox="0 0 24 24"><path d="M4 6h16M7 12h10m-7 6h4"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5 9a8 8 0 0 1 14-2l1 1M4 16l1 1a8 8 0 0 0 14-2"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 10v6m0-9v.5"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V3m-5 5 5-5 5 5M4 16v5h16v-5"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m4 12 5 5 11-11"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M5 5l14 14M19 5 5 19"/></symbol>
+</svg>
+<div class="shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="logo-wrap">
+      <a class="brand" href="#resumen" aria-label="Ir al resumen">
+        <span class="chevrons"><i></i><i></i></span>
+        <span class="brand-name">CITROËN<small>PERFORMANCE INTELLIGENCE</small></span>
+      </a>
+      <button id="closeMenu" class="mobile-close icon-only" aria-label="Cerrar menú"><svg><use href="#i-close"/></svg></button>
+    </div>
+    <div class="nav-caption">WORKSPACE</div>
+    <nav class="nav" aria-label="Secciones del dashboard">
+      <button class="nav-link active" data-target="resumen"><svg><use href="#i-dashboard"/></svg> Visión general <span>01</span></button>
+      <button class="nav-link" data-target="modelos"><svg><use href="#i-car"/></svg> Portafolio <span>02</span></button>
+      <button class="nav-link" data-target="medios"><svg><use href="#i-chart"/></svg> Ecosistema de medios <span>03</span></button>
+      <button class="nav-link" data-target="territorios"><svg><use href="#i-pin"/></svg> Territorios <span>04</span></button>
+      <button class="nav-link" data-target="campanas"><svg><use href="#i-layers"/></svg> Campañas <span>05</span></button>
+      <button class="nav-link" data-target="creativos"><svg><use href="#i-image"/></svg> Creative gallery <span>06</span></button>
+      <button class="nav-link" data-target="datos"><svg><use href="#i-db"/></svg> Datos & fuentes <span>07</span></button>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="side-illustration"><span>Ë</span><p>Different is<br><b>everything.</b></p></div>
+      <div class="sidebar-source"><span class="status-dot"></span><span id="sideDataStatus">Esperando fuente de datos</span></div>
+      <small>MONTECARLO EDITION · V1.0</small>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <div class="workspace">
+    <header class="topbar">
+      <div class="topbar-left"><button class="mobile-menu icon-only" id="openMenu" aria-label="Abrir menú"><svg><use href="#i-menu"/></svg></button><div class="breadcrumb">CITROËN <span>/</span> <b id="breadcrumb">Visión general</b></div></div>
+      <div class="topbar-right">
+        <span class="topbar-date" id="todayLabel"></span>
+        <button class="topbar-source" id="jumpToData"><span class="status-dot"></span><span id="topDataStatus">Sin datos cargados</span><svg><use href="#i-arrow"/></svg></button>
+        <div class="avatar">C<span>.</span></div>
+      </div>
+    </header>
+    <main class="content">
+      <section id="resumen" class="page-section">
+        <div class="intro-line"><div><div class="eyebrow"><span class="eyebrow-dot"></span> MARKETING COMMAND CENTER <span class="slash">/</span> COLOMBIA</div><h1>Más que un dashboard.<br><em>Una nueva perspectiva.</em></h1><p class="intro-copy">Inteligencia de medios y performance para el portafolio Citroën.</p></div><div class="intro-decor" aria-hidden="true">ë</div></div>
+        <div class="hero">
+          <div class="hero-inner">
+            <div class="hero-kicker"><span></span> CITROËN / MONTECARLO BLUE</div>
+            <h2>La data también<br>puede <i>moverte.</i></h2>
+            <p>De cada impresión a cada oportunidad. Una visión integrada de medios, campañas y vehículos.</p>
+            <div class="hero-actions">
+              <button class="button button-white" data-goto="modelos">Explorar modelos <svg><use href="#i-arrow"/></svg></button>
+              <button class="button button-outline" data-goto="datos">Conectar datos <svg><use href="#i-arrow"/></svg></button>
+            </div>
+          </div>
+          <div class="hero-glow" aria-hidden="true"></div>
+          <div class="hero-art"><img id="heroCar" src="https://citroenderco.vteximg.com.br/arquivos/ids/157771/live-pack-gris-grafito-main.jpg?v=638845873268330000" alt="Citroën Basalt, imagen de catálogo oficial" loading="eager"><div class="hero-art-backup">CITROËN<br><strong>BASALT</strong><small>Explorar SUV ↗</small></div></div>
+          <span class="hero-serial">01 — NEW PERSPECTIVES</span>
+        </div>
+        <div class="section-header filter-heading"><div><div class="section-overline">PERFORMANCE SNAPSHOT</div><h2>El pulso de tus campañas</h2><p id="filterExplanation">Selecciona tus filtros para analizar los datos cuando estén disponibles.</p></div><button id="resetFilters" class="quiet-button"><svg><use href="#i-refresh"/></svg> Restablecer</button></div>
+        <div class="filters" aria-label="Filtros globales">
+          <label><span>MODELO</span><select id="filterModel"><option value="">Todos los modelos</option></select></label>
+          <label><span>PLATAFORMA</span><select id="filterPlatform"><option value="">Todas las plataformas</option></select></label>
+          <label><span>CIUDAD</span><select id="filterCity"><option value="">Todas las ciudades</option></select></label>
+          <label class="date-filter"><span>DESDE</span><input type="date" id="filterFrom"></label>
+          <label class="date-filter"><span>HASTA</span><input type="date" id="filterTo"></label>
+          <button class="filter-icon" title="Filtros activos" aria-label="Filtros globales"><svg><use href="#i-filter"/></svg></button>
+        </div>
+        <div class="data-disclaimer" id="dataDisclaimer"><svg><use href="#i-info"/></svg> Modo estructura: todavía no hay un reporte Citroën cargado. No se presentan métricas simuladas. <button data-goto="datos">Importar un archivo →</button></div>
+        <div class="kpis" id="kpiGrid"></div>
+        <div class="overview-grid">
+          <article class="panel panel-trend"><div class="panel-head"><div><div class="section-overline">EVOLUCIÓN</div><h3>Tendencia de inversión y leads</h3></div><span class="mini-pill">DATOS POR FECHA</span></div><div id="trendChart" class="trend-chart"></div></article>
+          <article class="panel panel-summary"><div class="panel-head"><div><div class="section-overline">READING THE SIGNALS</div><h3>Lo que nos dice la data</h3></div><span class="spark-star">✳</span></div><div id="insightList"></div></article>
+        </div>
+      </section>
+      <section id="modelos" class="page-section">
+        <div class="section-header"><div><div class="section-overline">THE CITROËN FAMILY</div><h2>Un modelo. Una oportunidad.</h2><p>Portafolio verificado en Citroën Colombia. La eficiencia de medios depende del archivo cargado.</p></div><a class="text-link" href="https://www.citroen.com.co/" target="_blank" rel="noopener noreferrer">Sitio oficial ↗</a></div>
+        <div id="modelGrid" class="model-grid"></div>
+      </section>
+      <section id="medios" class="page-section">
+        <div class="section-header"><div><div class="section-overline">MEDIA INTELLIGENCE</div><h2>¿Dónde rinde cada peso?</h2><p>Inversión, leads y CPL segmentados por plataforma.</p></div></div>
+        <div class="dual-grid"><article class="panel"><div class="panel-head"><h3>Mix de inversión por medio</h3><span class="mini-pill">COP</span></div><div id="platformChart"></div></article><article class="panel"><div class="panel-head"><h3>Eficiencia por plataforma</h3><span class="mini-pill">CPL</span></div><div id="platformEfficiency"></div></article></div>
+      </section>
+      <section id="territorios" class="page-section">
+        <div class="section-header"><div><div class="section-overline">GEO PERFORMANCE</div><h2>Territorios que convierten.</h2><p>Únicamente ciudades y concesionarios presentes en los datos suministrados.</p></div></div>
+        <div class="dual-grid territory-grid"><article class="panel"><div class="panel-head"><h3>Oportunidades por ciudad</h3><span class="mini-pill">LEADS</span></div><div id="cityChart"></div></article><article class="panel"><div class="panel-head"><h3>Detalle por concesionario</h3><span class="mini-pill">DATOS REALES</span></div><div id="dealerChart"></div></article></div>
+      </section>
+      <section id="campanas" class="page-section">
+        <div class="section-header"><div><div class="section-overline">CAMPAIGN EXPLORER</div><h2>De la campaña al resultado.</h2><p>Explora las inversiones y oportunidades con detalle por campaña.</p></div><button id="exportCsv" class="secondary-button"><svg><use href="#i-download"/></svg> Exportar CSV</button></div>
+        <div class="table-panel"><div class="table-toolbar"><label class="table-search"><svg><use href="#i-search"/></svg><input id="campaignSearch" placeholder="Buscar campaña, modelo o plataforma" aria-label="Buscar campañas"></label><span id="campaignCount">0 campañas</span></div><div class="table-scroll"><table><thead><tr><th>CAMPAÑA</th><th>MODELO</th><th>PLATAFORMA</th><th>CIUDAD</th><th>INVERSIÓN</th><th>LEADS</th><th>CPL</th><th>CTR</th></tr></thead><tbody id="campaignRows"></tbody></table></div></div>
+      </section>
+      <section id="creativos" class="page-section">
+        <div class="section-header"><div><div class="section-overline">CREATIVE EXPLORER</div><h2>Creatividad respaldada por datos.</h2><p>Imágenes de pauta únicamente cuando existan URLs de piezas reales en tu fuente de campañas.</p></div></div><div id="creativeGrid" class="creative-grid"></div>
+      </section>
+      <section id="datos" class="page-section">
+        <div class="section-header"><div><div class="section-overline">TRUSTED DATA LAYER</div><h2>Datos reales, decisiones reales.</h2><p>Carga datos reales y visualiza su origen. Nada de inversiones históricas inventadas.</p></div></div>
+        <div class="data-grid">
+          <article class="panel import-panel"><div class="import-icon"><svg><use href="#i-upload"/></svg></div><h3>Conectar reporte de medios</h3><p>Importa un archivo <b>CSV o JSON</b> exportado de tus campañas de Citroën. Procesamiento local en el navegador; no se envía a un servidor.</p><label for="dataFile" class="button button-red">Seleccionar archivo <svg><use href="#i-upload"/></svg></label><input type="file" id="dataFile" accept=".csv,.json,text/csv,application/json" hidden><p id="fileFeedback" class="file-feedback">Sin archivo seleccionado</p><button id="downloadTemplate" class="quiet-button template-btn"><svg><use href="#i-download"/></svg> Descargar plantilla CSV vacía</button></article>
+          <article class="panel provenance-panel"><div class="panel-head"><h3>Registro de fuentes</h3><span class="mini-pill">TRAZABILIDAD</span></div><div class="source-row"><span class="source-bullet verified"></span><div><strong>Portafolio e imágenes oficiales</strong><small>Citroën Colombia · enlaces al sitio del fabricante</small></div><b>CATÁLOGO</b></div><div class="source-row"><span class="source-bullet" id="reportBullet"></span><div><strong>Performance de medios</strong><small id="sourceDescription">Ningún reporte proporcionado todavía</small></div><b id="sourceTag">PENDIENTE</b></div><div class="source-row"><span class="source-bullet"></span><div><strong>APIs de Meta, Google y TikTok</strong><small>Sin conexiones habilitadas. No se simula sincronización.</small></div><b>NO CONECTADO</b></div><div class="source-total"><strong id="sourceRows">0</strong><span>filas cargadas de marketing</span></div></article>
+        </div>
+        <article class="panel schema-panel"><div><div class="section-overline">FORMATO RECOMENDADO</div><h3>Tu fuente, nuestro modelo de datos.</h3><p>Cada fila debe representar un registro de rendimiento para una fecha, campaña, modelo, plataforma y ciudad. Se admiten variantes comunes de encabezados en español e inglés.</p><div class="schema-chips"><span>fecha</span><span>plataforma</span><span>modelo</span><span>ciudad</span><span>concesionario</span><span>campana</span><span>inversion</span><span>impresiones</span><span>alcance</span><span>clics</span><span>leads</span><span>url_creativo</span></div></div><button class="quiet-button" id="clearData"><svg><use href="#i-refresh"/></svg> Retirar datos cargados</button></article>
+      </section>
+      <footer class="footer"><span>© 2026 CITROËN PERFORMANCE INTELLIGENCE · DISEÑO MONTECARLO</span><span>Las imágenes identifican productos; las métricas provienen exclusivamente de archivos de datos aportados.</span></footer>
+    </main>
+  </div>
+</div>
+<div id="toast" role="status" aria-live="polite" class="toast"></div>
+<script src="./app.js" defer></script>
+</body></html>
