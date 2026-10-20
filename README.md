@@ -4,9 +4,9 @@ Dashboard premium Montecarlo Blue para Citroën Colombia, basado en los módulos
 
 ## Estado
 
-- **Diseño y navegación:** implementados.
-- **Catálogo de vehículos:** Citroën C3, Aircross y Basalt con referencias fotográficas de la web oficial de Citroën Colombia.
-- **Métricas publicitarias:** SIN DATOS hasta recibir un reporte Citroën real.
+- **Diseño y navegación:** implementación del concepto visual 3 aprobado, `concept3.css` y `concept3.js`, responsive y funcional.
+- **Catálogo de vehículos:** C3, C3 MAX, Aircross, AIRCROSS MAX, Basalt y Berlingo, con fichas y fotografías reales de producto de recursos web externos. La portada muestra cuatro modelos distintos.
+- **Métricas publicitarias:** 27.840 filas originales de ejecución de Meta Ads, 1 ene–20 oct de 2026, tres cuentas. Formularios y conversaciones contabilizados por separado.
 - **Sin datos ficticios:** no se generan presupuestos, leads, CTR, CPL, históricos ni proyecciones arbitrarias.
 - **No es una API en vivo:** carga CSV/JSON local y, opcionalmente, JSON público de repositorio.
 - **Sin dependencias de construcción:** abre `index.html` o conecta el repositorio a Vercel como sitio estático.
@@ -74,3 +74,38 @@ Sitio HTML/CSS/JS estático, sin build step. Conecta la rama `main` a Vercel, fr
 - Confirmar que Vercel esté autorizado al equipo y vinculado a este repositorio.
 
 © 2026 · Construido para análisis y planificación de marketing. Las métricas pertenecen a quien provee la fuente.
+
+## Rediseño visual · Concepto 3 aprobado (octubre 2026)
+
+La portada en `index.html` reproduce la dirección visual del concepto 3 que aprobó el propietario:
+- Barra lateral azul profundo y fondo general claro; tarjetas blancas suaves y acentos coral.
+- Encabezado **Marketing & movilidad**, hero fotográfico del Aircross y el titular "Más personas en movimiento, más historias por contar".
+- KPIs reales de presupuesto, gasto Meta, formularios, conversaciones, costo/formulario e impresiones.
+- **Planeado vs Ejecutado** grande con 3 métricas seleccionables: inversión, leads y CPL. Ejes mensuales enero a octubre. Octubre se trata como período parcial; no se crean cifras de noviembre o diciembre.
+- Embudo de impresiones y clics Meta con resultados separados de formularios y conversaciones.
+- Cuatro modelos visuales diferentes y buscables: C3, Basalt, Aircross y Berlingo. La variante MAX mantiene su propio filtro.
+- Tabla de campañas originales y hallazgos automáticos derivados de datos reales.
+- Filtros de mes, modelo y territorio inferido de nombres de conjuntos/campañas.
+- El resto de módulos originales de planeación, Meta Ads y exploración se mantiene intacto.
+
+### Trazabilidad y limitaciones IMPORTANTES
+
+1. **Plan total y ejecución Meta no tienen el mismo universo:** la barra planeada representa el presupuesto global de los libros Excel, mientras que la barra ejecutada representa exclusivamente Meta Ads. La línea describe Meta/plan y no cumplimiento de la estrategia.
+2. El presupuesto regional es desconocido para el mismo recorte geográfico que permite el export de Meta. Con filtro territorial se omite la barra planificada para no comparar audiencias de coberturas distintas.
+3. Los leads planificados pueden incluir otros objetivos; las **conversiones formulario de Meta no se consideran automáticamente equivalentes a las metas comerciales**.
+4. Las conversaciones de WhatsApp no se suman con los formularios como contactos únicos.
+5. El valor que aparece como **Costo / formulario** es gasto total Meta dividido por los formularios reportados; al incluir campañas de conversación, NO equivale al CPL de negocio de formularios puros.
+6. **Reach** por anuncio/día no es alcance único multicanal; la portada lo reemplaza por impresiones verificables.
+7. El archivo de Meta contiene `Cost` sin columna de divisa; pesos colombianos son un supuesto operativo, no moneda verificada dentro del extracto.
+8. Los proyectos con imágenes externas requieren acceso al proveedor de contenido; las tarjetas incluyen URLs alternativas específicas por modelo.
+
+### Datos integrados
+
+- `data/proyecciones_2026.js`: 10 presupuestos mensuales, 60 filas modelo-mes y 551 líneas del detalle.
+- `data/meta_2026_daily.json`: resumen de ejecución diaria obtenido de 27.840 registros del archivo de reporte.
+- `data/meta_2026_detail.json`: detalle de campañas, conjuntos y anuncios reales (sin URLs creativas originales).
+- `concept3.js`: solo consume las fuentes existentes y muestra datos derivados, no ejemplos ni cifras inventadas.
+
+### Validación
+
+GitHub Actions valida sintaxis de `app.js`, `meta.js`, `planning.js` y `concept3.js`, integridad del esquema proyectado y conciliación de la ejecución de Meta en todas las agregaciones.
