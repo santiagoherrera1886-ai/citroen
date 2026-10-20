@@ -13,6 +13,9 @@ jobs:
         with:
           node-version: "22"
       - name: Verify JavaScript syntax
-        run: node --check app.js
+        run: |
+          node --check app.js
+          node --check planning.js
+          node --check meta.js
       - name: Verify structure and no simulated data
         run: node scripts/verify.cjs
