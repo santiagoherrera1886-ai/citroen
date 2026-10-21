@@ -101,7 +101,7 @@ La portada en `index.html` reproduce la dirección visual del concepto 3 que apr
 
 ### Datos integrados
 
-- `data/proyecciones_2026.js`: 10 presupuestos mensuales, 60 filas modelo-mes y 551 líneas del detalle.
+- `data/proyecciones_2026.js`: 10 presupuestos mensuales, 60 filas modelo-mes y 551 líneas de ESTRUCTURA; la interfaz incorpora además 6 partidas de Berlingo anexas para 557 asignaciones trazables.
 - `data/meta_2026_daily.json`: resumen de ejecución diaria obtenido de 27.840 registros del archivo de reporte.
 - `data/meta_2026_detail.json`: detalle de campañas, conjuntos y anuncios reales (sin URLs creativas originales).
 - `concept3.js`: solo consume las fuentes existentes y muestra datos derivados, no ejemplos ni cifras inventadas.
@@ -123,3 +123,25 @@ Se corrigió la incidencia donde la app todavía mostraba banners de publicidad 
 - `model-fix.css` controla la nueva jerarquía y apariencia; para forzar actualización de caché se agregó versión a las referencias de código y estilos en `index.html`.
 
 **Despliegue:** GitHub Actions valida JavaScript y consistencia de los datos. La publicación Vercel se configura por conexión del proyecto a `main`; sin acceso autorizado al equipo Vercel no es posible confirmar la URL publicada desde la integración actual.
+
+## Auditoría del 21 de octubre: revisión de los diez libros originales
+
+Se confrontaron las celdas de los libros **ESTRUCTURA PERFORMANCE CITROEN ENERO–OCTUBRE 2026**, incluyendo hojas BOT, ESTRUCTURAA/ESTRUCTURA, BERLINGO, el adicional de abril y los escenarios alternos.
+
+- **Escenario base sujeto a aprobación de versiones:** COP 944.266.850,42. Cinco modelos de pasajeros: COP 855.980.000,40. Berlingo: COP 88.286.850,02.
+- **Líneas originales:** 551 partidas con presupuesto en estructuras principales (sin subtotales) + 6 partidas Berlingo en fuentes independientes enero–junio = **557 partidas** en la vista conciliada.
+- **Metas de leads:** 99.968,7057 para los cinco modelos de pasajeros en todo el período. La suma BOT E8 de los diez meses es 105.300,0711, pero desde junio **incluye Berlingo** (5.331,3653 leads para junio–octubre). No se pueden llamar leads solo de pasajeros.
+- **Berlingo:** enero–mayo el BOT excluye su inversión; junio ya incorpora el presupuesto aunque ESTRUCTURA lo separa; julio–octubre Berlingo ya figura en la estructura principal. No duplicar nunca.
+- **Enero:** escenario vigente provisional tomado de BOT V.1 y ESTRUCTURAA con 117 M de pasajeros + 13 M Berlingo. Coexisten un BOT (2) / ESTRUCTURA de 92,5 M con fórmulas rotas. Su aprobación como escenario anterior no está documentada.
+- **Marzo:** Estructura 2.0 contiene REMANENTE / PPTO FINAL. Es una posible redistribución y no inversión adicional. Confirmar vigencia.
+- **Abril:** el libro **PPTO ADICIONAL!H46 tiene 13.500.000 COP**, no 15 M. El escenario base de abril es COP 50.000.000,40 y el escenario hipotético sumando ese adicional sería COP 63.500.000,40. No incrementar la base sin aprobación.
+- **Mayo:** COP 13.480.000 del BOT + COP 786.850,02 Berlingo = COP 14.266.850,02; no sumar totalizadores J, O ni subtotales H63 como si fuesen pauta nueva.
+- **Integridad de fuentes:** enero BOT V.1 (2) contiene errores Excel #REF! y #DIV/0!, mayo BOT C20/C22 contiene #REF!. Campos ejecutados del BOT no se aceptan como prueba de gasto real.
+- **Objetivos:** septiembre y octubre usan campañas WHATSAPP; no comparar su meta de acciones con formularios Facebook como si fueran el mismo tipo de lead.
+- **Ejecución:** el reporte Meta Ads cubre un solo medio y octubre hasta el día 20; la diferencia contra un plan de todo el ecosistema de medios NO es cumplimiento de presupuesto global.
+
+La interfaz **Planeación 2026** conserva el esquema histórico de 551 líneas y lo extiende en memoria con seis partidas Berlingo auditadas sin sobrescribir los datos originales. Las verificaciones mensuales revisan suma por modelo, presupuesto total y metas por separado.
+
+### Documento de auditoría
+
+El Excel de revisión ofrece hojas **LEER PRIMERO**, **MENSUAL RECONCILIADO**, **METAS POR MODELO**, **557 LÍNEAS TRAZABLES**, **ESCENARIOS Y VERSIONES**, **30 ALERTAS AUDITORÍA** y **ARCHIVOS Y FUENTES**. Se mantiene como artefacto de la conversación, no se sube a este repositorio público sin pedirlo expresamente.
