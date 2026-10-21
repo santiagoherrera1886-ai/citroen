@@ -41,7 +41,7 @@
   }
   function kpis(filter){
     const t=totals(filter),isModel=!!filter.model;
-    $('planPreviewTotal').textContent=money(sum(data.months,2));
+    if($('planPreviewTotal'))$('planPreviewTotal').textContent=money(sum(data.months,2));
     const cpl=isModel?(t.incomplete||t.leads<=0?null:t.budget/t.leads):(t.passengerLeads>0?t.passengerBudget/t.passengerLeads:null);
     const items=[
       ['PRESUPUESTO BASE',money(t.budget),isModel?'Inversión prevista · '+filter.model:'Incluye Berlingo una sola vez',true],
@@ -121,8 +121,13 @@
     $('planExport').onclick=exportFiltered;
     document.addEventListener('citroen:real-data',e=>{realRows=Array.isArray(e.detail?.rows)?e.detail.rows:[];realSource=String(e.detail?.source||'');realPartial=!!e.detail?.partialScope||realSource.startsWith('Meta Ads');render();});
     unpack().then(v=>{data=v;initFilters();render();}).catch(e=>{
-      $('planOverviewNote').textContent='No fue posible abrir los presupuestos: '+e.message;
-      for(const id of ['planKpis','planTimeline','planModelsChart','planRegionsChart','planTypeChart','planComparison','planDetailRows','planAlerts'])$(id).innerHTML='<div class="empty-state"><b>Paquete de datos no disponible</b><span>Revisa la carga de data/proyecciones_2026.js.</span></div>';
+      console.error('Citroën · Planeación 2026:',e);
+      const loadError=!data;
+      $('planOverviewNote').textContent=(loadError?'No fue posible abrir los presupuestos: ':'Error visualizando presupuestos ya cargados: ')+e.message;
+      for(const id of ['planKpis','planTimeline','planModelsChart','planRegionsChart','planTypeChart','planComparison','planDetailRows','planAlerts']){
+        const slot=$(id);
+        if(slot&&!slot.hasChildNodes())slot.innerHTML='<div class="empty-state"><b>'+(loadError?'Paquete de datos no disponible':'Visualización pendiente')+'</b><span>'+(loadError?'Revisa la carga de data/proyecciones_2026.js.':'Los datos se cargaron; revisa la consola para identificar el panel afectado.')+'</span></div>';
+      }
     });
   }
   document.addEventListener('DOMContentLoaded',wire);
