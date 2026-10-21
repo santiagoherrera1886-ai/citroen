@@ -18,9 +18,12 @@ jobs:
           node --check planning.js
           node --check meta.js
           node --check concept3.js
+          node --check audit.js
       - name: Verify structure and no simulated data
         run: node scripts/verify.cjs
       - name: Install lightweight DOM test runner
         run: npm install --no-save --no-package-lock jsdom@25
       - name: Browser-like smoke test of Planning 2026
         run: node scripts/smoke-planning.cjs
+      - name: Browser-like audit detail test
+        run: node scripts/smoke-audit.cjs
