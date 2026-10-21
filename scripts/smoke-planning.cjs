@@ -23,7 +23,7 @@ w.document.dispatchEvent(new w.Event('DOMContentLoaded',{bubbles:true}));
   for(let i=0;i<12&&!w.document.querySelector('#planKpis .plan-kpi');i++)await tick();
   assert.equal(errors.length,0,'Unexpected DOM console errors: '+errors);
   const id=x=>w.document.getElementById(x);
-  assert.equal(id('planKpis').querySelectorAll('.plan-kpi').length,4,'KPI cards did not render');
+  assert.equal(id('planKpis').querySelectorAll('.plan-kpi').length,4,'KPI cards did not render: '+id('planOverviewNote')?.textContent+' | '+id('planKpis')?.textContent?.slice(0,160));
   assert.equal(id('planMonth').options.length,11,'All 10 months did not populate');
   assert.equal(id('planModel').options.length,7,'All 6 models did not populate');
   assert.equal(id('planComparison').querySelectorAll('tr').length,10,'Missing 10 plan-vs-real rows');
