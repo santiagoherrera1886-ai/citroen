@@ -22,7 +22,7 @@ const planRows=(month,model,includeBerlingo=true)=>state.plan.models.filter(r=>r
 const planValue=(month,mode)=>{
  if(state.territory)return null;
  if(mode==='investment'){const r=planRows(month,state.model);return state.model?(r.length?r.reduce((a,x)=>a+x[2],0):null):state.plan.months[months.indexOf(month)][2];}
- const r=planRows(month,state.model,mode!=='cpl'||!!state.model);if(!r.length||r.some(x=>x[3]==null))return null;
+ const r=planRows(month,state.model,!!state.model);if(!r.length||r.some(x=>x[3]==null))return null;
  const target=r.reduce((a,x)=>a+(x[3]||0),0),budget=r.reduce((a,x)=>a+x[2],0);
  return mode==='leads'?target:target>0?budget/target:null;
 };
