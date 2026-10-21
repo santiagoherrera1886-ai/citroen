@@ -45,9 +45,12 @@
       if(Math.abs(plannedBerlingo-expectedBrl[i])>2)throw Error('Berlingo no concilia en el mes '+(i+1));
       const passengerLeads=parsed.models.filter(r=>r[0]===i&&r[1]!=='BERLINGO').reduce((s,r)=>s+(r[3]||0),0);
       const brlLeads=parsed.models.find(r=>r[0]===i&&r[1]==='BERLINGO')?.[3]||0;
-      const botTarget=parsed.months[i][3];
-      const expectedGoal=passengerLeads+(i>=5?brlLeads:0);
-      if(Math.abs(botTarget-expectedGoal)>0.05)throw Error('Leads del BOT no concilian con el alcance declarado del mes '+(i+1));
+      // Esquema empacado: [5] = meta pasajeros, [7] = meta Berlingo.
+      // El índice [3] corresponde a un indicador no disponible en enero, NO a leads.
+      const storedPassengerGoal=parsed.months[i][5];
+      const storedBerlingoGoal=parsed.months[i][7];
+      if(Math.abs(storedPassengerGoal-passengerLeads)>0.05)throw Error('Metas de pasajeros no concilian con el mes '+(i+1));
+      if(storedBerlingoGoal!=null&&Math.abs(storedBerlingoGoal-brlLeads)>0.05)throw Error('Metas de Berlingo no concilian con el mes '+(i+1));
     }
     parsed.quality=Array.isArray(parsed.quality)?parsed.quality:[];
     parsed.quality.push(
