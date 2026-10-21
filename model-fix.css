@@ -56,3 +56,9 @@
 @media(max-width:1300px){.concept3-shell .model-grid.cit-model-gallery{grid-template-columns:repeat(2,minmax(0,1fr));}}
 @media(max-width:850px){.concept3-shell .model-grid.cit-model-gallery{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.concept3-shell #modelos>.section-header{align-items:flex-start;}.concept3-shell .c3-hero{height:290px;}.concept3-shell .c3-models-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:540px){.concept3-shell .model-grid.cit-model-gallery{grid-template-columns:1fr}.cit-model-gallery .model-photo{height:185px}.concept3-shell .c3-model-photo{height:95px}.concept3-shell .c3-hero{height:300px}.concept3-shell .c3-panel{padding:12px}}
+
+/* Planning figure moved out of the retired legacy summary. */
+.planning-intro .plan-intro-total{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:4px;min-width:180px;flex-shrink:0}
+.planning-intro .plan-intro-total small{color:#bed5e2;font-size:9px;font-weight:800;letter-spacing:1px}
+.planning-intro .plan-intro-total strong{color:#fff;font:800 22px Manrope,system-ui,sans-serif;letter-spacing:-.5px;white-space:nowrap}
+@media(max-width:750px){.planning-intro .plan-intro-total{margin-left:0;align-items:flex-start;min-width:0;width:100%}.planning-intro .plan-intro-total strong{font-size:19px}}
