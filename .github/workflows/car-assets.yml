@@ -1,0 +1,33 @@
+name: Prepare real car assets
+on:
+  push:
+    paths:
+      - scripts/build-model-assets.py
+      - .github/workflows/car-assets.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install image processing
+        run: pip install Pillow==11.3.0
+      - name: Download official clean model photos and create optimized image tiles
+        run: python scripts/build-model-assets.py
+      - name: Commit processed images
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/models/*.webp
+          if git diff --cached --quiet; then
+            echo "No new assets"
+          else
+            git commit -m "assets: publish consistent C3, Aircross, Basalt and Berlingo photographs"
+            git push
+          fi
