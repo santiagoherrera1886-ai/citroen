@@ -109,3 +109,17 @@ La portada en `index.html` reproduce la dirección visual del concepto 3 que apr
 ### Validación
 
 GitHub Actions valida sintaxis de `app.js`, `meta.js`, `planning.js` y `concept3.js`, integridad del esquema proyectado y conciliación de la ejecución de Meta en todas las agregaciones.
+
+
+## Corrección visual de octubre 2026 — portada compacta y navegación multipágina
+
+Se corrigió la incidencia donde la app todavía mostraba banners de publicidad como fotos de los carros, junto con una tarjeta vacía de Berlingo y un grupo adicional "Sin clasificar".
+
+- Los activos visuales optimizados ahora viven en `assets/models/c3.webp`, `aircross.webp`, `basalt.webp` y `berlingo.webp`. Son imágenes de referencia del fabricante, procesadas y guardadas en el propio repositorio por `scripts/build-model-assets.py` y GitHub Actions, no imágenes extraídas de promociones con textos sobrepuestos.
+- El Resumen tiene cuatro tarjetas compactas: C3, Basalt, Aircross y Berlingo. Sus indicadores provienen exclusivamente del export real de Meta Ads.
+- La pestaña Modelos ahora tiene **solo seis fichas**: C3, Aircross, Basalt, C3 MAX, Aircross MAX y Berlingo, con fotografías limpias. MAX puede reutilizar imagen de su familia por ser referencia visual; no se presenta como foto exacta de acabado.
+- La navegación del sidebar utiliza **pantallas separadas** (una sección visible por vez) en lugar de una página vertical interminable. Los filtros y secciones de plan y ejecución se mantienen disponibles.
+- El viejo resumen se sustituyó; algunos controles invisibles de compatibilidad siguen en el DOM para mantener el motor de importación y no romper la capa de datos existente.
+- `model-fix.css` controla la nueva jerarquía y apariencia; para forzar actualización de caché se agregó versión a las referencias de código y estilos en `index.html`.
+
+**Despliegue:** GitHub Actions valida JavaScript y consistencia de los datos. La publicación Vercel se configura por conexión del proyecto a `main`; sin acceso autorizado al equipo Vercel no es posible confirmar la URL publicada desde la integración actual.
