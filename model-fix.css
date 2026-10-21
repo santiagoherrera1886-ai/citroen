@@ -62,3 +62,11 @@
 .planning-intro .plan-intro-total small{color:#bed5e2;font-size:9px;font-weight:800;letter-spacing:1px}
 .planning-intro .plan-intro-total strong{color:#fff;font:800 22px Manrope,system-ui,sans-serif;letter-spacing:-.5px;white-space:nowrap}
 @media(max-width:750px){.planning-intro .plan-intro-total{margin-left:0;align-items:flex-start;min-width:0;width:100%}.planning-intro .plan-intro-total strong{font-size:19px}}
+
+/* Excel source-of-truth audit badges. No decision box uses status colour alone. */
+.audit-rules{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;margin:7px 0 14px}
+.audit-rules>div{padding:15px 17px;border-radius:13px;border:1px solid #e1ebf1;background:#fff;box-shadow:0 5px 13px #123b5806;display:flex;flex-direction:column;gap:6px}
+.audit-rules span{color:#8ba3b5;letter-spacing:1.1px;font-size:9px;font-weight:800}
+.audit-rules strong{color:#143c58;font-weight:800;font-size:14px}
+.audit-rules small{color:#748fa1;font-size:10px;line-height:1.45}
+@media(max-width:950px){.audit-rules{grid-template-columns:1fr}.audit-rules>div{padding:13px 15px}}
