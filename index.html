@@ -153,7 +153,11 @@
     <label>TIPO DEL PLAN <select id="planType"><option value="">Todos los tipos</option></select></label>
     <button id="planReset" class="quiet-button"><svg><use href="#i-refresh"/></svg> Limpiar</button>
   </div>
-  <div id="planOverviewNote" class="plan-small-note">Cargando proyecciones auditadas…</div>
+  <div class="audit-rules">
+  <div><span>ENERO · VERSIÓN</span><strong>Escenario ampliado</strong><small>117 M + 13 M Berlingo; existe una versión previa por 92,5 M</small></div>
+  <div><span>ABRIL · ADICIONAL</span><strong>$13,5 M sin confirmar</strong><small>Hoja PPTO ADICIONAL; no incluida en la base proyectada</small></div>
+  <div><span>BERLINGO · LEADS</span><strong>BOT cambia desde junio</strong><small>De enero a mayo: 5 modelos; desde junio: incluye Berlingo</small></div>
+</div><div id="planOverviewNote" class="plan-small-note">Cargando proyecciones auditadas…</div>
   <div class="plan-kpis" id="planKpis"></div>
   <div class="planning-charts">
     <article class="panel"><div class="panel-head"><div><div class="section-overline">MONTHLY RUN RATE</div><h3>Presupuesto proyectado por mes</h3></div><span class="mini-pill">COP · NO EJECUTADO</span></div><div id="planTimeline"></div></article>
@@ -169,7 +173,7 @@
     <p class="plan-footnote">* CPL del plan solo se muestra cuando hay leads informados para todo el alcance seleccionado. Los reales proceden exclusivamente del archivo cargado en «Datos & fuentes».</p>
   </article>
   <article class="panel plan-detail">
-    <div class="panel-head"><div><div class="section-overline">551 SOURCE LINES</div><h3>Distribución detallada del plan</h3><p>Con trazabilidad de hoja y celda original; los filtros de región y tipo afectan este desglose, no alteran el presupuesto global.</p></div><span id="planDetailCount" class="mini-pill">551 FILAS</span></div>
+    <div class="panel-head"><div><div class="section-overline">557 ASIGNACIONES AUDITADAS</div><h3>Distribución detallada del plan</h3><p>551 líneas originales de estructura + 6 presupuestos Berlingo que estaban en anexos independientes. Las celdas originales están identificadas; los filtros de región y tipo no modifican la base mensual.</p></div><span id="planDetailCount" class="mini-pill">557 FILAS</span></div>
     <div class="table-toolbar"><label class="table-search"><svg><use href="#i-search"/></svg><input id="planSearch" placeholder="Buscar campaña, región, conjunto…" aria-label="Buscar distribución del plan"></label><span id="planDetailBudget"></span></div>
     <div class="table-scroll"><table><thead><tr><th>MES</th><th>CAMPAÑA</th><th>TIPO</th><th>REGIÓN</th><th>CONJUNTO / ÁMBITO</th><th>MODELO</th><th>PRESUPUESTO</th><th>ORIGEN</th></tr></thead><tbody id="planDetailRows"></tbody></table></div>
     <div class="plan-table-foot">Mostrando un máximo de 120 filas en pantalla; la exportación contiene todas las filas filtradas. Los importes por región no representan alcance geográfico único.</div>
@@ -256,7 +260,7 @@
 <div id="toast" role="status" aria-live="polite" class="toast"></div>
 <script src="./app.js?v=20261021b" defer></script>
 <script src="./data/proyecciones_2026.js" defer></script>
-<script src="./planning.js" defer></script>
+<script src="./planning.js?v=20261021-audit-v2" defer></script>
 <script src="./meta.js" defer></script>
 <script src="./concept3.js?v=20261021b" defer></script>
 </body></html>
