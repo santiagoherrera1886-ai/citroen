@@ -145,3 +145,12 @@ La interfaz **Planeación 2026** conserva el esquema histórico de 551 líneas y
 ### Documento de auditoría
 
 El Excel de revisión ofrece hojas **LEER PRIMERO**, **MENSUAL RECONCILIADO**, **METAS POR MODELO**, **557 LÍNEAS TRAZABLES**, **ESCENARIOS Y VERSIONES**, **30 ALERTAS AUDITORÍA** y **ARCHIVOS Y FUENTES**. Se mantiene como artefacto de la conversación, no se sube a este repositorio público sin pedirlo expresamente.
+
+
+## Nueva pantalla: Auditoría Excel (21 de octubre de 2026)
+
+El dashboard contiene ahora una pantalla **Auditoría Excel** independiente y enlazada desde Planeación 2026. Incluye seis indicadores conciliados, 10 meses originales, 60 metas modelo-mes, 6 escenarios/alternativas, los 30 hallazgos de calidad con **hoja y celda**, y 10 fuentes mensuales. Se puede filtrar mes y criticidad, alternar vistas y volver a las **557 asignaciones** trazables de Planeación.
+
+**Fuente:** `data/auditoria_2026.js` documenta cifras originales, metas pasajeros/total BOT y Berlingo, y escenarios sin aprobación. `audit.js` verifica consistencia contra los presupuestos/modelos de `data/proyecciones_2026.js` antes de presentar el panel. `scripts/smoke-audit.cjs` valida la visualización, las vistas y los filtros. 
+
+**No declarar cumplimientos** a partir de la ejecución Meta: el plan corresponde a varios medios y tipos de conversión, mientras que Meta cubre solo una parte de los objetivos y ejecución.
