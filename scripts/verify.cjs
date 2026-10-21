@@ -82,3 +82,15 @@ assert.ok(c3css.includes('.c3-middle-grid')&&c3css.includes('.c3-bottom-grid'),'
 assert.ok(c3.includes('data-c3-metric')&&c3.includes('planValue')&&c3.includes('meta_2026_daily.json'),'Functional comparatives missing');
 assert.ok(!c3.includes('Math.random('),'Synthetic metrics detected');
 console.log('PASS: approved concept 3 layout and JavaScript bindings.');
+
+
+// Contract: every directly referenced Planning 2026 DOM element must exist.
+// This specifically guards against a regression caused by retiring the old summary.
+const planningCode=fs.readFileSync('planning.js','utf8');
+const planningRefs=[...planningCode.matchAll(/\$\('([^']+)'\)/g)].map(m=>m[1]);
+const missingPlanning=[...new Set(planningRefs.filter(id=>!ids.has(id)))];
+assert.deepEqual(missingPlanning,[],'Planning 2026 references deleted DOM ids: '+missingPlanning.join(', '));
+assert.ok(ids.has('planPreviewTotal'),'The new planning page must own its own budget-total element.');
+assert.ok(html.indexOf('id="planPreviewTotal"')>html.indexOf('id="planeacion"'),'Budget total must be inside Planning, not a retired Summary widget.');
+assert.ok(planningCode.includes('loadError=!data'),'Planning load error and UI rendering error must be distinguished.');
+console.log('PASS: planning UI DOM bindings survive independent-page navigation.');
