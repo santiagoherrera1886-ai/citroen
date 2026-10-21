@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="./styles.css">
 <link rel="stylesheet" href="./concept3.css">
 <link rel="stylesheet" href="./model-fix.css?v=20261021b">
+<link rel="stylesheet" href="./audit.css?v=1">
 </head>
 <body>
 <svg xmlns="http://www.w3.org/2000/svg" class="symbols" aria-hidden="true">
@@ -46,6 +47,7 @@
     <nav class="nav" aria-label="Secciones del dashboard">
       <button class="nav-link active" data-target="resumen"><svg><use href="#i-dashboard"/></svg> Resumen <span>01</span></button>
       <button class="nav-link" data-target="planeacion"><svg><use href="#i-chart"/></svg> Planeación 2026 <span>02</span></button>
+      <button class="nav-link" data-target="auditoria"><svg><use href="#i-db"/></svg> Auditoría Excel <span>03</span></button>
       <button class="nav-link" data-target="meta"><svg><use href="#i-chart"/></svg> Meta Ads · Real <span>03</span></button>
       <button class="nav-link" data-target="modelos"><svg><use href="#i-car"/></svg> Modelos <span>04</span></button>
       <button class="nav-link" data-target="medios"><svg><use href="#i-chart"/></svg> Medios <span>05</span></button>
@@ -152,6 +154,7 @@
     <label>REGIÓN DECLARADA <select id="planRegion"><option value="">Todas las regiones</option></select></label>
     <label>TIPO DEL PLAN <select id="planType"><option value="">Todos los tipos</option></select></label>
     <button id="planReset" class="quiet-button"><svg><use href="#i-refresh"/></svg> Limpiar</button>
+    <button type="button" class="audit-go-button" id="auditOpenFromPlanning">Ver auditoría Excel ↗</button>
   </div>
   <div class="audit-rules">
   <div><span>ENERO · VERSIÓN</span><strong>Escenario ampliado</strong><small>117 M + 13 M Berlingo; existe una versión previa por 92,5 M</small></div>
@@ -179,6 +182,57 @@
     <div class="plan-table-foot">Mostrando un máximo de 120 filas en pantalla; la exportación contiene todas las filas filtradas. Los importes por región no representan alcance geográfico único.</div>
   </article>
   <article class="panel plan-qa"><div class="panel-head"><div><div class="section-overline">DATA GOVERNANCE</div><h3>Controles de conciliación</h3></div><span class="mini-pill">AUDITORÍA</span></div><div id="planAlerts"></div></article>
+</section>
+
+
+<section id="auditoria" class="page-section cit-audit-page" aria-labelledby="auditTitle">
+  <div class="section-header">
+    <div><div class="section-overline">AUDITORÍA FORENSE · 10 EXCEL ORIGINALES · 2026</div>
+      <h2 id="auditTitle">La verdad detrás del plan</h2>
+      <p>Versiones, presupuestos, metas, Berlingo, fórmulas rotas y conciliación de cada mes — con referencias de hoja y celda.</p></div>
+    <button type="button" id="auditToPlan" class="secondary-button"><svg><use href="#i-chart"/></svg> Volver a Planeación</button>
+  </div>
+  <div class="cit-audit-hero">
+    <div><span class="cit-audit-eyebrow">CITROËN · AUDITABLE MEDIA PLANNING</span>
+      <h3>Diez archivos. Una base clara.<br><em>Sin duplicar presupuestos.</em></h3>
+      <p>Separamos el escenario base, las versiones anteriores, los adicionales pendientes de aprobación y los resultados realmente ejecutados.</p></div>
+    <div class="cit-audit-hero-meta"><b id="auditBaseHero">—</b><small>Presupuesto base · COP</small><span>NO ES GASTO EJECUTADO</span></div>
+  </div>
+  <div id="auditStatus" class="cit-audit-status">Verificando los diez libros y las 557 asignaciones…</div>
+  <div class="cit-audit-stats" id="auditStats"></div>
+  <div class="cit-audit-tools">
+    <label>MES <select id="auditMonth"><option value="">Todos los meses</option></select></label>
+    <label>PRIORIDAD <select id="auditSeverity"><option value="">Todas las alertas</option><option value="Alta">Alta</option><option value="Media">Media</option><option value="Información">Información</option></select></label>
+    <label>VISTA <select id="auditView"><option value="months">Conciliación mensual</option><option value="models">60 modelos/mes</option><option value="scenarios">Escenarios alternativos</option><option value="alerts">30 hallazgos</option></select></label>
+    <button type="button" id="auditReset">Limpiar filtros</button>
+  </div>
+  <article class="panel cit-audit-panel" data-audit-panel="months">
+    <div class="panel-head"><div><div class="section-overline">SOURCE OF TRUTH</div><h3>Presupuestos y metas conciliadas</h3><p>Los objetivos BOT cambian de alcance a partir de junio; esta tabla mantiene separadas las metas comparables.</p></div><span class="mini-pill">10 MESES · 10 EXCEL</span></div>
+    <div class="table-scroll"><table class="cit-audit-table"><thead><tr><th>MES</th><th>BASE TOTAL</th><th>5 PASAJEROS</th><th>BERLINGO</th><th>META 5 MODELOS</th><th>META BERLINGO</th><th>BOT E8</th><th>QUÉ INCLUYE BOT</th><th>FUENTE</th></tr></thead><tbody id="auditMonthRows"></tbody></table></div>
+    <p class="cit-audit-foot">Enero no tiene meta verificable de Berlingo. El presupuesto del BOT incorpora Berlingo de junio a octubre; no se suma por segunda vez.</p>
+  </article>
+  <article class="panel cit-audit-panel" data-audit-panel="models" hidden>
+    <div class="panel-head"><div><div class="section-overline">MODEL MIX / 2026</div><h3>Presupuesto y metas por modelo</h3><p>60 registros originales modelo-mes. Celdas de inversión y leads preservadas.</p></div><span class="mini-pill" id="auditModelCount">60 REGISTROS</span></div>
+    <div class="table-scroll"><table class="cit-audit-table"><thead><tr><th>MES</th><th>MODELO</th><th>PRESUPUESTO</th><th>LEADS META</th><th>CPL PROYECTADO</th><th>HOJA BOT</th><th>CELDAS</th></tr></thead><tbody id="auditModelRows"></tbody></table></div>
+  </article>
+  <article class="panel cit-audit-panel" data-audit-panel="scenarios" hidden>
+    <div class="panel-head"><div><div class="section-overline">APPROVALS & VERSIONS</div><h3>Escenarios, versiones y adicionales</h3><p>Estos valores NO se suman al presupuesto base. Los antecedentes quedan documentados para evitar doble contabilización.</p></div><span class="mini-pill">6 REGISTROS</span></div>
+    <div class="cit-scenario-compare">
+      <div><small>BASE ENERO–OCTUBRE</small><b id="auditScenarioBase">—</b><span>Escenario ampliado, sujeto a confirmar versiones</span></div>
+      <div><small>ADICIONAL ABRIL · SOLO SI SE APRUEBA</small><b id="auditScenarioExtra">—</b><span>PPTO ADICIONAL!H46 · no vigente por defecto</span></div>
+      <div><small>HIPOTÉTICO CON ADICIONAL</small><b id="auditScenarioTotal">—</b><span>Simulación, no ejecución ni presupuesto aprobado</span></div>
+    </div>
+    <div id="auditScenarioList" class="cit-scenario-list"></div>
+  </article>
+  <article class="panel cit-audit-panel" data-audit-panel="alerts" hidden>
+    <div class="panel-head"><div><div class="section-overline">EXCEL QUALITY REVIEW</div><h3>Hallazgos con hoja y celda</h3><p>Observaciones auditadas de las fuentes originales, con acción recomendada.</p></div><span id="auditAlertCount" class="mini-pill">30 ALERTAS</span></div>
+    <div id="auditAlertList" class="cit-audit-alert-list"></div>
+  </article>
+  <article class="panel cit-audit-provenance">
+    <div class="panel-head"><div><div class="section-overline">DATA LINEAGE</div><h3>Fuentes y trazabilidad</h3><p>Sin subir fórmulas rotas como ejecución ni confundir capturas WhatsApp con formularios Facebook.</p></div><span class="mini-pill">10 ARCHIVOS</span></div>
+    <div id="auditSources" class="cit-audit-source-grid"></div>
+    <p class="cit-audit-foot">Las 557 asignaciones detalladas —551 líneas de estructura y seis partidas de Berlingo anexas— se exploran y exportan desde <button type="button" id="auditGoDetail" class="cit-audit-link">Planeación 2026 →</button></p>
+  </article>
 </section>
 
 <section id="meta" class="page-section meta-page">
@@ -261,6 +315,8 @@
 <script src="./app.js?v=20261021b" defer></script>
 <script src="./data/proyecciones_2026.js" defer></script>
 <script src="./planning.js?v=20261021-audit-v2" defer></script>
+<script src="./data/auditoria_2026.js" defer></script>
+<script src="./audit.js" defer></script>
 <script src="./meta.js" defer></script>
 <script src="./concept3.js?v=20261021b" defer></script>
 </body></html>
