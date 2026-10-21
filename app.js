@@ -9,13 +9,15 @@
   const percent = x=>x==null?'—':pct.format(x);
   const esc = x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const validUrl=x=>{try{let a=new URL(x);return ['https:','http:'].includes(a.protocol)?a.href:''}catch{return ''}};
+  // Clean image sources selected per actual vehicle, never promotional campaign banners.
+  // These are representative model photographs; MAX uses its base family's photo.
   const models=[
-    {name:'C3',tag:'URBAN EXPLORER',desc:'Carácter SUV y practicidad para descubrir cada rincón de la ciudad.',photo:'https://www.citroen.com.co/content/dam/citroen/colombia/home/C3v2.jpg?imwidth=768',url:'https://www.citroen.com.co/modelos/nueva-c3.html'},
-    {name:'Aircross',tag:'FAMILY ADVENTURE',desc:'Versatilidad y espacio para viajar con toda la familia.',photo:'https://citroenderco.vteximg.com.br/arquivos/ids/157467-1000-500/Shine-Rojo-ruby-main.jpg?v=638635747121730000',url:'https://www.citroen.com.co/modelos/nueva-aircross-suv.html'},
-    {name:'Basalt',tag:'NEW GENERATION',desc:'Diseño coupé-SUV y líneas dinámicas que reinventan el confort.',photo:'https://citroenderco.vteximg.com.br/arquivos/ids/157771/live-pack-gris-grafito-main.jpg?v=638845873268330000',url:'https://www.citroen.com.co/modelos/basalt.html'},
-    {name:'C3 MAX',tag:'HYBRID EDITION',desc:'Variante MAX presente en la planeación; foto de familia C3 como referencia, no del acabado específico.',photo:'https://www.citroen.com.co/content/dam/citroen/colombia/home/C3v2.jpg?imwidth=768',url:'https://www.citroen.com.co/modelos/nueva-c3-max.html'},
-    {name:'AIRCROSS MAX',tag:'HYBRID EDITION',desc:'Variante MAX en los proyectados; imagen de la familia Aircross como referencia, no del acabado específico.',photo:'https://citroenderco.vteximg.com.br/arquivos/ids/157467-1000-500/Shine-Rojo-ruby-main.jpg?v=638635747121730000',url:'https://www.citroen.com.co/modelos/nueva-aircross-max.html'},
-    {name:'BERLINGO',tag:'PROFESSIONAL',desc:'Línea profesional contemplada en el plan de medios. Foto específica pendiente de validación.',photo:'',url:'https://www.citroen.com.co/modelos/nueva-berlingo-van.html'}
+    {name:'C3',tag:'URBAN EXPLORER',desc:'Carácter SUV y practicidad para descubrir cada rincón de la ciudad.',family:'suv',photo:'https://www.motor.com.co/static/assets/backend/styles/large/public/2026-02/Citro%C3%ABn%20C3%20MHEV%20-%207.jpg?itok=mj4LRshW',fallback:'https://cdn.motor1.com/images/mgl/VzL6g/s1/nuevo-citroen-c3.jpg',url:'https://www.citroen.com.co/modelos/nueva-c3.html'},
+    {name:'Aircross',tag:'FAMILY ADVENTURE',desc:'Versatilidad y espacio para viajar con toda la familia.',family:'suv',photo:'https://production.autoforce.com/uploads/version/profile_image/13436/model_main_webp_comprar-shine-7l-turbo-200-at_5b5f772267.png.webp',fallback:'https://citroenderco.vteximg.com.br/arquivos/ids/157467-1000-500/Shine-Rojo-ruby-main.jpg?v=638635747121730000',url:'https://www.citroen.com.co/modelos/nueva-aircross-suv.html'},
+    {name:'Basalt',tag:'NEW GENERATION',desc:'Diseño coupé-SUV y líneas dinámicas que reinventan el confort.',family:'suv',photo:'https://citroenderco.vteximg.com.br/arquivos/ids/157771/live-pack-gris-grafito-main.jpg?v=638845873268330000',fallback:'https://cdn.motor1.com/images/mgl/P3MoeG/s1/citroen-basalt-dark-edition-turbo-200-2026.jpg',url:'https://www.citroen.com.co/modelos/basalt.html'},
+    {name:'C3 MAX',tag:'VERSIÓN MAX',desc:'Variante MAX del C3. Imagen de la familia C3, no del equipamiento específico.',family:'max',photo:'https://www.motor.com.co/static/assets/backend/styles/large/public/2026-02/Citro%C3%ABn%20C3%20MHEV%20-%207.jpg?itok=mj4LRshW',fallback:'https://cdn.motor1.com/images/mgl/VzL6g/s1/nuevo-citroen-c3.jpg',url:'https://www.citroen.com.co/modelos/nueva-c3.html'},
+    {name:'AIRCROSS MAX',tag:'VERSIÓN MAX',desc:'Variante MAX del Aircross. Imagen de su familia, no del equipamiento específico.',family:'max',photo:'https://production.autoforce.com/uploads/version/profile_image/13436/model_main_webp_comprar-shine-7l-turbo-200-at_5b5f772267.png.webp',fallback:'https://citroenderco.vteximg.com.br/arquivos/ids/157467-1000-500/Shine-Rojo-ruby-main.jpg?v=638635747121730000',url:'https://www.citroen.com.co/modelos/nueva-aircross-suv.html'},
+    {name:'BERLINGO',tag:'PROFESSIONAL',desc:'Línea comercial con espacio y versatilidad para tu negocio.',family:'pro',photo:'https://citroen.md/public/models_in_stock/thumbs/pzCystRubI.jpg',fallback:'https://citroenalcala.com/wp-content/uploads/2025/12/berlingo-van.png',url:'https://www.citroen.com.co/modelos/nueva-berlingo-van.html'}
   ];
   const aliases={
     fecha:'fecha date dia day reporting_start date_start start_date',
@@ -120,9 +122,15 @@
     return state.rows.filter(r=>(!model||r.modelo===model)&&(!platform||r.plataforma===platform)&&(!city||r.ciudad===city)&&(!from||(r.fecha&&r.fecha>=from))&&(!to||(r.fecha&&r.fecha<=to)));
   }
   function nav(id){
+    const section=$(id);
+    if(!section)return;
     document.querySelectorAll('.nav-link').forEach(b=>b.classList.toggle('active',b.dataset.target===id));
-    const b=document.querySelector(`.nav-link[data-target="${id}"]`);$('breadcrumb').textContent=b?b.textContent.replace(/\d+/g,'').trim():'Visión general';
-    $(id)?.scrollIntoView({behavior:'smooth',block:'start'});history.replaceState(null,'','#'+id);$('sidebar').classList.remove('open');$('sidebarOverlay').classList.remove('show');
+    document.querySelectorAll('.content > section.page-section').forEach(e=>e.classList.toggle('is-active',e.id===id));
+    const b=document.querySelector('.nav-link[data-target="'+id+'"]');
+    $('breadcrumb').textContent=b?b.textContent.replace(/\d+/g,'').trim():'Resumen';
+    history.replaceState(null,'','#'+id);
+    window.scrollTo({top:0,behavior:'instant'});
+    $('sidebar').classList.remove('open');$('sidebarOverlay').classList.remove('show');
   }
   function goto(){document.querySelectorAll('[data-goto]').forEach(b=>b.onclick=()=>nav(b.dataset.goto));}
   let toastId;
@@ -140,12 +148,39 @@
   }
   function renderModels(rows){
     const by=group(rows,r=>r.modelo);
-    const all=[...models,...by.filter(g=>!models.some(m=>m.name===g.name)).map(g=>({name:g.name,tag:'MODELO IMPORTADO',desc:'Modelo encontrado en el archivo de rendimiento.',photo:'',url:'https://www.citroen.com.co/'}))];
-    $('modelGrid').innerHTML=all.map(m=>{
-      const a=by.find(x=>x.name===m.name)?.stats||aggregate([]);
-      return `<article class="model-card"><div class="model-photo"><span class="photo-fallback">${esc(m.name)}</span>${m.photo?`<img src="${esc(m.photo)}" alt="Citroën ${esc(m.name)} · imagen oficial" loading="lazy" onerror="this.style.display='none'">`:''}</div><div class="model-body"><div class="model-title"><h3>${esc(m.name)}</h3><span class="model-kicker">${esc(m.tag)}</span></div><p>${esc(m.desc)}</p><div class="model-stats"><div><small>LEADS</small><b>${num(a.leads)}</b></div><div><small>CPL</small><b>${money(a.cpl)}</b></div></div><div class="model-bottom"><a href="${esc(m.url)}" target="_blank" rel="noopener noreferrer">Ficha oficial ↗</a><button data-select-model="${esc(m.name)}">Analizar modelo →</button></div></div></article>`;
+    const gallery=$('modelGrid');
+    gallery.innerHTML=models.map(m=>{
+      const a=by.find(x=>x.name.toUpperCase()===m.name.toUpperCase())?.stats||aggregate([]);
+      return `<article class="model-card" data-family="${esc(m.family)}">
+        <div class="model-photo"><span class="photo-fallback">${esc(m.name)}</span>
+        <img src="${esc(m.photo)}" data-fallback="${esc(m.fallback)}" alt="Citroën ${esc(m.name)} · fotografía de referencia del vehículo" loading="lazy"></div>
+        <div class="model-body"><div class="model-title"><h3>${esc(m.name)}</h3><span class="model-kicker">${esc(m.tag)}</span></div>
+        <p>${esc(m.desc)}</p>
+        <div class="model-stats"><div><small>FORMULARIOS</small><b>${num(a.leads)}</b></div><div><small>GASTO / FORMULARIO*</small><b>${money(a.cpl)}</b></div></div>
+        <div class="model-bottom"><a href="${esc(m.url)}" target="_blank" rel="noopener noreferrer">Ficha oficial ↗</a>
+        <button type="button" data-select-model="${esc(m.name)}">Analizar modelo →</button></div></div></article>`;
     }).join('');
-    document.querySelectorAll('[data-select-model]').forEach(b=>b.onclick=()=>{$('filterModel').value=b.dataset.selectModel;render();nav('resumen');});
+    gallery.querySelectorAll('img').forEach(img=>img.onerror=()=>{
+      if(img.dataset.fallback){img.src=img.dataset.fallback;img.dataset.fallback='';}
+      else{img.style.display='none';img.closest('.model-photo').classList.add('no-photo');}
+    });
+    const buttons=document.querySelectorAll('[data-family]');
+    const pick=family=>{
+      gallery.querySelectorAll('.model-card').forEach(card=>card.hidden=family!=='all'&&card.dataset.family!==family);
+      document.querySelectorAll('.cit-family-button').forEach(b=>b.classList.toggle('is-active',b.dataset.family===family));
+    };
+    document.querySelectorAll('.cit-family-button').forEach(btn=>btn.onclick=()=>pick(btn.dataset.family));
+    const active=document.querySelector('.cit-family-button.is-active');
+    pick(active?.dataset.family||'all');
+    gallery.querySelectorAll('[data-select-model]').forEach(btn=>btn.onclick=()=>{
+      const desired=btn.dataset.selectModel;
+      const conceptSelect=$('c3Model');
+      if(conceptSelect && [...conceptSelect.options].some(o=>o.value===desired)){
+        conceptSelect.value=desired;conceptSelect.dispatchEvent(new Event('change'));
+      }
+      const oldSelect=$('filterModel');if(oldSelect && [...oldSelect.options].some(o=>o.value===desired)){oldSelect.value=desired;render();}
+      nav('resumen');
+    });
   }
   function trend(rows){
     const dates=group(rows.filter(x=>x.fecha),r=>r.fecha.slice(0,7)).sort((a,b)=>a.name.localeCompare(b.name));
