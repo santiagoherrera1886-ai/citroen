@@ -17,6 +17,48 @@
     const parsed=JSON.parse(raw);
     if(parsed.schema!=='citroen-planning-2026/v1'||parsed.months.length!==10||parsed.lines.length!==551||parsed.models.length!==60)throw Error('La estructura de proyecciones no coincide con el consolidado.');
     parsed.lines=parsed.lines.map(row=>{row=[...row];dictionaryIndexes.forEach(i=>row[i]=parsed.lineDictionaries[String(i)][row[i]]);return row;});
+    // Auditoría de los 10 libros originales (21 oct 2026):
+    // La tabla histórica incluye 551 asignaciones de estructura, pero omite
+    // 6 presupuestos de Berlingo que están en fuentes anexas de enero a junio.
+    // Se incorporan UNA sola vez, fuera de la región de campañas principal.
+    const berlingoExternos=[
+      [0,'ESTRUCTURAA',8,13000000,'AC8'],
+      [1,'BERLINGO',4,13000000,'O4'],
+      [2,'BERLINGO',4,13000000,'O4'],
+      [3,'BERLINGO',4,5000000,'O4'],
+      [4,'BERLINGO',4,786850.02,'O4'],
+      [5,'BERLINGO',4,6500000,'O4']
+    ];
+    parsed.lines.push(...berlingoExternos.map(([mes,hoja,fila,presupuesto,celda])=>[
+      mes,hoja,fila,'BERLINGO · ANEXO INDEPENDIENTE',
+      'BERLINGO / ANEXO','SIN DESGLOSE EN ESTRUCTURA PRINCIPAL',
+      'Véase presupuesto independiente','BERLINGO',presupuesto,celda
+    ]));
+    if(parsed.lines.length!==557)throw Error('La auditoría debe incluir 551 líneas de estructura y 6 presupuestos Berlingo anexos.');
+    const expectedBrl=[13000000,13000000,13000000,5000000,786850.02,6500000,15000000,7000000,11000000,4000000];
+    for(let i=0;i<10;i++){
+      const monthLines=parsed.lines.filter(r=>r[0]===i);
+      const fromRows=monthLines.reduce((s,r)=>s+(r[8]||0),0);
+      const planned=parsed.months[i][2];
+      if(Math.abs(fromRows-planned)>2)throw Error('Los presupuestos del mes '+(i+1)+' no concilian con su estructura auditada.');
+      const plannedBerlingo=parsed.models.filter(r=>r[0]===i&&r[1]==='BERLINGO').reduce((s,r)=>s+(r[2]||0),0);
+      if(Math.abs(plannedBerlingo-expectedBrl[i])>2)throw Error('Berlingo no concilia en el mes '+(i+1));
+      const passengerLeads=parsed.models.filter(r=>r[0]===i&&r[1]!=='BERLINGO').reduce((s,r)=>s+(r[3]||0),0);
+      const brlLeads=parsed.models.find(r=>r[0]===i&&r[1]==='BERLINGO')?.[3]||0;
+      const botTarget=parsed.months[i][3];
+      const expectedGoal=passengerLeads+(i>=5?brlLeads:0);
+      if(Math.abs(botTarget-expectedGoal)>0.05)throw Error('Leads del BOT no concilian con el alcance declarado del mes '+(i+1));
+    }
+    parsed.quality=Array.isArray(parsed.quality)?parsed.quality:[];
+    parsed.quality.push(
+      ['ALTA','ABRIL','Presupuesto adicional separado','PPTO ADICIONAL!H46 suma $13.500.000, NO $15.000.000. No pertenece a la base hasta verificar su aprobación.'],
+      ['ALTA','ENERO','Dos versiones de enero','BOT SEGUIMIENTO ENERO V.1 (2) muestra $92,5 millones; el plan ampliado ESTRUCTURAA / BOT V.1 contempla $117 millones sin Berlingo.'],
+      ['MEDIA','MARZO','Estructura 2.0','Escenario alterno con REMANENTE y PPTO FINAL; no suma presupuesto a la estructura base.'],
+      ['MEDIA','JUNIO','Meta BOT incluye Berlingo','Desde junio, E8 ya incorpora la meta de Berlingo; de enero a mayo E8 representa solo cinco modelos.'],
+      ['ALTA','ENERO','Sin meta Berlingo','Existe presupuesto de $13 millones en ESTRUCTURAA!AC8, pero no una meta comprobable de leads Berlingo para enero.'],
+      ['MEDIA','TODOS','Distribución 557 líneas','Se integran 551 líneas de ESTRUCTURA y 6 filas Berlingo externas. No sumar subtotales de H ni columnas J de resumen.'],
+      ['ALTA','SEP–OCT','Objetivos de WhatsApp','Los planes tienen campañas WHATSAPP; no comparar automáticamente sus conversaciones con formularios On-Facebook.']
+    );
     const total=parsed.months.reduce((v,m)=>v+m[2],0);
     if(Math.abs(total-944266850.42)>2)throw Error('Error de conciliación del total base.');
     return parsed;
