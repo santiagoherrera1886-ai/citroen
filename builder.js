@@ -162,7 +162,9 @@ async function downsize(file){
   const reader=new FileReader();reader.onerror=()=>resolve('');
   reader.onload=()=>{
    const im=new Image();im.onerror=()=>resolve('');
-   im.onload=()=>{const scale=Math.min(1,690/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(im.width*scale));c.height=Math.max(1,Math.round(im.height*scale));const x=c.getContext('2d');if(!x)return resolve('');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);resolve(c.toDataURL('image/jpeg',.68).slice(0,120000));};im.src=reader.result;
+   im.onload=()=>{const scale=Math.min(1,690/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(im.width*scale));c.height=Math.max(1,Math.round(im.height*scale));const x=c.getContext('2d');if(!x)return resolve('');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);let encoded='';
+    for(const quality of [.7,.5,.35,.2]){encoded=c.toDataURL('image/jpeg',quality);if(encoded.length<115000)break;}
+    resolve(encoded.length<120000?encoded:'');};im.src=reader.result;
   };reader.readAsDataURL(file);
  });
 }
