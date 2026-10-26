@@ -1,5 +1,17 @@
 # Citroën · Performance Intelligence
 
+## BARRA DE MÉTRICAS EDITABLE — 26/10/2026
+
+El modo **Editar resumen** incluye una barra lateral derecha de propiedades. Se selecciona una de las seis tarjetas KPI o un gráfico y se elige una métrica. Un ejemplo real es **Impresiones → Alcance sumado***. La tarjeta pasa de 145.525.157 impresiones a 113.191.745 de alcance sumado según la exportación de Meta Ads; esta última cifra **NO es alcance único deduplicado**, ya que procede de filas por día/anuncio.
+
+Campos reales disponibles: inversión Meta, formularios on-Facebook, conversaciones, impresiones, alcance sumado, clics en enlace, clics totales, CTR, CPM, costo por formulario y costo por conversación. La inversión planeada se limita al escenario de los Excel y nunca se muestra como ejecutado. Se permite cambiar el primer paso del funnel entre impresiones y alcance: para alcance, la ratio se denomina *clics/alcance sumado* y no CTR.
+
+El editor mantiene paneles nativos de Resumen, permite editar la principal métrica de las tarjetas de modelos y la columna de campañas, y ofrece campos de Meta para gráficos nuevos. Los ajustes se guardan en `localStorage` y se incluyen en exportar/importar diseño JSON. La barra de campos no modifica registros ni fuentes originales.
+
+Los test `scripts/smoke-metrics.cjs` validan las sustituciones contra los archivos originales, los filtros y el modo lectura.
+
+---
+
 ## REDISEÑO DEL RESUMEN — 26/10/2026 (versión activa)
 
 - El editor de informes dejó de existir como página independiente: **“Editar resumen”** aparece dentro del encabezado de Resumen.
