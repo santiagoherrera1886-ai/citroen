@@ -30,7 +30,7 @@ w.document.dispatchEvent(new w.Event('DOMContentLoaded',{bubbles:true}));
  const label=card.querySelector('.studio-card-title');
  label.value='Gráfico personalizado';
  label.dispatchEvent(new w.Event('change'));
- assert.ok(id('studioCards').textContent.includes('Gráfico personalizado'),'Editable title did not update');
+ assert.ok(id('studioCards').lastElementChild.querySelector('.studio-card-title').value==='Gráfico personalizado','Editable title did not update');
  card=id('studioCards').lastElementChild;
  card.querySelector('[data-control="chart"]').value='table';
  card.querySelector('[data-control="chart"]').dispatchEvent(new w.Event('change'));
