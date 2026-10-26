@@ -2,7 +2,7 @@
 (function(){
 'use strict';
 const $=id=>document.getElementById(id),KEY='citroen_workspace_draft_v1';
-const empty=()=>({version:1,pages:[],insights:[],creatives:[],filters:{month:true,model:true,territory:true}});
+const empty=()=>({version:1,summaryLayout:{enabled:false,items:{}},pages:[],insights:[],creatives:[],filters:{month:true,model:true,territory:true}});
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const uid=()=>('item-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7));
 const authorized=()=>window.CITROEN_ACCESS?.canEdit()===true&&$('c3Dashboard')?.classList.contains('studio-edit-on');
@@ -278,7 +278,7 @@ async function loadMeta(){
 async function loadPublished(){
  try{
   const response=await fetch('/api/dashboard',{cache:'no-store'});
-  if(response.ok){const d=await response.json();state=d.workspace||empty();}
+  if(response.ok){const d=await response.json();state=d.workspace||empty();if(window.CITROEN_FREE_LAYOUT)window.CITROEN_FREE_LAYOUT.import(state.summaryLayout||{enabled:false,items:{}});}
   else state=localDraft()||empty();
  }catch{state=localDraft()||empty();}
  if(!Array.isArray(state.pages))state=empty();
@@ -291,6 +291,7 @@ async function publish(){
  if(!authorized()||busy)return;
  busy=true;status('Publicando el diseño para todos los visitantes…');
  try{
+  state.summaryLayout=window.CITROEN_FREE_LAYOUT?.export()||{enabled:false,items:{}};
   const r=await fetch('/api/dashboard',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({workspace:state})});
   const d=await r.json();if(!r.ok)throw Error(d.error||'No se pudo publicar');
   status('Publicado correctamente. Las páginas, creativos, insights y filtros son visibles para visitantes.');
