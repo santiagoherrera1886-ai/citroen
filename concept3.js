@@ -19,8 +19,8 @@ const norm=s=>String(s||'').trim().toUpperCase();
 const filter=rows=>rows.filter(r=>(!state.month||r.month===state.month)&&(!state.model||norm(r.model)===norm(state.model))&&(!state.territory||r.territory===state.territory));
 const opt=(value,label)=>`<option value="${esc(value)}">${esc(label)}</option>`;
 const configured=(kind,slot,fallback)=>{const prefs=window.CITROEN_METRIC_OVERRIDES||{};return kind==='slot'?(prefs.slots&&prefs.slots[slot])||fallback:(prefs.native&&prefs.native[kind])||fallback;};
-const metricNames={planned:'Inversión planeada',spend:'Inversión Meta',forms:'Formularios',messages:'Conversaciones',impressions:'Impresiones',reach:'Alcance sumado*',clicks:'Clics en enlace',all_clicks:'Clics totales',ctr:'CTR de enlace',cpm:'CPM calculado',cpl:'Costo / formulario*',cost_message:'Costo / conversación*'};
-const metricNotes={planned:'Presupuesto proyectado · plan multicanal',spend:'Gasto Meta Ads · COP supuesto',forms:'Leads de formulario · sin conversaciones',messages:'Eventos de conversación · no leads únicos',impressions:'Impresiones entregadas · Meta Ads',reach:'Suma de alcances reportados; NO usuarios únicos',clicks:'Clics en enlace · Meta Ads',all_clicks:'Clics totales de Meta Ads',ctr:'Clics de enlace / impresiones',cpm:'Gasto Meta por 1.000 impresiones',cpl:'Gasto Meta / formularios; incluye otros objetivos',cost_message:'Gasto Meta / conversaciones; incluye otros objetivos'};
+const metricNames={planned:'Inversión planeada',spend:'Inversión Meta',forms:'Formularios',messages:'Conversaciones',impressions:'Impresiones',reach:'Alcance estimado*',clicks:'Clics en enlace',all_clicks:'Clics totales',ctr:'CTR de enlace',cpm:'CPM calculado',cpl:'Costo / formulario*',cost_message:'Costo / conversación*'};
+const metricNotes={planned:'Presupuesto proyectado · plan multicanal',spend:'Gasto Meta Ads · COP supuesto',forms:'Leads de formulario · sin conversaciones',messages:'Eventos de conversación · no leads únicos',impressions:'Impresiones entregadas · Meta Ads',reach:'Estimación Sainsbury · no alcance único observado',clicks:'Clics en enlace · Meta Ads',all_clicks:'Clics totales de Meta Ads',ctr:'Clics de enlace / impresiones',cpm:'Gasto Meta por 1.000 impresiones',cpl:'Gasto Meta / formularios; incluye otros objetivos',cost_message:'Gasto Meta / conversaciones; incluye otros objetivos'};
 const metricMoney=new Set(['planned','spend','cpm','cpl','cost_message']);
 function metricTotal(rows,key,plan){
  if(key==='planned')return plan;
@@ -29,7 +29,7 @@ function metricTotal(rows,key,plan){
  if(key==='forms')return forms;
  if(key==='messages')return messages;
  if(key==='impressions')return impressions;
- if(key==='reach')return v(6); // Suma de reach por registro; no desduplicado.
+ if(key==='reach')return window.CITROEN_REACH_MATH?.estimate(rows.map(r=>r.v[6]||0),window.CITROEN_REACH_MATH.currentUniverse())??null;
  if(key==='clicks')return clicks;
  if(key==='all_clicks')return v(5);
  if(key==='ctr')return impressions>0?100*clicks/impressions:null;
@@ -101,7 +101,7 @@ function comparison(rows){
  $('c3CompareChart').innerHTML=`<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" role="img" aria-label="Planeado contra ejecutado, alcance de Meta Ads"><defs><pattern id="c3hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="#fae0e3"/><rect width="3" height="7" fill="#ef7780"/></pattern></defs>${ticks}${bar}${path}</svg>`;
  const notes={
  impressions:'Meta Ads: impresiones reales por mes. No hay plan comparable de impresiones.',
- reach:'Meta Ads: alcance SUMADO de registros, NO usuarios únicos ni meta comparable.',
+ reach:'Alcance ESTIMADO con Sainsbury y universo configurado, no usuarios únicos medidos ni meta comparable.',
  clicks:'Meta Ads: clics en enlace, sin meta homologada.',
  all_clicks:'Meta Ads: clics totales, sin meta homologada.',
  forms:'Meta Ads: formularios, no necesariamente el mismo objetivo comercial del plan.',
@@ -113,18 +113,20 @@ function comparison(rows){
  leads:'Azul: metas comerciales del plan si son completas. Rojo: formularios de Meta. Las definiciones son distintas y no equivalen a cumplimiento. *Octubre parcial.',
  cpl:'Azul: CPL planificado (portafolio: cinco modelos sin Berlingo). Rojo: gasto total Meta / formularios; incluye WhatsApp y no es un CPL comercial comparable.'
  };
- $('c3CompareNote').textContent=notes[state.metric]||'Datos de Meta Ads, no ejecución global del plan.';
+ $('c3CompareNote').textContent=state.metric==='reach'&&!window.CITROEN_REACH_MATH?.currentUniverse()
+  ?'Sin universo de audiencia configurado: no se muestra estimación Sainsbury. Configúralo en Propiedades del gráfico.'
+  :notes[state.metric]||'Datos de Meta Ads, no ejecución global del plan.';
 }
 function funnel(rows){
  const first=configured('funnelMetric','metric','impressions'),isReach=first==='reach';
- const base=add(rows,isReach?6:3),clicks=add(rows,4),forms=add(rows,1),messages=add(rows,2);
+ const base=isReach?metricTotal(rows,'reach',null):add(rows,3),clicks=add(rows,4),forms=add(rows,1),messages=add(rows,2);
  const ratio=(a,b)=>b>0?(100*a/b).toLocaleString('es-CO',{maximumFractionDigits:2})+' %':'—';
  $('c3Funnel').innerHTML='<div class="c3-funnel-stages">'+[
-  [short(base),isReach?'Alcance sumado*':'Impresiones',''],[num(clicks),'Clics enlace',''],[num(forms),'Formularios',''],[num(messages),'Conversaciones','action']
+  [short(base),isReach?'Alcance estimado*':'Impresiones',''],[num(clicks),'Clics enlace',''],[num(forms),'Formularios',''],[num(messages),'Conversaciones','action']
  ].map(v=>'<div class="c3-funnel-step '+v[2]+'"><span><b>'+v[0]+'</b><small>'+v[1]+'</small></span></div>').join('')+'</div><div class="c3-funnel-rate">'+[
-  [isReach?'Clics / alcance sumado*':'CTR de enlace',ratio(clicks,base)],['Formularios / clics*',ratio(forms,clicks)],['Conversaciones / clics*',ratio(messages,clicks)]
+  [isReach?'Clics / alcance estimado*':'CTR de enlace',ratio(clicks,base)],['Formularios / clics*',ratio(forms,clicks)],['Conversaciones / clics*',ratio(messages,clicks)]
  ].map(v=>'<div><span>'+v[0]+'</span><b>'+v[1]+'</b></div>').join('')+'</div>';
- $('c3FunnelPanel').querySelector('.c3-funnel-foot').textContent=isReach?'*Alcance sumado NO equivale a usuarios únicos. Clics/alcance no es CTR. Formularios y conversaciones son distintos.':'Formularios y conversaciones son resultados paralelos: no se deben sumar como leads únicos.';
+ $('c3FunnelPanel').querySelector('.c3-funnel-foot').textContent=isReach?'*Sainsbury es estimación, no usuarios únicos observados. Requiere universo configurado. Clics/alcance estimado no es CTR.':'Formularios y conversaciones son resultados paralelos: no se deben sumar como leads únicos.';
 }
 function models(rows){
  $('c3Models').innerHTML=cars.map(m=>{
