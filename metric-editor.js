@@ -2,14 +2,14 @@
 (function(){
 "use strict";
 const STORAGE="citroen_metric_preferences_v1";
-const defaults={slots:{},native:{}};
+const defaults={slots:{},native:{},universe:null};
 const definitions=[
  {id:"planned",label:"Inversión planeada",subtitle:"Plan de medios 2026",group:"Proyecciones",source:"plan"},
  {id:"spend",label:"Inversión",subtitle:"Gasto ejecutado Meta Ads",group:"Meta Ads"},
  {id:"forms",label:"Formularios",subtitle:"Leads on-Facebook",group:"Meta Ads"},
  {id:"messages",label:"Conversaciones",subtitle:"Conversaciones iniciadas",group:"Meta Ads"},
  {id:"impressions",label:"Impresiones",subtitle:"Veces que se mostraron anuncios",group:"Meta Ads"},
- {id:"reach",label:"Alcance sumado*",subtitle:"Registros de alcance, no usuarios únicos",group:"Meta Ads"},
+ {id:"reach",label:"Alcance estimado · Sainsbury*",subtitle:"Requiere universo de audiencia configurable",group:"Meta Ads"},
  {id:"clicks",label:"Clics en enlace",subtitle:"Clics a enlaces",group:"Meta Ads"},
  {id:"all_clicks",label:"Clics totales",subtitle:"Todos los tipos de clic",group:"Meta Ads"},
  {id:"ctr",label:"CTR de enlace",subtitle:"Clics enlace ÷ impresiones",group:"Indicadores calculados"},
@@ -36,7 +36,8 @@ function normalized(input){
   const target=Object.values(nativeMap).find(x=>x.field===key);
   if(target&&target.allowed.includes(v))native[key]=v;
  }
- return {slots,native};
+ const universe=window.CITROEN_REACH_MATH?.validUniverse(data.universe)||null;
+ return {slots,native,universe};
 }
 function stored(){try{return normalized(JSON.parse(localStorage.getItem(STORAGE)||"null"));}catch{return normalized(defaults);}}
 let preferences=stored(),selected=null,search="";
@@ -98,7 +99,14 @@ function updateUI(){
    return head+'<button class="metric-field'+(info.metric===d.id?" is-active":"")+'" type="button" data-field="'+html(d.id)+'" aria-pressed="'+String(info.metric===d.id)+'"><span class="metric-field-icon">'+(d.id==="reach"?"◎":d.group==="Proyecciones"?"▥":"▤")+'</span><span class="metric-field-copy"><strong>'+html(d.label)+'</strong><small>'+html(d.subtitle)+'</small></span><span class="metric-field-check">'+(info.metric===d.id?"✓":"＋")+'</span></button>';
   }).join("")||'<div class="metric-empty">No hay métricas que coincidan con la búsqueda.</div>';
  }
- $("metricNote").hidden=!info||info.metric!=="reach";
+ const reachSelected=info?.metric==="reach";
+ $("metricNote").hidden=!reachSelected;
+ if(reachSelected){
+  $("metricUniverse").value=preferences.universe||"";
+  $("metricUniverseStatus").textContent=preferences.universe
+   ?"Sainsbury activo · universo "+new Intl.NumberFormat("es-CO").format(preferences.universe)+" personas. Resultado estimado; no son usuarios únicos comprobados."
+   :"Sin universo configurado: el alcance estimado se mostrará como —. Introduce el tamaño de la audiencia objetivo.";
+ }
  $("metricHint").textContent=info?.type==="kpi"?"Selecciona otra métrica y el indicador superior se actualizará automáticamente.":info?.type==="custom"?"Los gráficos nuevos admiten métricas de Meta Ads y del plan según la fuente elegida.":"Los cambios actualizan este gráfico y se guardan en este navegador.";
  document.querySelectorAll(".metric-selected").forEach(el=>el.classList.remove("metric-selected"));
  if(!selected)return;
@@ -136,6 +144,13 @@ function wire(){
  $("metricInspectorClose").onclick=()=>{selected=null;updateUI();};
  $("metricFieldInput").oninput=e=>{search=e.target.value;updateUI();$("metricFieldInput").focus();};
  $("metricFields").onclick=e=>{const button=e.target.closest("[data-field]");if(button)updateMetric(button.dataset.field);};
+ $("metricUniverse").onchange=e=>{
+  const raw=String(e.target.value||"").trim();
+  const U=window.CITROEN_REACH_MATH?.validUniverse(raw);
+  if(raw&&!U){$("metricUniverseStatus").textContent="El universo debe ser un número entero positivo. El alcance seguirá sin estimarse.";return;}
+  preferences.universe=U||null;
+  sync();
+ };
  $("c3Kpis").addEventListener("click",e=>{if(!$("c3Dashboard").classList.contains("studio-edit-on"))return;const el=e.target.closest("[data-metric-slot]");if(el)choose("k:"+el.dataset.metricSlot);});
  $("c3Kpis").addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){const el=e.target.closest("[data-metric-slot]");if(el&&$("c3Dashboard").classList.contains("studio-edit-on")){e.preventDefault();choose("k:"+el.dataset.metricSlot);}}});
  $("studioCards").addEventListener("click",e=>{
