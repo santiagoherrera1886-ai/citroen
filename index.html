@@ -13,7 +13,7 @@
 <link rel="stylesheet" href="./concept3.css">
 <link rel="stylesheet" href="./model-fix.css?v=20261021b">
 <link rel="stylesheet" href="./audit.css?v=1">
-<link rel="stylesheet" href="./studio.css?v=20261026c">
+<link rel="stylesheet" href="./studio.css?v=20261026d">
 </head>
 <body>
 <svg xmlns="http://www.w3.org/2000/svg" class="symbols" aria-hidden="true">
@@ -130,7 +130,15 @@
     <div class="metric-inspector-label"><strong>Métrica</strong><span>CAMBIAR CAMPO</span></div>
     <label for="metricFieldInput" class="metric-search-label"><span aria-hidden="true">⌕</span><input id="metricFieldInput" type="search" placeholder="Buscar campos..." autocomplete="off" aria-label="Buscar métricas"></label>
     <div id="metricFields" class="metric-fields" role="group" aria-label="Métricas disponibles"></div>
-    <div id="metricNote" class="metric-reach-note" hidden><strong>Atención con alcance</strong><p>La cifra suma alcances reportados por registro. No equivale a personas únicas desduplicadas.</p></div>
+    <div id="metricNote" class="metric-reach-note" hidden>
+      <strong>Estimación de alcance · Sainsbury</strong>
+      <p>El alcance se calcula con un universo de audiencia fijo y solapamiento aleatorio. No representa usuarios únicos medidos por Meta.</p>
+      <label for="metricUniverse" class="metric-universe-label">Universo de audiencia potencial (personas)</label>
+      <input id="metricUniverse" class="metric-universe-input" inputmode="numeric" type="number" min="1" step="1" placeholder="Ej. 15000000" aria-describedby="metricUniverseStatus">
+      <p id="metricUniverseStatus" class="metric-universe-status" role="status">Ingresa el universo para calcular el alcance estimado.</p>
+      <div class="metric-reach-formula">U × [1 − Π(1 − alcanceᵢ / U)]</div>
+      <small>No se suman los registros para presentar alcance neto. La estimación supone exposiciones independientes y no mide duplicación real.</small>
+    </div>
     <p id="metricHint" class="metric-inspector-hint">Selecciona una métrica para reemplazar la que aparece en la tarjeta.</p>
     <div class="metric-inspector-foot"><span class="metric-foot-dot"></span> Meta Ads real + planeación 2026</div>
   </aside>
@@ -357,7 +365,8 @@
 <script src="./data/auditoria_2026.js" defer></script>
 <script src="./audit.js" defer></script>
 <script src="./meta.js" defer></script>
-<script src="./concept3.js?v=20261026c" defer></script>
-<script src="./studio.js?v=20261026c" defer></script>
-<script src="./metric-editor.js?v=20261026a" defer></script>
+<script src="./reach-math.js?v=20261026b" defer></script>
+<script src="./concept3.js?v=20261026d" defer></script>
+<script src="./studio.js?v=20261026d" defer></script>
+<script src="./metric-editor.js?v=20261026b" defer></script>
 </body></html>
