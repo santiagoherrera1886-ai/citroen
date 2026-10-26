@@ -13,7 +13,7 @@
 <link rel="stylesheet" href="./concept3.css">
 <link rel="stylesheet" href="./model-fix.css?v=20261021b">
 <link rel="stylesheet" href="./audit.css?v=1">
-<link rel="stylesheet" href="./studio.css?v=20261026-style1">
+<link rel="stylesheet" href="./studio.css?v=20261026-style2">
 </head>
 <body>
 <svg xmlns="http://www.w3.org/2000/svg" class="symbols" aria-hidden="true">
@@ -125,7 +125,7 @@
 
   <aside id="metricInspector" class="metric-inspector" aria-label="Propiedades del gráfico y campos" hidden>
     <div class="metric-inspector-head"><div><span class="metric-eyebrow">CITROËN · VISUALIZACIONES</span><h2>Propiedades del gráfico</h2></div><button id="metricInspectorClose" type="button" aria-label="Deseleccionar gráfico" title="Deseleccionar">×</button></div>
-    <div class="metric-inspector-tabs" role="tablist" aria-label="Propiedades del gráfico"><button type="button" role="tab" aria-selected="true" class="is-active" data-inspector-tab="data">Datos</button><button type="button" role="tab" aria-selected="false" data-inspector-tab="style">Estilo</button></div>
+    <div class="metric-inspector-tabs" role="tablist" aria-label="Propiedades del gráfico"><button type="button" role="tab" aria-selected="true" class="is-active" data-inspector-tab="data">Datos</button><button type="button" role="tab" aria-selected="false" data-inspector-tab="style">Estilo</button><button type="button" role="tab" aria-selected="false" data-inspector-tab="layout">Diseño</button></div>
     <div class="metric-selection"><small>ELEMENTO SELECCIONADO</small><strong id="metricCurrent">Selecciona un indicador</strong><span id="metricCurrentSub">Haz clic en un gráfico o tarjeta del resumen</span></div>
     <div id="metricDataPane" class="metric-data-pane" role="tabpanel" aria-label="Configuración de datos">
     <div class="metric-inspector-label"><strong>Métrica</strong><span>CAMBIAR CAMPO</span></div>
@@ -155,11 +155,23 @@
       </div>
       <div class="metric-style-section"><strong>Formato</strong>
         <label class="metric-style-row">Esquinas <select data-style-field="radius"><option value="0">Cuadradas</option><option value="8">Sutiles</option><option value="15">Redondeadas</option><option value="24">Muy redondeadas</option></select></label>
-        <label class="metric-style-row">Tamaño de texto <select data-style-field="fontSize"><option value="0.9">Compacto</option><option value="1">Normal</option><option value="1.1">Grande</option><option value="1.2">Muy grande</option></select></label>
+        <label class="metric-style-row">Escala de texto <select data-style-field="fontScale"><option value="0.8">Muy compacto</option><option value="0.9">Compacto</option><option value="1">Normal</option><option value="1.1">Grande</option><option value="1.2">Muy grande</option><option value="1.5">Extra grande</option></select></label>
+        <label class="metric-style-row">Tipografía<select data-style-field="fontFamily"><option value="Manrope">Manrope</option><option value="Inter">Inter</option><option value="Arial">Arial</option><option value="Georgia">Georgia</option></select></label>
+        <label class="metric-style-row">Sombra<select data-style-field="shadow"><option value="none">Sin sombra</option><option value="soft">Suave</option><option value="strong">Intensa</option></select></label>
+        <label class="metric-style-row">Grosor del borde<select data-style-field="borderWidth"><option value="0">Sin borde</option><option value="1">Fino · 1 px</option><option value="2">Medio · 2 px</option><option value="3">Grueso · 3 px</option><option value="5">Muy grueso · 5 px</option></select></label>
+        <label class="metric-style-row">Opacidad del gráfico <input type="range" min="30" max="100" step="5" data-style-field="opacity"></label>
       </div>
-      <div class="metric-style-actions"><button id="metricStyleReset" type="button">Restablecer este estilo</button><button id="metricStyleApplyAll" type="button">Aplicar a todas</button></div>
+      <div class="metric-style-section"><strong>Visibilidad de los elementos</strong>
+        <label class="metric-style-check"><input type="checkbox" data-style-field="showLegend" checked> Mostrar leyenda</label>
+        <label class="metric-style-check"><input type="checkbox" data-style-field="showGrid" checked> Mostrar cuadrícula</label>
+        <label class="metric-style-check"><input type="checkbox" data-style-field="showLabels"> Mostrar valores sobre las series</label>
+      </div>
+      <div class="metric-style-actions"><button id="metricStyleReset" type="button">Restablecer estilo</button><button id="metricStyleApplyAll" type="button">Aplicar a todas</button></div>
+      <div class="metric-style-actions"><button id="metricStyleUndo" type="button">↶ Deshacer estilo</button><button id="metricStyleRedo" type="button">↷ Rehacer estilo</button></div>
+      <p id="metricStyleStatus" class="metric-style-note" role="status">Selecciona una tarjeta para modificarla.</p>
       <p class="metric-style-note">Los cambios se muestran al instante y se guardan en este navegador. Puedes exportar el diseño para reutilizarlo.</p>
     </div>
+    <div id="metricLayoutPane" class="metric-layout-pane" role="tabpanel" aria-label="Diseño del gráfico" hidden></div>
     <div class="metric-inspector-foot"><span class="metric-foot-dot"></span> Meta Ads real + planeación 2026</div>
   </aside>
   <div id="studioCards" class="c3-summary-grid" aria-label="Paneles del resumen personalizable">
@@ -386,7 +398,8 @@
 <script src="./audit.js" defer></script>
 <script src="./meta.js" defer></script>
 <script src="./reach-math.js?v=20261026b" defer></script>
-<script src="./concept3.js?v=20261026-style1" defer></script>
-<script src="./studio.js?v=20261026-style1" defer></script>
-<script src="./metric-editor.js?v=20261026-style1" defer></script>
+<script src="./concept3.js?v=20261026-style2" defer></script>
+<script src="./studio.js?v=20261026-style2" defer></script>
+<script src="./metric-editor.js?v=20261026-style2" defer></script>
+<script src="./style-engine.js?v=20261026-style2" defer></script>
 </body></html>
