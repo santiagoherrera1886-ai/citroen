@@ -1,5 +1,19 @@
 # Citroën · Performance Intelligence
 
+## ACTUALIZACIÓN VIGENTE — 26 de octubre de 2026
+
+**La fuente activa del dashboard está corregida con los diez Excel recibidos el 26/10/2026.** La auditoría histórica del 21 de octubre que aparece más abajo se conserva como referencia de la versión anterior, no como presupuesto vigente.
+
+- **Plan actualizado enero–octubre:** COP 1.086.316.554,45; el anterior era COP 944.266.850,42. Cambiaron abril (COP 65.000.000,45) y mayo (COP 141.316.554). Enero, febrero, marzo y junio–octubre conservan sus presupuestos anteriores.
+- **Plan pasajeros:** COP 986.485.356,45; **Berlingo:** COP 99.831.198,00, contando la partida una sola vez.
+- **Hallazgo sin resolver:** mayo BOT de pasajeros COP 130.485.356 vs. suma de estructura COP 131.477.980; diferencia COP 992.624. La fuente independiente Berlingo también difiere entre H3 y O4. Se señala, no se disfraza como reconciliación completa.
+- **Abril, adicional:** PPTO ADICIONAL H46 por COP 13.500.000 no se incorpora a la base porque no hay confirmación de aprobación. Las versiones históricas no se suman de nuevo.
+- **Ejecución:** Meta Ads permanece independiente de la proyección; no interpretar diferencias como cumplimiento multicanal. Octubre real cubre solo hasta el 20/10.
+- **Editor de informes:** nueva sección “Editor de informes” con gráficos a elección, indicadores, origen de datos, filtros, comparativos, cambio barra/línea/tabla y arrastrar tarjetas. El diseño se guarda con `localStorage` **solo en el navegador actual**; exportar/importar JSON para reutilizarlo entre navegadores. No existe todavía un backend compartido de Looker Studio.
+- **Implementación:** `data/revision_2026.js` integra los cambios exactos de abril y mayo sobre `data/proyecciones_2026.js`; `studio.js`, `studio.css` e `index.html` contienen el editor. `scripts/smoke-studio.cjs` y los demás tests se ejecutan en GitHub Actions.
+
+---
+
 Dashboard premium Montecarlo Blue para Citroën Colombia, basado en los módulos operativos de Suzuki Performance Intelligence, pero desarrollado desde cero.
 
 ## Estado
