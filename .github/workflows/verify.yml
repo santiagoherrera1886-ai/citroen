@@ -20,6 +20,7 @@ jobs:
           node --check concept3.js
           node --check audit.js
           node --check studio.js
+          node --check metric-editor.js
           node --check data/revision_2026.js
       - name: Verify structure and no simulated data
         run: node scripts/verify.cjs
@@ -31,3 +32,5 @@ jobs:
         run: node scripts/smoke-audit.cjs
       - name: Browser-like custom Studio editor test
         run: node scripts/smoke-studio.cjs
+      - name: Browser-like metric inspector real data test
+        run: node scripts/smoke-metrics.cjs
