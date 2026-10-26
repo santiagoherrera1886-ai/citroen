@@ -95,3 +95,52 @@
 @media(max-width:1220px){.c3-summary-grid{grid-template-columns:repeat(6,minmax(0,1fr))}.c3-summary-grid>.c3-models-panel{grid-column:span 4!important}.c3-summary-grid>.c3-campaign-panel{grid-column:span 2!important}.c3-summary-grid>.c3-insight-panel{grid-column:span 6!important}.c3-summary-grid .c3-insights{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:1080px){.c3-summary-grid{grid-template-columns:1fr}.c3-summary-grid>.c3-panel,.c3-summary-grid>.studio-card{grid-column:1/-1!important}.c3-summary-grid .c3-insights{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:640px){.c3-dashboard .studio-header-edit{grid-column:1/-1;font-size:11px}.c3-summary-grid .c3-insights{display:block}.c3-summary-grid .studio-native-tools{right:4px;left:4px;justify-content:flex-end;gap:3px}.c3-summary-grid .studio-native-tools select{max-width:100px}.studio-inline-tools{padding:10px}.studio-inline-tools .studio-toolbar label{flex:1 1 40%}.studio-inline-tools .studio-toolbar select{width:100%;min-width:0}.studio-inline-tools .studio-actions{width:100%}.c3-dashboard.studio-edit-on .c3-summary-grid>.c3-panel{padding-top:65px}}
+
+
+/* Looker-style metric inspector — appears only while editing the Resumen. */
+.metric-inspector[hidden],.metric-reach-note[hidden]{display:none!important}
+.metric-inspector{position:fixed;z-index:75;right:0;top:0;bottom:0;width:308px;box-sizing:border-box;display:flex;flex-direction:column;overflow:hidden;background:#fff;border-left:1px solid #dce6ee;box-shadow:-12px 0 35px rgba(20,57,81,.13);font-family:Manrope,"DM Sans",sans-serif;color:#16364f}
+.metric-inspector-head{padding:22px 19px 15px;display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid #edf1f5}
+.metric-inspector-head h2{font-size:15px;font-weight:800;margin:4px 0;letter-spacing:-.035em;color:#173951}
+.metric-eyebrow{font-size:8px;font-weight:850;letter-spacing:.14em;color:#e84959}
+.metric-inspector-head button{align-self:start;cursor:pointer;border:1px solid #dde8ef;background:#f7fafc;width:29px;height:29px;border-radius:8px;font-size:19px;color:#69869b}
+.metric-inspector-tabs{display:flex;justify-content:stretch;padding:0 14px;border-bottom:1px solid #eaf0f5;color:#8a9bab;font-size:11px;font-weight:800}
+.metric-inspector-tabs span{flex:1;text-align:center;padding:12px 6px}
+.metric-inspector-tabs .is-active{color:#df4654;border-bottom:2px solid #f14c5a}
+.metric-selection{background:#f3f8fc;margin:14px 14px 17px;padding:13px;border:1px solid #e4edf5;border-radius:12px;display:flex;flex-direction:column;gap:5px}
+.metric-selection small{font-size:8px;color:#7890a3;letter-spacing:.11em;font-weight:900}
+.metric-selection strong{font-size:13px;line-height:1.3}
+.metric-selection span{font-size:10px;line-height:1.6;color:#66849b}
+.metric-inspector-label{display:flex;align-items:center;justify-content:space-between;padding:0 17px 8px}
+.metric-inspector-label strong{font-size:12px}
+.metric-inspector-label span{font-size:8px;font-weight:900;letter-spacing:.11em;color:#98a8b5}
+.metric-search-label{display:flex;gap:6px;align-items:center;margin:0 14px 8px;border:1px solid #dae7ef;border-radius:9px;padding:0 10px;background:#fbfdff}
+.metric-search-label span{font-size:20px;color:#8aa3b6}
+.metric-search-label input{min-width:0;flex:1;font:500 12px Manrope,sans-serif;padding:10px 0;background:transparent;border:0;outline:none;color:#183d56}
+.metric-fields{padding:0 9px 16px;overflow-y:auto;flex:1;scrollbar-color:#cbdbe6 transparent;scrollbar-width:thin}
+.metric-group{padding:15px 8px 7px;color:#8197a8;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.12em}
+.metric-field{display:flex;align-items:center;text-align:left;width:100%;min-height:58px;gap:9px;background:transparent;padding:8px;border:1px solid transparent;border-radius:9px;cursor:pointer;color:#193e57;transition:background .15s,border-color .15s}
+.metric-field:hover,.metric-field:focus-visible{background:#eff6fb;border-color:#deedf7}
+.metric-field.is-active{background:#eaf4ff;border-color:#badcf2}
+.metric-field-icon{width:30px;height:30px;flex:none;display:grid;place-items:center;border-radius:7px;background:#e9f1f8;font-size:13px;color:#4d7694}
+.metric-field.is-active .metric-field-icon{color:#2477ba;background:#d9efff}
+.metric-field-copy{min-width:0;flex:1;display:flex;flex-direction:column;gap:2px}
+.metric-field-copy strong{font-size:11px;font-weight:800;line-height:1.35}
+.metric-field-copy small{font-size:9px;color:#8599a8;line-height:1.5}
+.metric-field-check{font-size:15px;font-weight:900;color:#a6b9c8}
+.metric-field.is-active .metric-field-check{color:#2183d2}
+.metric-reach-note{background:#fff9ee;border:1px solid #f0d9ad;border-radius:9px;margin:6px 13px;padding:11px;color:#805c31}
+.metric-reach-note strong{font-size:10px}
+.metric-reach-note p{font-size:10px;line-height:1.6;margin:5px 0 0}
+.metric-inspector-hint{font-size:10px;line-height:1.55;color:#788d9d;margin:9px 17px 15px}
+.metric-inspector-foot{font-size:10px;background:#f8fbfe;border-top:1px solid #eaf0f5;padding:14px;color:#678297}
+.metric-foot-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#1ab679;margin-right:5px}
+body:has(.c3-dashboard.studio-edit-on) .concept3-shell .content{max-width:none;padding-right:328px}
+.c3-dashboard.studio-edit-on .c3-kpi{cursor:pointer;outline-offset:0;transition:box-shadow .15s,outline-color .15s}
+.c3-dashboard.studio-edit-on .c3-summary-grid>.c3-panel,.c3-dashboard.studio-edit-on .c3-summary-grid>.studio-card{cursor:pointer}
+.c3-dashboard.studio-edit-on .c3-kpi:hover,.c3-dashboard.studio-edit-on .metric-selected{outline:2px solid #69b8e7!important;outline-offset:-2px;box-shadow:0 0 0 4px rgba(106,184,231,.09)!important}
+.c3-dashboard.studio-edit-on .c3-summary-grid>.metric-selected{border-color:#69b8e7!important;background-clip:padding-box}
+.c3-dashboard.studio-edit-on .c3-kpi[tabindex]:focus-visible{outline:3px solid #4ba8e0}
+@media(max-width:1250px){.metric-inspector{width:280px}body:has(.c3-dashboard.studio-edit-on) .concept3-shell .content{padding-right:300px}}
+@media(max-width:980px){body:has(.c3-dashboard.studio-edit-on) .concept3-shell .content{padding-right:16px}.metric-inspector{width:min(310px,92vw);box-shadow:-20px 0 55px #16364f4d}}
+@media(max-width:580px){.metric-inspector{width:100%;left:0;top:auto;height:min(76vh,620px);border-left:0;border-top:2px solid #dde8ef;border-radius:17px 17px 0 0}.metric-inspector-head{padding:15px}.metric-selection{margin:9px 12px}.metric-inspector-hint{margin:8px 13px 12px}}
