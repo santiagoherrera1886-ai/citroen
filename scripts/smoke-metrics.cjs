@@ -30,6 +30,12 @@ const pause=()=>new Promise(r=>setTimeout(r,0));
  assert.ok($('c3Kpis').querySelector('[data-metric-slot="5"]').textContent.includes('113.191.745'),'KPI has true source reach sum');
  assert.ok($('metricNote').textContent.toLowerCase().includes('no equivale'),'Reach is labeled as not deduplicated');
  assert.equal(w.CITROEN_METRIC_OVERRIDES.slots[5],'reach','Selection stored in shared data settings');
+ $('c3ComparePanel').click();
+ $('metricFields').querySelector('[data-field="reach"]').click();
+ assert.ok($('c3CompareNote').textContent.includes('NO usuarios únicos'),'Comparison reach shows only actual data and warns about aggregation');
+ w.document.querySelector('[data-c3-metric="investment"]').click();
+ assert.equal(w.CITROEN_METRIC_OVERRIDES.native.compareMetric,'investment','Original comparison metric button updates sidebar settings');
+
  const note=w.localStorage.getItem('citroen_metric_preferences_v1');
  assert.ok(note.includes('"reach"'),'Reach saved to browser');
  $('c3FunnelPanel').click();
