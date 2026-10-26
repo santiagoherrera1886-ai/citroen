@@ -158,7 +158,10 @@ function drawLayout(){
   let v="";
   if(kf==="width")v=width;
   else if(kf==="title")v=title||"";
-  else v=el.querySelector('[data-control="'+kf+'"]')?.value||({sort:"original",limit:"0",model:"",source,chart:"bar",dimension:"month"}[kf]||"");
+  else{
+   const details=window.CITROEN_STUDIO_ACTIONS?.getCustom(k)||{};
+   v=details[kf]??el.querySelector('[data-control="'+kf+'"]')?.value??({sort:"original",limit:"0",model:"",source,chart:"bar",dimension:"month"}[kf]||"");
+  }
   c.value=String(v);
  });
 }
