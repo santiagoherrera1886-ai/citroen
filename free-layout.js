@@ -13,7 +13,8 @@ function autoLayout(){
  let ix=0,iy=12,rowHeight=0;
  for(const el of nodes()){
   const k=el.dataset.panelKey;if(state.items[k])continue;
-  const a=el.getBoundingClientRect(),w=a.width>100?a.width:Math.min(700,Math.round(size*(Number((el.style.gridColumn||'').replace(/\D/g,''))||3)/6)-12));
+  const a=el.getBoundingClientRect(),span=Number((el.style.gridColumn||'').replace(/\D/g,''))||3;
+  const w=a.width>100?a.width:Math.min(700,Math.round(size*span/6)-12);
   const h=a.height>100?a.height:el.id==='c3ComparePanel'?365:el.id==='c3FunnelPanel'?365:285;
   let x=a.width>100&&rect.width>0?a.left-rect.left:ix,y=a.height>100&&rect.height>0?a.top-rect.top:iy;
   if(a.width<=100||rect.width===0){if(x+w>size){ix=0;iy+=rowHeight+15;rowHeight=0;}x=ix;y=iy;ix+=w+15;rowHeight=Math.max(rowHeight,h);}
