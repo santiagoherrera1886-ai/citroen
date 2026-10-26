@@ -1,15 +1,17 @@
 /* Editor lateral de campos de Citroen. Datos tomados del plan y de Meta Ads; no se generan cifras. */
 (function(){
 "use strict";
-const STORAGE="citroen_metric_preferences_v1";
-const defaults={slots:{},native:{},universe:null};
+const STORAGE="citroen_metric_preferences_v2";
+const LEGACY_STORAGE="citroen_metric_preferences_v1";
+const DEFAULT_UNIVERSE=15000000; // Universo aprobado para Citroen (personas).
+const defaults={slots:{},native:{},universe:DEFAULT_UNIVERSE};
 const definitions=[
  {id:"planned",label:"Inversión planeada",subtitle:"Plan de medios 2026",group:"Proyecciones",source:"plan"},
  {id:"spend",label:"Inversión",subtitle:"Gasto ejecutado Meta Ads",group:"Meta Ads"},
  {id:"forms",label:"Formularios",subtitle:"Leads on-Facebook",group:"Meta Ads"},
  {id:"messages",label:"Conversaciones",subtitle:"Conversaciones iniciadas",group:"Meta Ads"},
  {id:"impressions",label:"Impresiones",subtitle:"Veces que se mostraron anuncios",group:"Meta Ads"},
- {id:"reach",label:"Alcance estimado · Sainsbury*",subtitle:"Requiere universo de audiencia configurable",group:"Meta Ads"},
+ {id:"reach",label:"Alcance estimado · Sainsbury*",subtitle:"Sainsbury · universo Citroën 15 millones",group:"Meta Ads"},
  {id:"clicks",label:"Clics en enlace",subtitle:"Clics a enlaces",group:"Meta Ads"},
  {id:"all_clicks",label:"Clics totales",subtitle:"Todos los tipos de clic",group:"Meta Ads"},
  {id:"ctr",label:"CTR de enlace",subtitle:"Clics enlace ÷ impresiones",group:"Indicadores calculados"},
@@ -36,10 +38,19 @@ function normalized(input){
   const target=Object.values(nativeMap).find(x=>x.field===key);
   if(target&&target.allowed.includes(v))native[key]=v;
  }
- const universe=window.CITROEN_REACH_MATH?.validUniverse(data.universe)||null;
+ const universe=window.CITROEN_REACH_MATH?.validUniverse(data.universe)||DEFAULT_UNIVERSE;
  return {slots,native,universe};
 }
-function stored(){try{return normalized(JSON.parse(localStorage.getItem(STORAGE)||"null"));}catch{return normalized(defaults);}}
+function stored(){
+ try{
+  const current=localStorage.getItem(STORAGE);
+  if(current)return normalized(JSON.parse(current));
+  const previous=localStorage.getItem(LEGACY_STORAGE);
+  // Migrar campos y tarjetas existentes pero establecer el nuevo universo aprobado de 15 M.
+  if(previous)return normalized({...JSON.parse(previous),universe:DEFAULT_UNIVERSE});
+ }catch(err){console.warn("Preferencias de métricas no disponibles",err);}
+ return normalized(defaults);
+}
 let preferences=stored(),selected=null,search="";
 window.CITROEN_METRIC_OVERRIDES=preferences;
 function persist(){
@@ -102,10 +113,10 @@ function updateUI(){
  const reachSelected=info?.metric==="reach";
  $("metricNote").hidden=!reachSelected;
  if(reachSelected){
-  $("metricUniverse").value=preferences.universe||"";
+  $("metricUniverse").value=preferences.universe||DEFAULT_UNIVERSE;
   $("metricUniverseStatus").textContent=preferences.universe
-   ?"Sainsbury activo · universo "+new Intl.NumberFormat("es-CO").format(preferences.universe)+" personas. Resultado estimado; no son usuarios únicos comprobados."
-   :"Sin universo configurado: el alcance estimado se mostrará como —. Introduce el tamaño de la audiencia objetivo.";
+   ?"Sainsbury activo · universo "+new Intl.NumberFormat("es-CO").format(preferences.universe)+" personas (base Citroën: 15.000.000). Estimación, no alcance único medido."
+   :"Universo base Citroën: 15.000.000 personas. Estimación, no alcance único medido.";
  }
  $("metricHint").textContent=info?.type==="kpi"?"Selecciona otra métrica y el indicador superior se actualizará automáticamente.":info?.type==="custom"?"Los gráficos nuevos admiten métricas de Meta Ads y del plan según la fuente elegida.":"Los cambios actualizan este gráfico y se guardan en este navegador.";
  document.querySelectorAll(".metric-selected").forEach(el=>el.classList.remove("metric-selected"));
@@ -148,7 +159,7 @@ function wire(){
   const raw=String(e.target.value||"").trim();
   const U=window.CITROEN_REACH_MATH?.validUniverse(raw);
   if(raw&&!U){$("metricUniverseStatus").textContent="El universo debe ser un número entero positivo. El alcance seguirá sin estimarse.";return;}
-  preferences.universe=U||null;
+  preferences.universe=U||DEFAULT_UNIVERSE;
   sync();
  };
  $("c3Kpis").addEventListener("click",e=>{if(!$("c3Dashboard").classList.contains("studio-edit-on"))return;const el=e.target.closest("[data-metric-slot]");if(el)choose("k:"+el.dataset.metricSlot);});
