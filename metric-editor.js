@@ -63,7 +63,7 @@ function panelInfo(){
   return {title:info.title,label:name==="c3InsightsPanel"?"Resumen inteligente":"Visualización original",allowed:info.allowed,metric:info.field?preferences.native[info.field]||info.defaultValue:null,type:"native",name};
  }
  if(selected.startsWith("c:")){
-  const card=document.querySelector('#studioCards .studio-card[data-id="'+CSS.escape(selected.slice(2))+'"]');
+  const card=Array.from(document.querySelectorAll('#studioCards .studio-card')).find(el=>el.dataset.id===selected.slice(2));
   if(!card)return null;
   const source=card.querySelector('[data-control="source"]')?.value||card.querySelector(".studio-card-label")?.textContent?.includes("META")&&"meta"||"plan";
   const metric=card.querySelector('[data-control="metric"]')?.value||"investment";
@@ -101,6 +101,7 @@ function updateUI(){
  $("metricNote").hidden=!info||info.metric!=="reach";
  $("metricHint").textContent=info?.type==="kpi"?"Selecciona otra métrica y el indicador superior se actualizará automáticamente.":info?.type==="custom"?"Los gráficos nuevos admiten métricas de Meta Ads y del plan según la fuente elegida.":"Los cambios actualizan este gráfico y se guardan en este navegador.";
  document.querySelectorAll(".metric-selected").forEach(el=>el.classList.remove("metric-selected"));
+ if(!selected)return;
  if(selected.startsWith("k:")){
   const k=$('c3Kpis').querySelector('[data-metric-slot="'+selected.slice(2)+'"]');
   if(k)k.classList.add("metric-selected");
