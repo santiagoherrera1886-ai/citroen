@@ -1,16 +1,19 @@
-import {createHmac,randomBytes,randomUUID,scryptSync,timingSafeEqual} from 'node:crypto';
+import {createHmac,createHash,randomBytes,randomUUID,scryptSync,timingSafeEqual} from 'node:crypto';
 import {get,put} from '@vercel/blob';
 
-const ADMIN_EMAIL=(process.env.CITROEN_ADMIN_EMAIL||'').trim().toLowerCase();
+const ADMIN_EMAIL=(process.env.CITROEN_ADMIN_EMAIL||'santiago.herrera@vml.com').trim().toLowerCase();
 const ADMIN_HASH=process.env.CITROEN_ADMIN_PASSWORD_HASH||'';
-const SESSION_SECRET=process.env.CITROEN_SESSION_SECRET||'';
+const SESSION_SECRET=process.env.CITROEN_SESSION_SECRET||(process.env.BLOB_READ_WRITE_TOKEN?createHmac('sha256',process.env.BLOB_READ_WRITE_TOKEN).update('citroen.editor.session.v1').digest('hex'):'');
 const USERS_PATH='private/citroen-editor-users-v1.json';
 const COOKIE='citroen_editor_session';
 const MAX_AGE=8*60*60;
 const EMPTY={users:{}};
 const attempts=new Map();
 
-export function ready(){return Boolean(ADMIN_EMAIL&&ADMIN_HASH&&SESSION_SECRET.length>=40&&process.env.BLOB_READ_WRITE_TOKEN);}
+export function ready(){return Boolean(ADMIN_EMAIL&&SESSION_SECRET.length>=40&&process.env.BLOB_READ_WRITE_TOKEN);}
+export const ownerEmail=ADMIN_EMAIL;
+const ACTIVATION_HASH='18a62369cee3abd612606d938dbac12a584e528f4af81d47f6f728538dafb345';
+export function verifyActivation(code){if(typeof code!=='string'||code.length>200)return false;const a=createHash('sha256').update(code).digest('hex');return timingSafeEqual(Buffer.from(a,'hex'),Buffer.from(ACTIVATION_HASH,'hex'));}
 export function json(res,status,data){res.setHeader('Cache-Control','no-store, max-age=0');res.setHeader('X-Content-Type-Options','nosniff');return res.status(status).json(data);}
 export function error(res,status,message){return json(res,status,{ok:false,error:message});}
 export function sameOrigin(req){
@@ -43,14 +46,14 @@ export async function usersRead(){
  return {users:raw.users,etag:r.blob?.etag};
 }
 export async function usersWrite(db){
- const options={access:'private',contentType:'application/json',allowOverwrite:true,addRandomSuffix:false};
+ const options={access:'private',contentType:'application/json',allowOverwrite:Boolean(db.etag),addRandomSuffix:false};
  if(db.etag)options.ifMatch=db.etag;
  await put(USERS_PATH,JSON.stringify({users:db.users}),options);
 }
 export function findAccount(db,email){
  const u=db.users[email];
  if(u)return {...u,email};
- if(email===ADMIN_EMAIL)return {email,role:'owner',active:true,hash:ADMIN_HASH,revision:'bootstrap',mustChange:true};
+ if(email===ADMIN_EMAIL&&ADMIN_HASH)return {email,role:'owner',active:true,hash:ADMIN_HASH,revision:'bootstrap',mustChange:true};
  return null;
 }
 const b64=s=>Buffer.from(s).toString('base64url');
