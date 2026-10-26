@@ -82,7 +82,7 @@
     const f=$('auditMonth').value,prio=$('auditSeverity').value;
     const thisMonth=f?names[monthNo(f)].toUpperCase():null;
     const rows=audit.alerts.filter(r=>(!prio||r[0]===prio)&&(!thisMonth||r[1]===thisMonth||r[1]==='TODOS'||(thisMonth==='SEPTIEMBRE'||thisMonth==='OCTUBRE')&&r[1]==='SEP–OCT'));
-    $('auditAlertCount').textContent=n(rows.length)+' DE 30 ALERTAS';
+    $('auditAlertCount').textContent=n(rows.length)+' DE '+audit.alerts.length+' ALERTAS';
     $('auditAlertList').innerHTML=rows.map((r,i)=>
        '<div class="cit-audit-issue"><span class="cit-issue-severity '+(r[0]==='Alta'?'high':r[0]==='Media'?'mid':'info')+'">'+safe(r[0])+'</span>'+
        '<div><div class="cit-issue-heading"><strong>'+safe(r[2])+'</strong><span>'+safe(r[1])+'</span></div><code>'+safe(r[3])+'</code><p>'+safe(r[4])+'</p><small>Acción: '+safe(r[5])+'</small></div></div>'
@@ -92,7 +92,7 @@
     monthsView();modelView();scenarioView();alertsView();
     const key=$('auditView').value;
     document.querySelectorAll('[data-audit-panel]').forEach(p=>{p.hidden=p.dataset.auditPanel!==key;});
-    $('auditStatus').textContent='Auditoría reconciliada · 10 libros originales · 60 filas modelo-mes · 557 asignaciones · 30 hallazgos con referencias de celda.';
+    $('auditStatus').textContent='Auditoría de proyecciones · 10 libros revisados · 60 filas modelo-mes · '+(packed?.lines?.length+6||'')+' asignaciones · '+audit.alerts.length+' alertas. Mayo presenta $992.624 pendientes de conciliación.';
   }
   function stats(){
     const m=audit.months;
