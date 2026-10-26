@@ -1,5 +1,21 @@
 # Citroën · Performance Intelligence
 
+## CITROËN VISUAL BUILDER — 26 DE OCTUBRE DE 2026
+
+**Editor enriquecido publicado en la sección Resumen:**
+
+- Barra visual superior al pulsar **Editar resumen**: crear con un clic gráficos de barras, líneas, áreas, tablas, comparativos Plan vs Meta y proyecciones. Cada gráfico usa las fuentes existentes del dashboard y se agrega a la retícula sin sustituir los cinco paneles originales.
+- **Datos / Estilo / Diseño** en la barra lateral: indicadores, métricas Meta y del plan, filtros globales, ordenar y limitar categorías de gráficos adicionales, cambiar tipo de gráfico, títulos, distribución, anchura, duplicar los gráficos creados y ocultar paneles nativos.
+- **Estilo**: seis paletas Montecarlo/Citroën/Esmeralda/Lavanda/Atardecer/Grafito (más Nocturno), colores de series, fondo, texto, borde, radios, grosor de borde, sombras, fuente, escala tipográfica, leyenda, cuadrícula y etiquetas; deshacer/rehacer estilos y aplicar a todos.
+- **Paleta general** en la cinta superior: recolorea todas las visualizaciones actuales. Un botón adicional restaura el aspecto original.
+- **Fotos de los carros**: sustituir por JPG/PNG/WebP propios (se procesan en el navegador a aproximadamente 950 px y se comprimen) o pegar un enlace HTTPS; incluye C3, Basalt, Aircross, Berlingo y foto de portada. Se pueden restaurar una por una o todas sin alterar datos.
+- **Persistencia**: distribuciones, métricas, estilos y fotos se almacenan solo en el navegador. El archivo JSON de Exportar diseño incluye los ajustes de diseño, paletas y las imágenes personalizadas, si existen. No son cambios colaborativos ni equivalen a subir activos a GitHub/Vercel para todos los usuarios.
+- **Seguridad de imágenes**: enlaces deben ser HTTPS y no incluir credenciales. Cargas aceptadas JPG/PNG/WebP de hasta 5 MB, comprimidas antes de almacenar. Fotos que no carguen muestran la imagen de referencia y un aviso.
+- **Limitaciones frente a Looker Studio**: este editor no tiene conectores arbitrarios, un motor SQL o campos calculados libres, colaboración multiusuario en tiempo real, ni las 49 visualizaciones de Looker. Estas funciones requieren una arquitectura adicional y no se simulan.
+- Pruebas: `scripts/smoke-style.cjs`, `scripts/smoke-gallery.cjs`, `scripts/smoke-metrics.cjs`, `scripts/smoke-studio.cjs`.
+
+---
+
 ## CORRECCIÓN METODOLÓGICA DEL ALCANCE — 26/10/2026
 
 A partir de esta versión, cuando el usuario elige **Alcance estimado · Sainsbury** en el Resumen, **no se suman** los alcances de los registros de Meta Ads para presentarlos como alcance neto.
