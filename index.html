@@ -13,7 +13,7 @@
 <link rel="stylesheet" href="./concept3.css">
 <link rel="stylesheet" href="./model-fix.css?v=20261021b">
 <link rel="stylesheet" href="./audit.css?v=1">
-<link rel="stylesheet" href="./studio.css?v=20261026">
+<link rel="stylesheet" href="./studio.css?v=20261026b">
 </head>
 <body>
 <svg xmlns="http://www.w3.org/2000/svg" class="symbols" aria-hidden="true">
@@ -51,12 +51,11 @@
       <button class="nav-link" data-target="auditoria"><svg><use href="#i-db"/></svg> Auditoría Excel <span>03</span></button>
       <button class="nav-link" data-target="meta"><svg><use href="#i-chart"/></svg> Meta Ads · Real <span>03</span></button>
       <button class="nav-link" data-target="modelos"><svg><use href="#i-car"/></svg> Modelos <span>04</span></button>
-      <button class="nav-link" data-target="medios"><svg><use href="#i-chart"/></svg> Medios <span>05</span></button>
+
       <button class="nav-link" data-target="territorios"><svg><use href="#i-pin"/></svg> Geografía <span>06</span></button>
       <button class="nav-link" data-target="campanas"><svg><use href="#i-layers"/></svg> Campañas <span>05</span></button>
-      <button class="nav-link" data-target="creativos"><svg><use href="#i-image"/></svg> Creativos <span>08</span></button>
-      <button class="nav-link" data-target="studio"><svg><use href="#i-layers"/></svg> Editor de informes <span>09</span></button>
-      <button class="nav-link" data-target="datos"><svg><use href="#i-db"/></svg> Datos & fuentes <span>07</span></button>
+
+
     </nav>
     <div class="sidebar-bottom">
       <div class="side-illustration"><span>Ë</span><p>Different is<br><b>everything.</b></p></div>
@@ -85,6 +84,7 @@
       <label class="c3-select"><span class="sr-only">Territorio</span><select id="c3Territory"><option value="">Todos los territorios</option></select></label>
       <label class="c3-select"><span class="sr-only">Modelo</span><select id="c3Model"><option value="">Todos los modelos</option></select></label>
       <span class="c3-source-pill"><span class="c3-live-dot"></span> META REAL + PLAN 2026</span>
+      <button type="button" id="studioEdit" class="studio-header-edit" aria-pressed="false"><span aria-hidden="true">✎</span> Editar resumen</button>
     </div>
   </div>
   <div class="c3-hero">
@@ -98,7 +98,32 @@
   </div>
   <div class="c3-context-line" id="c3Context">Conciliando presupuesto planeado y ejecución Meta Ads del período...</div>
   <div class="c3-kpi-grid" id="c3Kpis" aria-live="polite"></div>
-  <div class="c3-middle-grid">
+
+  <div class="studio-inline-tools" id="studioTools" hidden>
+    <div class="studio-inline-title"><span class="studio-inline-icon">✦</span><div><strong>Modo edición del resumen</strong><span>Arrastra, redimensiona o agrega gráficos. Guarda tu vista al finalizar.</span></div></div>
+    <div class="studio-toolbar">
+      <label>Período del gráfico <select id="studioMonth"><option value="">Enero – Octubre</option></select></label>
+      <label>Modelo del gráfico <select id="studioModel"><option value="">Todos los modelos</option></select></label>
+      <div class="studio-actions">
+        <button type="button" id="studioAdd" class="studio-btn primary">＋ Agregar gráfico</button>
+        <button type="button" id="studioCompare" class="studio-btn coral">⊞ Nuevo comparativo</button>
+        <button type="button" id="studioSave" class="studio-btn">Guardar vista</button>
+      </div>
+    </div>
+    <div class="studio-secondary">
+      <span id="studioCount">Cargando editor de informes…</span>
+      <div class="studio-smallactions">
+        <button type="button" id="studioExport" class="studio-btn">Exportar diseño</button>
+        <label for="studioImport" class="studio-btn" style="cursor:pointer">Importar diseño</label>
+        <input type="file" id="studioImport" accept="application/json,.json" class="studio-hidden-input">
+        <button type="button" id="studioCsv" class="studio-btn">Exportar datos CSV</button>
+        <button type="button" id="studioReset" class="studio-btn">Restaurar resumen</button>
+      </div>
+    </div>
+    <p id="studioStatus" class="studio-inline-status">Preparando gráficos…</p>
+  </div>
+
+  <div id="studioCards" class="c3-summary-grid" aria-label="Paneles del resumen personalizable">
     <article class="c3-panel c3-compare-panel" id="c3ComparePanel">
       <div class="c3-panel-heading"><div><h3>Planeado vs Ejecutado</h3><p>Inversión y generación de oportunidades · 2026</p></div>
       <div class="c3-chart-controls" role="group" aria-label="Métrica del comparativo">
@@ -110,22 +135,21 @@
       <div id="c3CompareChart" class="c3-comparison-chart" aria-live="polite"></div>
       <p class="c3-chart-footnote" id="c3CompareNote">Meta Ads es solo una parte de la ejecución. Las barras no equivalen al cumplimiento de todos los medios.</p>
     </article>
-    <article class="c3-panel c3-funnel-panel">
+    <article class="c3-panel c3-funnel-panel" id="c3FunnelPanel">
       <div class="c3-panel-heading"><div><h3>Funnel de conversión</h3><p>Del anuncio a la acción · Meta Ads</p></div><span class="c3-mini-tag">DATOS REALES</span></div>
       <div id="c3Funnel" class="c3-funnel-body" aria-live="polite"></div>
       <p class="c3-funnel-foot">Formularios y conversaciones son resultados paralelos: no se deben sumar como leads únicos.</p>
     </article>
-  </div>
-  <div class="c3-bottom-grid">
-    <article class="c3-panel c3-models-panel"><div class="c3-panel-heading"><h3>Desempeño por modelo</h3><button class="c3-text-link" data-c3-jump="modelos">Ver todos los modelos →</button></div>
+
+    <article class="c3-panel c3-models-panel" id="c3ModelsPanel"><div class="c3-panel-heading"><h3>Desempeño por modelo</h3><button class="c3-text-link" data-c3-jump="modelos">Ver todos los modelos →</button></div>
       <div class="c3-models-grid" id="c3Models"></div>
     </article>
-    <article class="c3-panel c3-campaign-panel"><div class="c3-panel-heading"><h3>Campañas principales</h3><button class="c3-text-link" data-c3-jump="meta">Ver todas →</button></div>
+    <article class="c3-panel c3-campaign-panel" id="c3CampaignPanel"><div class="c3-panel-heading"><h3>Campañas principales</h3><button class="c3-text-link" data-c3-jump="meta">Ver todas →</button></div>
       <div class="c3-campaign-table-wrap"><table class="c3-campaign-table"><thead><tr><th>Campaña</th><th>Modelo</th><th>Inversión</th><th>Form.</th><th>Costo/form.</th></tr></thead><tbody id="c3Campaigns"></tbody></table></div>
     </article>
-    <article class="c3-panel c3-insight-panel"><div class="c3-panel-heading"><h3><span class="c3-bulb">✳</span> Hallazgos clave</h3></div><div id="c3Insights" class="c3-insights"></div></article>
+    <article class="c3-panel c3-insight-panel" id="c3InsightsPanel"><div class="c3-panel-heading"><h3><span class="c3-bulb">✳</span> Hallazgos clave</h3></div><div id="c3Insights" class="c3-insights"></div></article>
   </div>
-  <div class="c3-honesty">FUENTES · Proyecciones enero–octubre 2026 de 10 libros Excel · Ejecución Meta Ads del 1 de enero al 20 de octubre de 2026 (3 cuentas). Los territorios se infieren de nombres de campañas. Moneda de Meta asumida COP, pendiente de verificación contable. <button data-c3-jump="datos">Revisar fuentes ↗</button></div>
+  <div class="c3-honesty">FUENTES · Proyecciones enero–octubre 2026 de 10 libros Excel · Ejecución Meta Ads del 1 de enero al 20 de octubre de 2026 (3 cuentas). Los territorios se infieren de nombres de campañas. Moneda de Meta asumida COP, pendiente de verificación contable. </div>
 </div>
 </section>
       
@@ -286,7 +310,7 @@
 <div id="modelGrid" class="model-grid cit-model-gallery"></div>
 <p class="cit-image-note">Fotografías referenciales tratadas para una presentación uniforme, tomadas de catálogos y galerías automotrices. Las versiones MAX comparten imagen de su familia: no representan el acabado exacto.</p>
       </section>
-      <section id="medios" class="page-section">
+      <section id="medios" class="page-section legacy-hidden-section" hidden aria-hidden="true">
         <div class="section-header"><div><div class="section-overline">MEDIA INTELLIGENCE</div><h2>¿Dónde rinde cada peso?</h2><p>Inversión, leads y CPL segmentados por plataforma.</p></div></div>
         <div class="dual-grid"><article class="panel"><div class="panel-head"><h3>Mix de inversión por medio</h3><span class="mini-pill">COP</span></div><div id="platformChart"></div></article><article class="panel"><div class="panel-head"><h3>Eficiencia por plataforma</h3><span class="mini-pill">CPL</span></div><div id="platformEfficiency"></div></article></div>
       </section>
@@ -298,55 +322,11 @@
         <div class="section-header"><div><div class="section-overline">CAMPAIGN EXPLORER</div><h2>De la campaña al resultado.</h2><p>Explora las inversiones y oportunidades con detalle por campaña.</p></div><button id="exportCsv" class="secondary-button"><svg><use href="#i-download"/></svg> Exportar CSV</button></div>
         <div class="table-panel"><div class="table-toolbar"><label class="table-search"><svg><use href="#i-search"/></svg><input id="campaignSearch" placeholder="Buscar campaña, modelo o plataforma" aria-label="Buscar campañas"></label><span id="campaignCount">0 campañas</span></div><div class="table-scroll"><table><thead><tr><th>CAMPAÑA</th><th>MODELO</th><th>PLATAFORMA</th><th>CIUDAD</th><th>INVERSIÓN</th><th>LEADS</th><th>CPL</th><th>CTR</th></tr></thead><tbody id="campaignRows"></tbody></table></div></div>
       </section>
-      <section id="creativos" class="page-section">
+      <section id="creativos" class="page-section legacy-hidden-section" hidden aria-hidden="true">
         <div class="section-header"><div><div class="section-overline">CREATIVE EXPLORER</div><h2>Creatividad respaldada por datos.</h2><p>Imágenes de pauta únicamente cuando existan URLs de piezas reales en tu fuente de campañas.</p></div></div><div id="creativeGrid" class="creative-grid"></div>
       </section>
       
-      <section id="studio" class="page-section studio-section">
-        <div class="studio-heading">
-          <div><div class="studio-kicker">CITROËN / CUSTOM REPORT BUILDER</div>
-            <h2>Tu dashboard, a tu manera.</h2>
-            <p>Construye tus propios informes: agrega comparativos, cambia las métricas y los tipos de gráfico, mueve las tarjetas y guarda tus vistas. Inspirado en Looker Studio, sin perder los datos originales.</p>
-          </div>
-          <span class="studio-chip">EDICIÓN FLEXIBLE · 2026</span>
-        </div>
-        <div class="studio-alert">
-          <b>Fuentes diferenciadas:</b> presupuesto y metas del plan enero–octubre no son resultados reales.
-          El ejecutado cubre exclusivamente Meta Ads (enero a 20 de octubre).
-          <b>Mayo:</b> el BOT y la estructura tienen una diferencia sin conciliar de $992.624 COP.
-        </div>
-        <div class="studio-toolbar">
-          <label>Período
-            <select id="studioMonth"><option value="">Enero – Octubre</option></select>
-          </label>
-          <label>Modelo
-            <select id="studioModel"><option value="">Todos los modelos</option></select>
-          </label>
-          <div class="studio-actions">
-            <button type="button" id="studioAdd" class="studio-btn primary">＋ Agregar gráfico</button>
-            <button type="button" id="studioCompare" class="studio-btn coral">⊞ Nuevo comparativo</button>
-            <button type="button" id="studioEdit" class="studio-btn">Bloquear diseño</button>
-            <button type="button" id="studioSave" class="studio-btn">Guardar vista</button>
-          </div>
-        </div>
-        <div class="studio-secondary">
-          <span id="studioCount">Preparando vistas personalizadas…</span>
-          <div class="studio-smallactions">
-            <button type="button" id="studioExport" class="studio-btn">Exportar diseño JSON</button>
-            <label for="studioImport" class="studio-btn" style="cursor:pointer">Importar diseño</label>
-            <input type="file" id="studioImport" accept="application/json,.json" class="studio-hidden-input">
-            <button type="button" id="studioCsv" class="studio-btn">Exportar datos CSV</button>
-            <button type="button" id="studioReset" class="studio-btn">Restablecer vista</button>
-          </div>
-        </div>
-        <div id="studioCards" class="studio-cards" aria-live="polite"></div>
-        <div class="studio-footer">
-          <b>Cómo editar:</b> cambia fuente, indicador, eje o formato dentro de cada tarjeta; arrastra para reorganizar (o usa las flechas).
-          Los diseños se guardan en el navegador. Para compartirlos con otro equipo o dispositivo, exporta e importa el archivo JSON.
-          <p id="studioStatus">Cargando proyecciones y ejecución…</p>
-        </div>
-      </section>
-      <section id="datos" class="page-section">
+      <section id="datos" class="page-section legacy-hidden-section" hidden aria-hidden="true">
         <div class="section-header"><div><div class="section-overline">TRUSTED DATA LAYER</div><h2>Datos reales, decisiones reales.</h2><p>Carga datos reales y visualiza su origen. Nada de inversiones históricas inventadas.</p></div></div>
         <div class="data-grid">
           <article class="panel import-panel"><div class="import-icon"><svg><use href="#i-upload"/></svg></div><h3>Conectar reporte de medios</h3><p>Importa un archivo <b>CSV o JSON</b> exportado de tus campañas de Citroën. Procesamiento local en el navegador; no se envía a un servidor.</p><label for="dataFile" class="button button-red">Seleccionar archivo <svg><use href="#i-upload"/></svg></label><input type="file" id="dataFile" accept=".csv,.json,text/csv,application/json" hidden><p id="fileFeedback" class="file-feedback">Sin archivo seleccionado</p><button id="downloadTemplate" class="quiet-button template-btn"><svg><use href="#i-download"/></svg> Descargar plantilla CSV vacía</button></article>
@@ -367,5 +347,5 @@
 <script src="./audit.js" defer></script>
 <script src="./meta.js" defer></script>
 <script src="./concept3.js?v=20261026" defer></script>
-<script src="./studio.js?v=20261026" defer></script>
+<script src="./studio.js?v=20261026b" defer></script>
 </body></html>
