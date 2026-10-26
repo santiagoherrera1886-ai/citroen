@@ -217,12 +217,12 @@ function draw(){
  $("studioTools").hidden=!state.edit;
  $("studioEdit").innerHTML=state.edit?"✓ Terminar edición":"✎ Editar resumen";
  $("studioEdit").setAttribute("aria-pressed",String(state.edit));
- $("studioCount").textContent=(nativeIds.length+state.cards.length-state.hidden.length)+" gráficos visibles · selecciona un gráfico para editar sus métricas";
+ $("studioCount").textContent=(nativeIds.length+state.cards.length-state.hidden.length)+" gráficos visibles · inserta nuevos gráficos desde la barra superior o selecciona uno para editarlo";
  document.dispatchEvent(new Event("citroen:studio-layout"));
 }
-function add(source){
+function add(source,chart="bar"){
  const id=nextId();
- state.cards.push({id,title:source==="compare"?"Comparativo personalizado":"Nuevo gráfico",source,metric:"investment",dimension:"month",chart:"bar",model:""});
+ state.cards.push({id,title:source==="compare"?"Comparativo personalizado":source==="plan"?"Proyección personalizada":"Nuevo gráfico de Meta",source,metric:"investment",dimension:"month",chart,model:""});
  state.order.push("c:"+id);
  state.edit=true;persist();draw();
  const card=document.querySelector('#studioCards .studio-card[data-id="'+id+'"]');
@@ -261,12 +261,23 @@ function exportCsv(){
 function wire(){
  document.addEventListener("citroen:metric-settings",()=>{if(ready)draw();});
  document.addEventListener("citroen:style-settings",()=>{if(ready)draw();});
+ $("studioGallery").onclick=e=>{
+  const btn=e.target.closest("[data-gallery-chart]");
+  if(!btn)return;
+  add(btn.dataset.gallerySource,btn.dataset.galleryChart);
+ };
+ $("studioThemes").onclick=()=>{$("studioQuickThemes").hidden=!$("studioQuickThemes").hidden;};
+ $("studioQuickThemes").onclick=e=>{
+  const b=e.target.closest("[data-global-palette]");
+  if(b&&window.CITROEN_STYLE_EDITOR)window.CITROEN_STYLE_EDITOR.applyGlobalPalette(b.dataset.globalPalette);
+ };
+ $("studioResetPalette").onclick=()=>window.CITROEN_STYLE_EDITOR?.resetAll();
  $("studioAdd").onclick=()=>add("plan");
  $("studioCompare").onclick=()=>add("compare");
  $("studioEdit").onclick=()=>{state.edit=!state.edit;persist();draw();};
  $("studioSave").onclick=()=>{persist();alertStatus("Vista del resumen guardada en este navegador. Puedes exportarla para compartirla.");};
  $("studioExport").onclick=()=>{
-  download(JSON.stringify({schema:"citroen-workspace/v2",cards:state.cards,month:state.month,model:state.model,order:state.order,sizes:state.sizes,hidden:state.hidden,titles:state.titles,metrics:window.CITROEN_METRIC_EDITOR?window.CITROEN_METRIC_EDITOR.export():null,styles:window.CITROEN_STYLE_EDITOR?.export()||null},null,2),"citroen_resumen_editable.json");
+  download(JSON.stringify({schema:"citroen-workspace/v2",cards:state.cards,month:state.month,model:state.model,order:state.order,sizes:state.sizes,hidden:state.hidden,titles:state.titles,metrics:window.CITROEN_METRIC_EDITOR?window.CITROEN_METRIC_EDITOR.export():null,styles:window.CITROEN_STYLE_EDITOR?.export()||null,photos:window.CITROEN_PHOTO_EDITOR?.export()||null},null,2),"citroen_resumen_editable.json");
  };
  $("studioCsv").onclick=exportCsv;
  $("studioImport").onchange=async e=>{
@@ -291,13 +302,14 @@ function wire(){
     const changed={};for(const [k,v] of Object.entries(o.styles.elements||{}))changed[idMap[k]||k]=v;
     window.CITROEN_STYLE_EDITOR.replace({elements:changed});
    }
+   if(o.photos&&window.CITROEN_PHOTO_EDITOR)window.CITROEN_PHOTO_EDITOR.replace(o.photos);
    persist();draw();alertStatus("Diseño del resumen importado correctamente.");
   }catch(err){alertStatus("No se pudo importar: "+err.message);}
   e.target.value="";
  };
  $("studioReset").onclick=()=>{
   if(!confirm("¿Restaurar la disposición original del Resumen y quitar gráficos personalizados?"))return;
-  state.cards=[];state.order=[...defaultOrder];state.sizes={};state.hidden=[];state.titles={};state.month="";state.model="";if(window.CITROEN_METRIC_EDITOR)window.CITROEN_METRIC_EDITOR.reset();if(window.CITROEN_STYLE_EDITOR)window.CITROEN_STYLE_EDITOR.resetAll();
+  state.cards=[];state.order=[...defaultOrder];state.sizes={};state.hidden=[];state.titles={};state.month="";state.model="";if(window.CITROEN_METRIC_EDITOR)window.CITROEN_METRIC_EDITOR.reset();if(window.CITROEN_STYLE_EDITOR)window.CITROEN_STYLE_EDITOR.resetAll();if(window.CITROEN_PHOTO_EDITOR)window.CITROEN_PHOTO_EDITOR.resetAll();
   $("studioMonth").value="";$("studioModel").value="";
   for(const id of nativeIds){const heading=$(id)?.querySelector(".c3-panel-heading h3");if(heading){heading.dataset.studioApplied="";if(id==="c3ComparePanel")heading.textContent="Planeado vs Ejecutado";if(id==="c3FunnelPanel")heading.textContent="Funnel de conversión";if(id==="c3ModelsPanel")heading.textContent="Desempeño por modelo";if(id==="c3CampaignPanel")heading.textContent="Campañas principales";if(id==="c3InsightsPanel")heading.textContent="✳ Hallazgos clave";}}
   persist();draw();alertStatus("Resumen restaurado.");
