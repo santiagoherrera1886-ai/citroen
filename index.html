@@ -13,7 +13,7 @@
 <link rel="stylesheet" href="./concept3.css">
 <link rel="stylesheet" href="./model-fix.css?v=20261021b">
 <link rel="stylesheet" href="./audit.css?v=1">
-<link rel="stylesheet" href="./studio.css?v=20261026b">
+<link rel="stylesheet" href="./studio.css?v=20261026c">
 </head>
 <body>
 <svg xmlns="http://www.w3.org/2000/svg" class="symbols" aria-hidden="true">
@@ -100,7 +100,7 @@
   <div class="c3-kpi-grid" id="c3Kpis" aria-live="polite"></div>
 
   <div class="studio-inline-tools" id="studioTools" hidden>
-    <div class="studio-inline-title"><span class="studio-inline-icon">✦</span><div><strong>Modo edición del resumen</strong><span>Arrastra, redimensiona o agrega gráficos. Guarda tu vista al finalizar.</span></div></div>
+    <div class="studio-inline-title"><span class="studio-inline-icon">✦</span><div><strong>Modo edición del resumen</strong><span>Selecciona un gráfico o indicador y cambia sus métricas desde la barra derecha. También puedes mover y redimensionar.</span></div></div>
     <div class="studio-toolbar">
       <label>Período del gráfico <select id="studioMonth"><option value="">Enero – Octubre</option></select></label>
       <label>Modelo del gráfico <select id="studioModel"><option value="">Todos los modelos</option></select></label>
@@ -123,6 +123,17 @@
     <p id="studioStatus" class="studio-inline-status">Preparando gráficos…</p>
   </div>
 
+  <aside id="metricInspector" class="metric-inspector" aria-label="Propiedades del gráfico y campos" hidden>
+    <div class="metric-inspector-head"><div><span class="metric-eyebrow">CITROËN · VISUALIZACIONES</span><h2>Propiedades del gráfico</h2></div><button id="metricInspectorClose" type="button" aria-label="Deseleccionar gráfico" title="Deseleccionar">×</button></div>
+    <div class="metric-inspector-tabs"><span class="is-active">Configuración</span><span>Datos</span></div>
+    <div class="metric-selection"><small>ELEMENTO SELECCIONADO</small><strong id="metricCurrent">Selecciona un indicador</strong><span id="metricCurrentSub">Haz clic en un gráfico o tarjeta del resumen</span></div>
+    <div class="metric-inspector-label"><strong>Métrica</strong><span>CAMBIAR CAMPO</span></div>
+    <label for="metricFieldInput" class="metric-search-label"><span aria-hidden="true">⌕</span><input id="metricFieldInput" type="search" placeholder="Buscar campos..." autocomplete="off" aria-label="Buscar métricas"></label>
+    <div id="metricFields" class="metric-fields" role="group" aria-label="Métricas disponibles"></div>
+    <div id="metricNote" class="metric-reach-note" hidden><strong>Atención con alcance</strong><p>La cifra suma alcances reportados por registro. No equivale a personas únicas desduplicadas.</p></div>
+    <p id="metricHint" class="metric-inspector-hint">Selecciona una métrica para reemplazar la que aparece en la tarjeta.</p>
+    <div class="metric-inspector-foot"><span class="metric-foot-dot"></span> Meta Ads real + planeación 2026</div>
+  </aside>
   <div id="studioCards" class="c3-summary-grid" aria-label="Paneles del resumen personalizable">
     <article class="c3-panel c3-compare-panel" id="c3ComparePanel">
       <div class="c3-panel-heading"><div><h3>Planeado vs Ejecutado</h3><p>Inversión y generación de oportunidades · 2026</p></div>
@@ -346,6 +357,7 @@
 <script src="./data/auditoria_2026.js" defer></script>
 <script src="./audit.js" defer></script>
 <script src="./meta.js" defer></script>
-<script src="./concept3.js?v=20261026" defer></script>
-<script src="./studio.js?v=20261026b" defer></script>
+<script src="./concept3.js?v=20261026c" defer></script>
+<script src="./studio.js?v=20261026c" defer></script>
+<script src="./metric-editor.js?v=20261026a" defer></script>
 </body></html>
