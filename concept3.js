@@ -78,8 +78,9 @@ function setKpis(rows){
  $('c3Context').textContent=(state.month?labels[months.indexOf(state.month)]+' 2026':'Enero–octubre de 2026')+' · '+(state.model||'Todos los modelos')+' · '+(state.territory||'Cobertura completa')+' · octubre contiene resultados hasta el 20/10. Cifras reales, no las de la maqueta.';
 }
 function comparison(rows){
- const periods=months.filter(m=>!state.month||state.month===m);
- const series=periods.map(m=>{const d=rows.filter(r=>r.month===m),spend=add(d,0),forms=add(d,1);let actual=state.metric==='investment'?spend:state.metric==='leads'?forms:(forms>0?spend/forms:null);return {month:m,label:labels[months.indexOf(m)],planned:planValue(m,state.metric),actual};});
+ const selected=configured('compareMetric','metric',state.metric);state.metric=selected;
+  const periods=months.filter(m=>!state.month||state.month===m);
+ const series=periods.map(m=>{const d=rows.filter(r=>r.month===m),k=state.metric,which=k==='investment'?'spend':k==='leads'?'forms':k;return {month:m,label:labels[months.indexOf(m)],planned:['investment','leads','cpl'].includes(k)?planValue(m,k):null,actual:metricTotal(d,which,null)};});
  const max=Math.max(1,...series.flatMap(s=>[s.planned||0,s.actual||0]));
  const w=840,h=219,l=51,r=16,t=22,b=32,pw=w-l-r,ph=h-t-b,step=pw/series.length,bw=Math.min(20,step*.28);
  const y=v=>t+ph-(Math.max(0,v||0)/max)*ph;
@@ -88,7 +89,7 @@ function comparison(rows){
    const x=l+step*(i+.5);
    let ret='';
    if(s.planned!=null)ret+=`<rect x="${x-bw-3}" y="${y(s.planned)}" height="${Math.max(0,t+ph-y(s.planned))}" width="${bw}" rx="2" fill="#a9d4eb"><title>${s.label} planeado: ${state.metric==='leads'?num(s.planned):money(s.planned)}</title></rect>`;
-   if(s.actual!=null)ret+=`<rect x="${x+3}" y="${y(s.actual)}" height="${Math.max(0,t+ph-y(s.actual))}" width="${bw}" rx="2" fill="${s.month==='2026-10'?'url(#c3hatch)':'#f46b74'}"><title>${s.label} Meta: ${state.metric==='leads'?num(s.actual):money(s.actual)}${s.month==='2026-10'?' (parcial)':''}</title></rect>`;
+   if(s.actual!=null)ret+=`<rect x="${x+3}" y="${y(s.actual)}" height="${Math.max(0,t+ph-y(s.actual))}" width="${bw}" rx="2" fill="${s.month==='2026-10'?'url(#c3hatch)':'#f46b74'}"><title>${s.label} Meta: ${['investment','cpl','cpm','cost_message'].includes(state.metric)?money(s.actual):state.metric==='ctr'?fmtMetric(s.actual,'ctr'):num(s.actual)}${s.month==='2026-10'?' (parcial)':''}</title></rect>`;
    return ret+`<text x="${x}" y="${h-7}" text-anchor="middle" font-size="11" font-weight="700" fill="#7896aa">${s.label.toUpperCase()}${s.month==='2026-10'?'*':''}</text>`;
  }).join('');
  let path='';
@@ -103,30 +104,35 @@ function comparison(rows){
  leads:'Azul: metas comerciales del plan si son completas. Rojo: formularios de Meta. Las definiciones son distintas y no equivalen a cumplimiento. *Octubre parcial.',
  cpl:'Azul: CPL planificado (portafolio: cinco modelos sin Berlingo). Rojo: gasto total Meta / formularios; incluye WhatsApp y no es un CPL comercial comparable.'
  };
- $('c3CompareNote').textContent=notes[state.metric];
+ $('c3CompareNote').textContent=notes[state.metric]||'Datos de Meta Ads, no ejecución global del plan.';
 }
 function funnel(rows){
- const impression=add(rows,3),clicks=add(rows,4),forms=add(rows,1),messages=add(rows,2);
+ const first=configured('funnelMetric','metric','impressions'),isReach=first==='reach';
+ const base=add(rows,isReach?6:3),clicks=add(rows,4),forms=add(rows,1),messages=add(rows,2);
  const ratio=(a,b)=>b>0?(100*a/b).toLocaleString('es-CO',{maximumFractionDigits:2})+' %':'—';
  $('c3Funnel').innerHTML='<div class="c3-funnel-stages">'+[
- [short(impression),'Impresiones',''],[num(clicks),'Clics enlace',''],[num(forms),'Formularios',''],[num(messages),'Conversaciones','action']
- ].map(v=>`<div class="c3-funnel-step ${v[2]}"><span><b>${v[0]}</b><small>${v[1]}</small></span></div>`).join('')+'</div><div class="c3-funnel-rate">'+[
- ['CTR de enlace',ratio(clicks,impression)],['Formularios / clics*',ratio(forms,clicks)],['Conversaciones / clics*',ratio(messages,clicks)]
- ].map(v=>`<div><span>${v[0]}</span><b>${v[1]}</b></div>`).join('')+'</div>';
+  [short(base),isReach?'Alcance sumado*':'Impresiones',''],[num(clicks),'Clics enlace',''],[num(forms),'Formularios',''],[num(messages),'Conversaciones','action']
+ ].map(v=>'<div class="c3-funnel-step '+v[2]+'"><span><b>'+v[0]+'</b><small>'+v[1]+'</small></span></div>').join('')+'</div><div class="c3-funnel-rate">'+[
+  [isReach?'Clics / alcance sumado*':'CTR de enlace',ratio(clicks,base)],['Formularios / clics*',ratio(forms,clicks)],['Conversaciones / clics*',ratio(messages,clicks)]
+ ].map(v=>'<div><span>'+v[0]+'</span><b>'+v[1]+'</b></div>').join('')+'</div>';
+ $('c3FunnelPanel').querySelector('.c3-funnel-foot').textContent=isReach?'*Alcance sumado NO equivale a usuarios únicos. Clics/alcance no es CTR. Formularios y conversaciones son distintos.':'Formularios y conversaciones son resultados paralelos: no se deben sumar como leads únicos.';
 }
 function models(rows){
  $('c3Models').innerHTML=cars.map(m=>{
- const selected=rows.filter(r=>norm(r.model)===norm(m.model)),form=add(selected,1),spend=add(selected,0);
- return `<article class="c3-model-card"><div class="c3-model-top"><div><h4>${m.name}</h4><p>${m.desc}</p></div><button class="c3-model-visit" type="button" data-model="${esc(m.model)}" aria-label="Filtrar ${m.name}">›</button></div><div class="c3-model-photo"><span>${m.model}</span><img loading="lazy" src="${esc(m.src)}" data-backup="${esc(m.backup)}" alt="${m.name} — fotografía real"></div><div class="c3-model-data"><div><b>${num(form)}</b><span>Formularios</span><small>Meta 2026</small></div><div><b>${form>0?money(spend/form):'—'}</b><span>Gasto / form.</span><small>Indicativo*</small></div></div></article>`;
+ const selected=rows.filter(r=>norm(r.model)===norm(m.model)),form=add(selected,1),spend=add(selected,0),modelMetric=configured('modelsMetric','metric','forms'),metricValue=metricTotal(selected,modelMetric,null);
+ return `<article class="c3-model-card"><div class="c3-model-top"><div><h4>${m.name}</h4><p>${m.desc}</p></div><button class="c3-model-visit" type="button" data-model="${esc(m.model)}" aria-label="Filtrar ${m.name}">›</button></div><div class="c3-model-photo"><span>${m.model}</span><img loading="lazy" src="${esc(m.src)}" data-backup="${esc(m.backup)}" alt="${m.name} — fotografía real"></div><div class="c3-model-data"><div><b>${fmtMetric(metricValue,modelMetric)}</b><span>${esc(metricNames[modelMetric]||'Formularios')}</span><small>${modelMetric==='reach'?'No deduplicado':'Meta 2026'}</small></div><div><b>${form>0?money(spend/form):'—'}</b><span>Gasto / form.</span><small>Indicativo*</small></div></div></article>`;
  }).join('');
  for(const btn of $('c3Models').querySelectorAll('[data-model]'))btn.onclick=()=>{state.model=btn.dataset.model;$('c3Model').value=state.model;render();$('c3ComparePanel').scrollIntoView({behavior:'smooth',block:'center'});};
  for(const img of $('c3Models').querySelectorAll('img'))img.onerror=()=>{if(img.dataset.backup){img.src=img.dataset.backup;img.dataset.backup='';}else img.style.display='none';};
 }
 function campaigns(){
- const rows=filter(state.campaigns).sort((a,b)=>b.v[0]-a.v[0]).slice(0,4);
+ const key=configured('campaignsMetric','metric','spend');
+ const rows=filter(state.campaigns).sort((a,b)=>(metricTotal([b],key,null)||0)-(metricTotal([a],key,null)||0)).slice(0,4);
+ const th=$('c3CampaignPanel').querySelector('.c3-campaign-table thead th:nth-child(3)');
+ if(th)th.textContent=metricNames[key]||'Inversión';
  $('c3Campaigns').innerHTML=rows.length?rows.map(r=>{
- const name=r.campaign.replace(/^\d{4}_colombia_citroen_/i,'');
- return `<tr><td title="${esc(r.campaign)}">${esc(name.slice(0,33))}${name.length>33?'…':''}</td><td>${esc(r.model)}</td><td>${money(r.v[0])}</td><td>${num(r.v[1])}</td><td>${r.v[1]>0?money(r.v[0]/r.v[1]):'—'}</td></tr>`;
+  const name=r.campaign.replace(/^\d{4}_colombia_citroen_/i,'');
+  return '<tr><td title="'+esc(r.campaign)+'">'+esc(name.slice(0,33))+(name.length>33?'…':'')+'</td><td>'+esc(r.model)+'</td><td>'+fmtMetric(metricTotal([r],key,null),key)+'</td><td>'+num(r.v[1])+'</td><td>'+(r.v[1]>0?money(r.v[0]/r.v[1]):'—')+'</td></tr>';
  }).join(''):'<tr><td colspan="5">Sin campañas para esta selección.</td></tr>';
 }
 function insights(rows){
@@ -141,7 +147,7 @@ function insights(rows){
  $('c3Insights').innerHTML=sections.map((x,i)=>`<div class="c3-insight"><span class="n">${i+1}</span><div><b>${esc(x[0])}</b><span>${esc(x[1])}</span></div></div>`).join('');
 }
 function render(){
- if(!state.ready)return;const rows=filter(state.rows);setKpis(rows);comparison(rows);funnel(rows);models(rows);campaigns();insights(rows);
+ if(!state.ready)return;const rows=filter(state.rows);setKpis(rows);comparison(rows);funnel(rows);models(rows);campaigns();insights(rows);document.dispatchEvent(new Event('citroen:summary-rendered'));
 }
 function wire(){
  if(!$('c3Dashboard'))return;
@@ -150,6 +156,7 @@ function wire(){
  for(const btn of document.querySelectorAll('[data-c3-jump]'))btn.onclick=()=>{const nav=document.querySelector('.nav-link[data-target="'+btn.dataset.c3Jump+'"]');if(nav)nav.click();};
  for(const [id,key] of [['c3Month','month'],['c3Model','model'],['c3Territory','territory']])$(id).onchange=e=>{state[key]=e.target.value;render();};
  for(const b of document.querySelectorAll('[data-c3-metric]'))b.onclick=()=>{state.metric=b.dataset.c3Metric;for(const el of document.querySelectorAll('[data-c3-metric]'))el.classList.toggle('active',el===b);render();};
+ document.addEventListener('citroen:metric-settings',()=>{state.metric=configured('compareMetric','metric','investment');document.querySelectorAll('[data-c3-metric]').forEach(el=>el.classList.toggle('active',el.dataset.c3Metric===state.metric));render();});
  Promise.all([
  loadPlan(),
  fetch('./data/meta_2026_daily.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Reporte diario no disponible.');return r.json();}),
