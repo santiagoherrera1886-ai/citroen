@@ -126,14 +126,33 @@ function cardBody(card){
 function monthOptions(){return '<option value="">Todos los meses</option>'+Array.from(new Set(data.map(r=>r.month))).sort().map(m=>'<option value="'+esc(m)+'" '+(localFilter.month===m?'selected':'')+'>'+esc(m)+'</option>').join('');}
 function modelOptions(){return '<option value="">Todos los modelos</option>'+Array.from(new Set(data.map(r=>r.model))).sort().map(m=>'<option value="'+esc(m)+'" '+(localFilter.model===m?'selected':'')+'>'+esc(m)+'</option>').join('');}
 function renderExternal(card){
- const cols=external.columns||[],rows=external.rows||[];
- if(!cols.length)return '<p class="builder-empty">No hay columnas disponibles.</p>';
- return '<div class="builder-external"><small>'+esc(external.source||'Fuente conectada')+' · Vista previa privada</small><table class="builder-data-table"><thead><tr>'+cols.slice(0,5).map(c=>'<th>'+esc(c)+'</th>').join('')+'</tr></thead><tbody>'+rows.slice(0,7).map(r=>'<tr>'+cols.slice(0,5).map(c=>'<td>'+esc(r[c])+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
+ const cols=external?.columns||[],rows=external?.rows||[];
+ if(!cols.length)return '<p class="builder-empty">Reconecta la fuente privada desde Conexiones de datos para actualizar el gráfico.</p>';
+ const label='<small class="builder-ext-source">'+esc(external.source||'Fuente conectada')+' · Lectura privada (hasta 100 filas)</small>';
+ if(card.shape==='table')return label+'<div class="builder-preview-scroll"><table class="builder-data-table"><thead><tr>'+cols.slice(0,6).map(c=>'<th>'+esc(c)+'</th>').join('')+'</tr></thead><tbody>'+rows.slice(0,100).map(r=>'<tr>'+cols.slice(0,6).map(c=>'<td>'+esc(r[c])+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
+ const dim=cols.includes(card.dimension)?card.dimension:cols[0],valCol=cols.includes(card.metric)?card.metric:cols[1]||cols[0];
+ const groups=new Map();
+ for(const r of rows){const group=String(r[dim]??'Sin dato').slice(0,55),value=Number(String(r[valCol]??'0').replace(/,/g,''));groups.set(group,(groups.get(group)||0)+(Number.isFinite(value)?value:0));}
+ const points=Array.from(groups,([name,value])=>({name,value})).slice(0,15);
+ if(!points.length)return label+'<p class="builder-empty">Esta tabla no tiene valores numéricos para representar.</p>';
+ const max=Math.max(1,...points.map(p=>p.value)),W=540,H=192,pad=28,step=(W-pad*2)/points.length,coords=[];
+ let svg='';
+ points.forEach((p,i)=>{const x=pad+step*(i+.5),y=H-pad-p.value/max*(H-2*pad);coords.push([x,y]);if(card.shape==='bar')svg+='<rect x="'+(x-step*.30)+'" y="'+y+'" width="'+step*.6+'" height="'+(H-pad-y)+'" fill="#86bcdc" rx="3"/>';svg+='<text x="'+x+'" y="'+(H-5)+'" text-anchor="middle" font-size="9" fill="#55748a">'+esc(p.name.slice(0,9))+'</text>';});
+ if(card.shape!=='bar'){const curve=coords.map(x=>x.join(',')).join(' ');if(card.shape==='area')svg+='<polygon points="'+coords[0][0]+','+(H-pad)+' '+curve+' '+coords.at(-1)[0]+','+(H-pad)+'" fill="#c8e4f4"/>';svg+='<polyline points="'+curve+'" fill="none" stroke="#e95061" stroke-width="3"/>';}
+ return label+'<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+esc(card.title)+'">'+svg+'</svg><small>Dimensión: '+esc(dim)+' · Métrica: '+esc(valCol)+'</small>';
 }
 function editCard(page,card){
  if(!authorized())return;
  const modal=$('builderCardEditor'),form=$('builderCardForm');
- form.elements.title.value=card.title||'';
+ const metricInput=form.elements.metric,dimensionInput=form.elements.dimension;
+ if(card.source==='external'&&external?.columns?.length){
+  metricInput.innerHTML=external.columns.map(c=>'<option value="'+esc(c)+'">'+esc(c)+'</option>').join('');
+  dimensionInput.innerHTML=external.columns.map(c=>'<option value="'+esc(c)+'">'+esc(c)+'</option>').join('');
+ }else{
+  metricInput.innerHTML=Object.entries(CL).map(([k,v])=>'<option value="'+k+'">'+esc(v)+'</option>').join('');
+  dimensionInput.innerHTML='<option value="month">Mes</option><option value="model">Modelo</option>';
+ }
+  form.elements.title.value=card.title||'';
  form.elements.text.value=card.text||'';
  form.elements.metric.value=card.metric||'spend';
  form.elements.shape.value=card.shape||'bar';
@@ -279,7 +298,7 @@ async function connect(kind,settings){
    if(!state.pages.length){status('Crea una página antes de añadir una fuente.');return;}
    const id=prompt('Escribe el nombre exacto de la página destino',state.pages[0].title);
    const page=state.pages.find(p=>p.title===id);if(!page)return status('Página no encontrada.');
-   const c={id:uid(),type:'chart',source:'external',title:'Vista previa · '+data.source,text:'',x:40,y:40,w:640,h:350,metric:'spend',dimension:'month',shape:'table'};
+   const c={id:uid(),type:'chart',source:'external',title:'Datos · '+data.source,text:'',x:40,y:40,w:640,h:350,metric:data.columns[1]||data.columns[0],dimension:data.columns[0],shape:'table'};
    page.cards.push(c);stash();navTo('report-'+page.id);
   }));
  }catch(e){$('builderConnectionStatus').textContent=e.message;}
