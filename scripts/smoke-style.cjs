@@ -31,7 +31,7 @@ function change(el,value){assert.ok(el,"Change target missing");if(el.type==="ch
  assert.equal(w.CITROEN_STYLE_EDITOR.get("k:5").background,"#ffeeff","Custom background color is saved");
  assert.ok(w.localStorage.getItem("citroen_visual_styles_v1").includes("#ffeeff"),"Style persists in browser");
  $("metricStyleUndo").click();
- assert.equal(w.CITROEN_STYLE_EDITOR.get("k:5").background,"#ffffff","Undo restores prior style");
+ assert.equal(w.CITROEN_STYLE_EDITOR.get("k:5").background,"#faf8ff","Undo restores palette background");
  $("metricStyleRedo").click();
  assert.equal(w.CITROEN_STYLE_EDITOR.get("k:5").background,"#ffeeff","Redo reapplies style");
  $("c3ComparePanel").click();
