@@ -46,7 +46,7 @@ const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
  assert.ok(card.querySelector('.builder-card-grip'),'Card has free dragging handle');
  assert.ok(card.querySelector('.builder-card-resize'),'Card has resize handle');
  assert.ok(card.querySelector('svg'),'Card visualizes real Meta data');
- $('builderFilterSetup').click();assert.equal($('builderFilterModal').hidden,false,'Filter configuration visible');
+ $('builderFilterSetup').click();assert.equal($('builderFilterModal').hidden,false,'Filter configuration visible; auth='+isEditor+'; edit='+$('c3Dashboard').className+'; onclick='+typeof $('builderFilterSetup').onclick+'; id='+$('builderFilterModal').id);
  const checkbox=$('builderFilterModal').querySelector('[data-filter-toggle="territory"]');checkbox.checked=false;checkbox.dispatchEvent(new w.Event('change',{bubbles:true}));
  assert.equal(published.filters.territory,true,'Filter changes require publish');
  assert.equal(w.document.getElementById('c3Territory').closest('label').hidden,true,'Territory control hides when selected');
