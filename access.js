@@ -9,6 +9,8 @@ function open(id){$(id).hidden=false;$(id).querySelector('input')?.focus();}
 function close(id){$(id).hidden=true;}
 function publicState(){
  $('citroenMasterOpen').hidden=!(user&&user.role==='owner'&&!user.mustChange);
+ $('studioEdit').hidden=!(user&&!user.mustChange);
+ const entry=$('citroenSidebarLogin');if(entry){entry.hidden=!!(user&&!user.mustChange);entry.textContent=user?.mustChange?'Completar seguridad':'Ingresar a Diseño';}
  $('citroenAuthLogout').hidden=!user;
  $('citroenMasterIdentity').textContent=user?user.email:'';
 }
@@ -160,6 +162,8 @@ async function checkSessionDuringEdit(){
 }
 function wire(){
  $('citroenActivateLink').onclick=showActivate;
+ $('citroenPasteActivation').onclick=async()=>{try{const value=await navigator.clipboard.readText();const el=$('citroenActivateForm').querySelector('[name="activationCode"]');el.value=value.trim();status('citroenAuthStatus','Código pegado. Comprueba el correo y la clave inicial.');}catch{status('citroenAuthStatus','Tu navegador no permitió pegar automáticamente. Usa Ctrl+V o Cmd+V en el campo.',true);}};
+ $('citroenSidebarLogin').onclick=()=>requestEdit();
  $('citroenBackLogin').onclick=showLogin;
  $('citroenActivateForm').addEventListener('submit',activate);
  $('citroenLoginForm').addEventListener('submit',login);
