@@ -11,6 +11,7 @@ w.Blob=class{constructor(parts){this.parts=parts}stream(){const that=this;return
 w.Response=class{constructor(stream){this.stream=stream}async text(){return zlib.gunzipSync(Buffer.from(this.stream.parts[0])).toString("utf8")}};
 const actuals=JSON.parse(fs.readFileSync("data/meta_2026_daily.json","utf8")),detail=JSON.parse(fs.readFileSync("data/meta_2026_detail.json","utf8"));
 w.fetch=async url=>({ok:true,json:async()=>String(url).includes("detail")?detail:actuals});w.confirm=()=>true;
+w.CITROEN_ACCESS={canEdit:()=>true,requestEdit:()=>{w.CITROEN_STUDIO_UNLOCK?.();return Promise.resolve(true);}};
 for(const f of ["concept3.js","studio.js","metric-editor.js","style-engine.js"])w.eval(fs.readFileSync(f,"utf8"));
 w.document.dispatchEvent(new w.Event("DOMContentLoaded",{bubbles:true}));
 const pause=()=>new Promise(r=>setTimeout(r,0));
