@@ -10,21 +10,25 @@ const SHORT=x=>x==null?"—":Math.abs(x)>=1000000?N(x/1000000)+" M":Math.abs(x)>
 const monthNames=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct"];
 const categories={month:"Mes",model:"Modelo"};
 const metricLabels={investment:"Inversión",leads:"Leads / formularios",cpl:"Costo por lead / formulario",impressions:"Impresiones"};
-const defaults=[
+const legacyDefaults=[
  {id:"a",title:"Inversión planeada vs. Meta",source:"compare",metric:"investment",dimension:"month",chart:"bar",model:""},
  {id:"b",title:"Presupuesto por modelo",source:"plan",metric:"investment",dimension:"model",chart:"bar",model:""},
  {id:"c",title:"Metas de leads proyectadas",source:"plan",metric:"leads",dimension:"month",chart:"line",model:""},
  {id:"d",title:"Formularios reportados por Meta",source:"meta",metric:"leads",dimension:"month",chart:"line",model:""}
 ];
-const state={cards:[],month:"",model:"",edit:true};
-const KEY="citroen_workspace_editable_v1";
+const nativeIds=["c3ComparePanel","c3FunnelPanel","c3ModelsPanel","c3CampaignPanel","c3InsightsPanel"];
+const nativeDefaultSizes={c3ComparePanel:4,c3FunnelPanel:2,c3ModelsPanel:3,c3CampaignPanel:2,c3InsightsPanel:1};
+const defaultOrder=nativeIds.map(id=>"n:"+id);
+const state={cards:[],month:"",model:"",edit:false,order:[],sizes:{},hidden:[],titles:{}};
+const KEY="citroen_workspace_summary_v2";
 let plan=null,meta=[],dragged=null,ready=false;
-function saved(){try{return JSON.parse(localStorage.getItem(KEY)||"null");}catch{return null;}}
-function persist(){try{localStorage.setItem(KEY,JSON.stringify({cards:state.cards,month:state.month,model:state.model,edit:state.edit}));}catch{}}
+function saved(key=KEY){try{return JSON.parse(localStorage.getItem(key)||"null");}catch{return null;}}
+function persist(){try{localStorage.setItem(KEY,JSON.stringify({cards:state.cards,month:state.month,model:state.model,edit:state.edit,order:state.order,sizes:state.sizes,hidden:state.hidden,titles:state.titles}));}catch{}}
 function download(text,name,type){const u=URL.createObjectURL(new Blob([text],{type:type||"application/json;charset=utf-8"}));const a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1500);}
 function alertStatus(msg){const el=$("studioStatus");if(el)el.textContent=msg;}
 function opt(arr,current){return arr.map(x=>'<option value="'+html(x[0])+'"'+(x[0]===current?" selected":"")+'>'+html(x[1])+"</option>").join("");}
-function nextId(){return "c"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+let idCounter=0;
+function nextId(){return "c"+Date.now().toString(36)+(++idCounter).toString(36);}
 function rowsFor(card){
  const selectedMonths=plan.months.map(x=>x[0]).filter(m=>!state.month||state.month===m);
  const selectedModels=Array.from(new Set(plan.models.map(x=>x[1])));
@@ -87,6 +91,7 @@ function cardHtml(card,index){
  '<label>Vista<select data-control="chart">'+opt([["bar","Barras"],["line","Líneas"],["table","Tabla"]],card.chart)+"</select></label>"+
  '<button type="button" data-act="up" title="Mover arriba" aria-label="Mover panel a la izquierda">←</button>'+
  '<button type="button" data-act="down" title="Mover abajo" aria-label="Mover panel a la derecha">→</button>'+
+ '<label>Tamaño<select data-card-size>'+sizeOptions(state.sizes["c:"+card.id]||3)+'</select></label>'+
  '<button type="button" data-act="remove" class="studio-danger" title="Eliminar gráfico" aria-label="Eliminar gráfico">×</button></div>':"";
  const notes=card.source==="compare"?"El plan incluye varios medios; la ejecución cubre solo Meta. No representa cumplimiento. Las metas de leads y los formularios no son equivalentes.":card.source==="meta"?"Resultados Meta Ads del export cargado, hasta el 20 de octubre. No son resultados multicanal.":"Plan de inversión o metas comerciales, no ejecución. Mayo tiene una diferencia pendiente de conciliación de $992.624.";
  return '<article class="studio-card" data-id="'+html(card.id)+'" role="group" aria-label="'+html(card.title)+'">'+
@@ -95,60 +100,173 @@ function cardHtml(card,index){
  (card.source==="compare"?'<div class="studio-legend"><span><i class="studio-dot plan"></i> Planeado total</span><span><i class="studio-dot meta"></i> Meta Ads</span></div>':"")+
  '<p class="studio-card-note">'+html(notes)+"</p></article>";
 }
+
+function allPanelKeys(){return defaultOrder.concat(state.cards.map(c=>"c:"+c.id));}
+function validOrder(){
+ const available=new Set(allPanelKeys());
+ const seen=new Set();
+ state.order=[...state.order,...allPanelKeys()].filter(k=>available.has(k)&&!seen.has(k)&&seen.add(k));
+}
+function movePanel(key,steps){
+ validOrder();
+ const a=state.order.indexOf(key),b=Math.max(0,Math.min(state.order.length-1,a+steps));
+ if(a<0||a===b)return;
+ const item=state.order.splice(a,1)[0];state.order.splice(b,0,item);persist();draw();
+}
+function sizeLabel(){return [["2","Compacto"],["3","Mitad"],["4","Amplio"],["6","Ancho completo"]];}
+function sizeOptions(size){return opt(sizeLabel(),String(size));}
+function decorateNative(el){
+ const key="n:"+el.id;
+ el.dataset.panelKey=key;
+ let tools=el.querySelector(".studio-native-tools");
+ if(!tools){
+   tools=document.createElement("div");
+   tools.className="studio-native-tools";
+   tools.innerHTML='<span class="studio-drag studio-native-drag" title="Arrastrar panel" draggable="true" role="img" aria-label="Arrastrar">⠿</span>'+
+    '<label>Anchura <select aria-label="Anchura del panel" data-native-size>'+sizeOptions(state.sizes[key]||nativeDefaultSizes[el.id]||3)+'</select></label>'+
+    '<button type="button" data-native-act="up" aria-label="Mover panel antes" title="Mover antes">←</button>'+
+    '<button type="button" data-native-act="down" aria-label="Mover panel después" title="Mover después">→</button>'+
+    '<button type="button" data-native-act="hide" aria-label="Ocultar panel" title="Ocultar panel">×</button>';
+   el.prepend(tools);
+ }
+ const select=tools.querySelector("[data-native-size]");
+ select.value=String(state.sizes[key]||nativeDefaultSizes[el.id]||3);
+ select.onchange=e=>{state.sizes[key]=Number(e.target.value);persist();draw();};
+ tools.querySelectorAll("[data-native-act]").forEach(b=>b.onclick=()=>{
+   if(b.dataset.nativeAct==="up")movePanel(key,-1);
+   else if(b.dataset.nativeAct==="down")movePanel(key,1);
+   else {state.hidden=Array.from(new Set([...state.hidden,key]));persist();draw();alertStatus("Panel oculto. Usa 'Restaurar resumen' para recuperar los paneles predeterminados.");}
+ });
+ const title=Array.from(el.querySelectorAll(".c3-panel-heading h3"))[0];
+ if(title){
+  if(state.titles[key]&&!title.dataset.studioApplied){title.textContent=state.titles[key];title.dataset.studioApplied="1";}
+  title.contentEditable=state.edit?"true":"false";
+  title.spellcheck=false;
+  title.title=state.edit?"Haz clic para editar el título":"";
+  title.onblur=()=>{const next=title.textContent.trim().slice(0,90);if(next){state.titles[key]=next;persist();}};
+  title.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();title.blur();}};
+ }
+}
+function bindDrag(el){
+ const key=el.dataset.panelKey;
+ el.ondragstart=e=>{
+  if(!state.edit||!e.target.closest(".studio-drag")){e.preventDefault();return;}
+  dragged=key;
+  if(e.dataTransfer){e.dataTransfer.effectAllowed="move";e.dataTransfer.setData("text/plain",key);}
+  el.classList.add("studio-moving");
+ };
+ el.ondragend=()=>{dragged=null;el.classList.remove("studio-moving");};
+ el.ondragover=e=>{if(dragged&&dragged!==key){e.preventDefault();if(e.dataTransfer)e.dataTransfer.dropEffect="move";}};
+ el.ondrop=e=>{
+  if(!state.edit||!dragged||dragged===key)return;
+  e.preventDefault();
+  validOrder();
+  const old=state.order.indexOf(dragged),target=state.order.indexOf(key);
+  if(old<0||target<0)return;
+  const item=state.order.splice(old,1)[0];
+  state.order.splice(target,0,item);
+  dragged=null;persist();draw();
+ };
+}
+function bindCustom(el){
+ const key=el.dataset.panelKey,card=state.cards.find(c=>"c:"+c.id===key);
+ if(!card)return;
+ el.querySelector(".studio-card-title").onchange=e=>{card.title=e.target.value.slice(0,90)||"Gráfico sin título";persist();draw();};
+ el.querySelectorAll("[data-control]").forEach(sel=>sel.onchange=e=>{
+  card[sel.dataset.control]=e.target.value;
+  if(["plan","compare"].includes(card.source)&&card.metric==="impressions")card.metric="investment";
+  persist();draw();
+ });
+ el.querySelectorAll("[data-act]").forEach(b=>b.onclick=()=>{
+  const a=b.dataset.act;
+  if(a==="remove"){state.cards=state.cards.filter(c=>c.id!==card.id);state.order=state.order.filter(v=>v!==key);delete state.sizes[key];}
+  else if(a==="up")return movePanel(key,-1);
+  else if(a==="down")return movePanel(key,1);
+  persist();draw();
+ });
+ const sz=el.querySelector("[data-card-size]");
+ if(sz){sz.value=String(state.sizes[key]||3);sz.onchange=e=>{state.sizes[key]=Number(e.target.value);persist();draw();};}
+ bindDrag(el);
+}
 function draw(){
  if(!ready)return;
- $("studioCards").innerHTML=state.cards.map(cardHtml).join("");
- $("studioCount").textContent=state.cards.length+" paneles · configuración guardada en este navegador";
- $("studioEdit").textContent=state.edit?"Bloquear diseño":"Editar diseño";
+ const canvas=$("studioCards");if(!canvas)return;
+ validOrder();
+ canvas.querySelectorAll(".studio-card").forEach(el=>el.remove());
+ canvas.insertAdjacentHTML("beforeend",state.cards.map(cardHtml).join(""));
+ nativeIds.forEach(id=>{const el=$(id);if(el){decorateNative(el);bindDrag(el);}});
+ canvas.querySelectorAll(".studio-card").forEach(el=>{el.dataset.panelKey="c:"+el.dataset.id;bindCustom(el);});
+ const elements=new Map(Array.from(canvas.children).map(el=>[el.dataset.panelKey,el]).filter(([k])=>k));
+ state.order.forEach(key=>{const el=elements.get(key);if(!el)return;el.style.gridColumn="span "+(state.sizes[key]||(key.startsWith("n:")?nativeDefaultSizes[key.slice(2)]:3));el.hidden=state.hidden.includes(key);canvas.appendChild(el);});
+ $("c3Dashboard").classList.toggle("studio-edit-on",state.edit);
+ $("studioTools").hidden=!state.edit;
+ $("studioEdit").innerHTML=state.edit?"✓ Terminar edición":"✎ Editar resumen";
  $("studioEdit").setAttribute("aria-pressed",String(state.edit));
- document.querySelectorAll(".studio-card").forEach(el=>{
-  const index=state.cards.findIndex(c=>c.id===el.dataset.id),card=state.cards[index];
-  el.querySelector(".studio-card-title").onchange=e=>{card.title=e.target.value.slice(0,90)||"Gráfico sin título";persist();draw();};
-  el.querySelectorAll("[data-control]").forEach(sel=>sel.onchange=e=>{
-   card[sel.dataset.control]=e.target.value;
-   if(sel.dataset.control==="source"&&card.source==="compare"&&card.metric==="impressions")card.metric="investment";
-   if(sel.dataset.control==="source"&&card.source==="plan"&&card.metric==="impressions")card.metric="investment";
-   persist();draw();
-  });
-  el.querySelectorAll("[data-act]").forEach(b=>b.onclick=()=>{
-   const a=b.dataset.act;
-   if(a==="remove")state.cards.splice(index,1);
-   else if(a==="up"&&index>0)[state.cards[index-1],state.cards[index]]=[state.cards[index],state.cards[index-1]];
-   else if(a==="down"&&index<state.cards.length-1)[state.cards[index+1],state.cards[index]]=[state.cards[index],state.cards[index+1]];
-   persist();draw();
-  });
-  el.addEventListener("dragstart",e=>{if(!state.edit){e.preventDefault();return;}dragged=el.dataset.id;e.dataTransfer.effectAllowed="move";el.classList.add("studio-moving");});
-  el.addEventListener("dragend",()=>{dragged=null;el.classList.remove("studio-moving");});
-  el.addEventListener("dragover",e=>{if(dragged){e.preventDefault();e.dataTransfer.dropEffect="move";}});
-  el.addEventListener("drop",e=>{e.preventDefault();if(!dragged||dragged===el.dataset.id)return;const a=state.cards.findIndex(c=>c.id===dragged),b=state.cards.findIndex(c=>c.id===el.dataset.id);if(a<0||b<0)return;const [v]=state.cards.splice(a,1);state.cards.splice(b,0,v);persist();draw();});
- });
+ $("studioCount").textContent=(nativeIds.length+state.cards.length-state.hidden.length)+" gráficos visibles · arrastra para mover, cambia anchura o edita títulos";
 }
 function add(source){
- const id=nextId();state.cards.push({id,title:source==="compare"?"Comparativo personalizado":"Nuevo gráfico",source,metric:"investment",dimension:"month",chart:"bar",model:""});
- state.edit=true;persist();draw();$("studioCards").lastElementChild.scrollIntoView({behavior:"smooth",block:"center"});
+ const id=nextId();
+ state.cards.push({id,title:source==="compare"?"Comparativo personalizado":"Nuevo gráfico",source,metric:"investment",dimension:"month",chart:"bar",model:""});
+ state.order.push("c:"+id);
+ state.edit=true;persist();draw();
+ const card=document.querySelector('#studioCards .studio-card[data-id="'+id+'"]');
+ if(card)card.scrollIntoView({behavior:"smooth",block:"center"});
 }
 function exportCsv(){
  let lines=[["Panel","Fuente","Eje","Grupo","Planeado","Meta Ads"].join(";")];
  for(const card of state.cards)for(const r of rowsFor(card))lines.push([card.title,card.source,card.dimension,r.label,r.planned==null?"":r.planned,r.actual==null?"":r.actual].map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(";"));
  download("\uFEFF"+lines.join("\r\n"),"citroen_vista_personalizada_2026.csv","text/csv;charset=utf-8");
 }
+
 function wire(){
  $("studioAdd").onclick=()=>add("plan");
  $("studioCompare").onclick=()=>add("compare");
  $("studioEdit").onclick=()=>{state.edit=!state.edit;persist();draw();};
- $("studioSave").onclick=()=>{persist();alertStatus("Vista guardada en este navegador. Para compartir, exporta el diseño JSON.");};
- $("studioExport").onclick=()=>download(JSON.stringify({schema:"citroen-workspace/v1",cards:state.cards,month:state.month,model:state.model},null,2),"citroen_dashboard_diseno.json");
+ $("studioSave").onclick=()=>{persist();alertStatus("Vista del resumen guardada en este navegador. Puedes exportarla para compartirla.");};
+ $("studioExport").onclick=()=>{
+  download(JSON.stringify({schema:"citroen-workspace/v2",cards:state.cards,month:state.month,model:state.model,order:state.order,sizes:state.sizes,hidden:state.hidden,titles:state.titles},null,2),"citroen_resumen_editable.json");
+ };
  $("studioCsv").onclick=exportCsv;
  $("studioImport").onchange=async e=>{
-  const f=e.target.files&&e.target.files[0];if(!f)return;
-  try{const o=JSON.parse(await f.text());if(o.schema!=="citroen-workspace/v1"||!Array.isArray(o.cards)||o.cards.length>40)throw Error("Formato de diseño no válido");
-   state.cards=o.cards.filter(c=>["plan","meta","compare"].includes(c.source)&&["bar","line","table"].includes(c.chart)&&["month","model"].includes(c.dimension)&&typeof c.title==="string").map(c=>({id:nextId(),title:c.title.slice(0,90),source:c.source,metric:["investment","leads","cpl","impressions"].includes(c.metric)?c.metric:"investment",dimension:c.dimension,chart:c.chart,model:""}));
-   state.month=typeof o.month==="string"?o.month:"";state.model=typeof o.model==="string"?o.model:"";$("studioMonth").value=state.month;$("studioModel").value=state.model;persist();draw();alertStatus("Diseño importado.");}
-  catch(err){alertStatus("No se importó: "+err.message);}
+  const file=e.target.files&&e.target.files[0];if(!file)return;
+  try{
+   const o=JSON.parse(await file.text());
+   if(!["citroen-workspace/v1","citroen-workspace/v2"].includes(o.schema)||!Array.isArray(o.cards)||o.cards.length>40)throw Error("Formato de diseño no válido");
+   const idMap={};
+   state.cards=o.cards.filter(c=>["plan","meta","compare"].includes(c.source)&&["bar","line","table"].includes(c.chart)&&["month","model"].includes(c.dimension)&&typeof c.title==="string").map(c=>{
+    const id=nextId();idMap["c:"+c.id]="c:"+id;
+    return {id,title:c.title.slice(0,90),source:c.source,metric:["investment","leads","cpl","impressions"].includes(c.metric)?c.metric:"investment",dimension:c.dimension,chart:c.chart,model:""};
+   });
+   state.order=Array.isArray(o.order)?o.order.map(k=>idMap[k]||k):defaultOrder.concat(state.cards.map(c=>"c:"+c.id));
+   state.sizes={};for(const [key,value] of Object.entries(o.sizes||{})){const dest=idMap[key]||key;if([2,3,4,6].includes(Number(value)))state.sizes[dest]=Number(value);}
+   state.hidden=Array.isArray(o.hidden)?o.hidden.map(k=>idMap[k]||k).filter(k=>defaultOrder.includes(k)):[];
+   state.titles=typeof o.titles==="object"&&o.titles&&!Array.isArray(o.titles)?o.titles:{};
+   state.month=typeof o.month==="string"?o.month:"";state.model=typeof o.model==="string"?o.model:"";
+   $("studioMonth").value=state.month;$("studioModel").value=state.model;
+   state.edit=true;persist();draw();alertStatus("Diseño del resumen importado correctamente.");
+  }catch(err){alertStatus("No se pudo importar: "+err.message);}
   e.target.value="";
  };
- $("studioReset").onclick=()=>{if(!confirm("¿Restablecer la disposición de gráficos de esta vista?"))return;state.cards=defaults.map(c=>({...c}));state.month="";state.model="";$("studioMonth").value="";$("studioModel").value="";persist();draw();};
- for(const [id,field] of [["studioMonth","month"],["studioModel","model"]])$(id).onchange=e=>{state[field]=e.target.value;persist();draw();};
+ $("studioReset").onclick=()=>{
+  if(!confirm("¿Restaurar la disposición original del Resumen y quitar gráficos personalizados?"))return;
+  state.cards=[];state.order=[...defaultOrder];state.sizes={};state.hidden=[];state.titles={};state.month="";state.model="";
+  $("studioMonth").value="";$("studioModel").value="";
+  for(const id of nativeIds){const heading=$(id)?.querySelector(".c3-panel-heading h3");if(heading){heading.dataset.studioApplied="";if(id==="c3ComparePanel")heading.textContent="Planeado vs Ejecutado";if(id==="c3FunnelPanel")heading.textContent="Funnel de conversión";if(id==="c3ModelsPanel")heading.textContent="Desempeño por modelo";if(id==="c3CampaignPanel")heading.textContent="Campañas principales";if(id==="c3InsightsPanel")heading.textContent="✳ Hallazgos clave";}}
+  persist();draw();alertStatus("Resumen restaurado.");
+ };
+ for(const [id,field] of [["studioMonth","month"],["studioModel","model"]]){
+  $(id).onchange=e=>{
+   state[field]=e.target.value;
+   const target=$(field==="month"?"c3Month":"c3Model");
+   if(target&&Array.from(target.options).some(o=>o.value===e.target.value)){
+    target.value=e.target.value;target.dispatchEvent(new Event("change",{bubbles:true}));
+   }
+   persist();draw();
+  };
+ }
+ for(const [id,field] of [["c3Month","month"],["c3Model","model"]]){
+  $(id).addEventListener("change",e=>{state[field]=e.target.value;$(field==="month"?"studioMonth":"studioModel").value=state[field];persist();draw();});
+ }
 }
 async function start(){
  if(!$("studioCards"))return;
@@ -164,10 +282,17 @@ async function start(){
     meta=raw.daily.map(r=>({month:String(dict.dates[r[0]]).slice(0,7),model:String(dict.models[r[1]]),spend:Number(r[4])||0,forms:Number(r[5])||0,impressions:Number(r[7])||0}));
    }
   }catch(err){console.warn("Studio: ejecución Meta no disponible",err);}
-  const store=saved();state.cards=Array.isArray(store?.cards)&&store.cards.length<=40?store.cards:defaults.map(c=>({...c}));
+  const store=saved();
+  const old=saved("citroen_workspace_editable_v1");
+  state.cards=Array.isArray(store?.cards)&&store.cards.length<=40?store.cards:
+   Array.isArray(old?.cards)?old.cards.filter(c=>!["a","b","c","d"].includes(c.id)).slice(0,36):[];
+  state.order=Array.isArray(store?.order)?store.order:defaultOrder.concat(state.cards.map(c=>"c:"+c.id));
+  state.sizes=store?.sizes&&typeof store.sizes==="object"?store.sizes:{};
+  state.hidden=Array.isArray(store?.hidden)?store.hidden:[];
+  state.titles=store?.titles&&typeof store.titles==="object"?store.titles:{};
   state.month=store&&typeof store.month==="string"?store.month:"";
   state.model=store&&typeof store.model==="string"?store.model:"";
-  state.edit=store?.edit!==false;
+  state.edit=store?.edit===true;
   $("studioMonth").innerHTML=opt([["","Enero – Octubre"],...plan.months.map((m,i)=>[m[0],monthNames[i]+" 2026"])],state.month);
   $("studioModel").innerHTML=opt([["","Todos los modelos"],...Array.from(new Set(plan.models.map(x=>x[1]))).sort().map(m=>[m,m])],state.model);
   ready=true;wire();draw();
