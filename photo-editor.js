@@ -13,8 +13,10 @@ const $=id=>document.getElementById(id);
 const dataURI=x=>typeof x==="string"&&/^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(x)&&x.length<430000;
 const secureURL=x=>{try{const u=new URL(x);return u.protocol==="https:"&&u.username===""&&u.password===""&&u.href.length<2048;}catch{return false;}};
 const valid=x=>secureURL(x)||dataURI(x);
+const safeAttr=x=>String(x||"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+const canonical=x=>secureURL(x)?new URL(x).href:x;
 let images={};
-function restore(){try{const o=JSON.parse(localStorage.getItem(KEY)||"{}");if(o&&typeof o==="object")for(const item of items){if(valid(o[item.id]))images[item.id]=o[item.id]}}catch{}}
+function restore(){try{const o=JSON.parse(localStorage.getItem(KEY)||"{}");if(o&&typeof o==="object")for(const item of items){if(valid(o[item.id]))images[item.id]=canonical(o[item.id])}}catch{}}
 restore();
 function save(){try{localStorage.setItem(KEY,JSON.stringify(images));return true;}catch{notify("No se pudo guardar: el navegador alcanzó su límite local. Prueba con fotos más pequeñas.");return false;}}
 function notify(s){if($("studioPhotoStatus"))$("studioPhotoStatus").textContent=s;}
@@ -42,30 +44,41 @@ function apply(){
 }
 function setImage(id,source){
  if(!items.some(x=>x.id===id)||!valid(source))return false;
- images[id]=source;if(!save())return false;
+ images[id]=canonical(source);if(!save())return false;
  apply();render();
  return true;
 }
 function remove(id){
  if(!items.some(x=>x.id===id))return;
  delete images[id];save();
- // Restoring a model photo needs the original rendered DOM; emit a read-only refresh of summary.
- document.dispatchEvent(new Event("citroen:refresh-model-images"));
+ if(id!=="HERO"){
+  Array.from(document.querySelectorAll("#c3Models .c3-model-card")).forEach(card=>{
+   const label=card.querySelector(".c3-model-photo>span")?.textContent?.trim();
+   if(String(label||"").toLowerCase()===id.toLowerCase()){
+    const img=card.querySelector("img");if(img){img.onerror=null;img.src=items.find(x=>x.id===id).original;img.style.display="";}
+   }
+  });
+ }
  const hero=$("c3HeroCar");if(id==="HERO"&&hero){hero.onerror=null;hero.src=items[2].original;hero.style.display="";}
  apply();render();
 }
-function resetAll(){images={};save();document.dispatchEvent(new Event("citroen:refresh-model-images"));const hero=$("c3HeroCar");if(hero){hero.onerror=null;hero.src=items[2].original;hero.style.display="";}render();notify("Imágenes originales restauradas.");}
+function resetAll(){images={};save();
+ for(const card of document.querySelectorAll("#c3Models .c3-model-card")){
+  const label=card.querySelector(".c3-model-photo>span")?.textContent?.trim(),model=items.find(x=>x.id.toLowerCase()===String(label||"").toLowerCase());
+  if(model){const img=card.querySelector("img");if(img){img.onerror=null;img.src=model.original;img.style.display="";}}
+ }
+ const hero=$("c3HeroCar");if(hero){hero.onerror=null;hero.src=items[2].original;hero.style.display="";}render();notify("Imágenes originales restauradas.");}
 function replace(o){
  if(!o||typeof o!=="object")return;
  images={};
- for(const m of items){if(valid(o[m.id]))images[m.id]=o[m.id]}
- save();document.dispatchEvent(new Event("citroen:refresh-model-images"));apply();render();
+ for(const m of items){if(valid(o[m.id]))images[m.id]=canonical(o[m.id])}
+ save();apply();render();
 }
 function render(){
  const el=$("studioPhotoModels");if(!el)return;
  el.innerHTML=items.map(item=>
  '<article class="studio-photo-card" data-photo-model="'+item.id+'">'+
- '<img alt="Vista previa de '+item.name+'" data-photo-preview="'+item.id+'" src="'+(images[item.id]||item.original)+'">'+
+ '<img alt="Vista previa de '+item.name+'" data-photo-preview="'+item.id+'" src="'+safeAttr(images[item.id]||item.original)+'">'+
  '<div class="studio-photo-detail"><strong>'+item.name+'</strong><small>'+ (images[item.id]?"Imagen personalizada · guardada en este navegador":"Imagen original Citroën")+'</small>'+
  '<label class="studio-photo-upload">↑ Subir imagen<input type="file" data-photo-file="'+item.id+'" accept="image/jpeg,image/png,image/webp" aria-label="Subir foto '+item.name+'"></label>'+
  '<div class="studio-photo-url"><input type="url" placeholder="https://.../mi-foto.webp" data-photo-url="'+item.id+'" aria-label="URL de foto de '+item.name+'"><button type="button" data-photo-apply="'+item.id+'">Aplicar URL</button></div>'+
@@ -89,7 +102,7 @@ function upload(id,file){
    canvas.height=Math.max(1,Math.round((picture.naturalHeight||picture.height)*scale));
    const ctx=canvas.getContext("2d");
    if(!ctx){notify("Este navegador no permitió procesar la imagen.");return;}
-   ctx.clearRect(0,0,canvas.width,canvas.height);
+   ctx.fillStyle="#ffffff";ctx.fillRect(0,0,canvas.width,canvas.height);
    ctx.drawImage(picture,0,0,canvas.width,canvas.height);
    let encoded="";
    try{for(const q of [.86,.74,.58,.44]){encoded=canvas.toDataURL("image/jpeg",q);if(dataURI(encoded))break;}}catch{notify("No fue posible comprimir la imagen.");return;}
