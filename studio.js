@@ -274,7 +274,12 @@ function wire(){
  $("studioResetPalette").onclick=()=>window.CITROEN_STYLE_EDITOR?.resetAll();
  $("studioAdd").onclick=()=>add("plan");
  $("studioCompare").onclick=()=>add("compare");
- $("studioEdit").onclick=()=>{state.edit=!state.edit;persist();draw();};
+ window.CITROEN_STUDIO_UNLOCK=()=>{if(!ready||!window.CITROEN_ACCESS?.canEdit())return;state.edit=true;persist();draw();};
+ window.CITROEN_STUDIO_LOCK=()=>{state.edit=false;persist();draw();};
+ $("studioEdit").onclick=()=>{
+  if(state.edit){state.edit=false;persist();draw();return;}
+  window.CITROEN_ACCESS?.requestEdit();
+ };
  $("studioSave").onclick=()=>{persist();alertStatus("Vista del resumen guardada en este navegador. Puedes exportarla para compartirla.");};
  $("studioExport").onclick=()=>{
   download(JSON.stringify({schema:"citroen-workspace/v2",cards:state.cards,month:state.month,model:state.model,order:state.order,sizes:state.sizes,hidden:state.hidden,titles:state.titles,metrics:window.CITROEN_METRIC_EDITOR?window.CITROEN_METRIC_EDITOR.export():null,styles:window.CITROEN_STYLE_EDITOR?.export()||null,photos:window.CITROEN_PHOTO_EDITOR?.export()||null},null,2),"citroen_resumen_editable.json");
@@ -352,7 +357,7 @@ async function start(){
   state.titles=store?.titles&&typeof store.titles==="object"?store.titles:{};
   state.month=store&&typeof store.month==="string"?store.month:"";
   state.model=store&&typeof store.model==="string"?store.model:"";
-  state.edit=store?.edit===true;
+  state.edit=false; // Never trust a prior localStorage edit flag without an authenticated session.
   $("studioMonth").innerHTML=opt([["","Enero – Octubre"],...plan.months.map((m,i)=>[m[0],monthNames[i]+" 2026"])],state.month);
   $("studioModel").innerHTML=opt([["","Todos los modelos"],...Array.from(new Set(plan.models.map(x=>x[1]))).sort().map(m=>[m,m])],state.model);
   ready=true;wire();draw();
