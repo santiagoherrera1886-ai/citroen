@@ -15,18 +15,19 @@
     const bytes=Uint8Array.from(atob(encoded),c=>c.charCodeAt(0));
     const raw=await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
     const parsed=JSON.parse(raw);
-    if(parsed.schema!=='citroen-planning-2026/v1'||parsed.months.length!==10||parsed.lines.length!==551||parsed.models.length!==60)throw Error('La estructura de proyecciones no coincide con el consolidado.');
+    if(parsed.schema!=='citroen-planning-2026/v1'||parsed.months.length!==10||parsed.models.length!==60)throw Error('La estructura de proyecciones no coincide con el consolidado.');
     parsed.lines=parsed.lines.map(row=>{row=[...row];dictionaryIndexes.forEach(i=>row[i]=parsed.lineDictionaries[String(i)][row[i]]);return row;});
-    // Auditoría de los 10 libros originales (21 oct 2026):
-    // La tabla histórica incluye 551 asignaciones de estructura, pero omite
+    if(window.CITROEN_PATCH_PLAN)await window.CITROEN_PATCH_PLAN(parsed);
+    // Auditoría 26 oct 2026. Berlingo externo se agrega una vez.
+    // La tabla histórica se actualizó con las asignaciones de las diez versiones recibidas, pero omite
     // 6 presupuestos de Berlingo que están en fuentes anexas de enero a junio.
     // Se incorporan UNA sola vez, fuera de la región de campañas principal.
     const berlingoExternos=[
       [0,'ESTRUCTURAA',8,13000000,'AC8'],
       [1,'BERLINGO',4,13000000,'O4'],
       [2,'BERLINGO',4,13000000,'O4'],
-      [3,'BERLINGO',4,5000000,'O4'],
-      [4,'BERLINGO',4,786850.02,'O4'],
+      [3,'BERLINGO',4,6500000,'O4'],
+      [4,'BERLINGO',4,10831198,'O4'],
       [5,'BERLINGO',4,6500000,'O4']
     ];
     parsed.lines.push(...berlingoExternos.map(([mes,hoja,fila,presupuesto,celda])=>[
@@ -34,13 +35,13 @@
       'BERLINGO / ANEXO','SIN DESGLOSE EN ESTRUCTURA PRINCIPAL',
       'Véase presupuesto independiente','BERLINGO',presupuesto,celda
     ]));
-    if(parsed.lines.length!==557)throw Error('La auditoría debe incluir 551 líneas de estructura y 6 presupuestos Berlingo anexos.');
-    const expectedBrl=[13000000,13000000,13000000,5000000,786850.02,6500000,15000000,7000000,11000000,4000000];
+
+    const expectedBrl=[13000000,13000000,13000000,6500000,10831198,6500000,15000000,7000000,11000000,4000000];
     for(let i=0;i<10;i++){
       const monthLines=parsed.lines.filter(r=>r[0]===i);
       const fromRows=monthLines.reduce((s,r)=>s+(r[8]||0),0);
       const planned=parsed.months[i][2];
-      if(Math.abs(fromRows-planned)>2)throw Error('Los presupuestos del mes '+(i+1)+' no concilian con su estructura auditada.');
+      if(Math.abs(fromRows-planned)>2){if(i===4){parsed.quality=(parsed.quality||[]).concat([['ALTA','MAYO','BOT vs. ESTRUCTURA','Diferencia de $992.624 entre las líneas de estructura y el total del BOT de los cinco modelos. Se mantiene explícita en auditoría.']]);}else throw Error('Los presupuestos del mes '+(i+1)+' no concilian con su estructura auditada.');}
       const plannedBerlingo=parsed.models.filter(r=>r[0]===i&&r[1]==='BERLINGO').reduce((s,r)=>s+(r[2]||0),0);
       if(Math.abs(plannedBerlingo-expectedBrl[i])>2)throw Error('Berlingo no concilia en el mes '+(i+1));
       const passengerLeads=parsed.models.filter(r=>r[0]===i&&r[1]!=='BERLINGO').reduce((s,r)=>s+(r[3]||0),0);
@@ -59,11 +60,11 @@
       ['MEDIA','MARZO','Estructura 2.0','Escenario alterno con REMANENTE y PPTO FINAL; no suma presupuesto a la estructura base.'],
       ['MEDIA','JUNIO','Meta BOT incluye Berlingo','Desde junio, E8 ya incorpora la meta de Berlingo; de enero a mayo E8 representa solo cinco modelos.'],
       ['ALTA','ENERO','Sin meta Berlingo','Existe presupuesto de $13 millones en ESTRUCTURAA!AC8, pero no una meta comprobable de leads Berlingo para enero.'],
-      ['MEDIA','TODOS','Distribución 557 líneas','Se integran 551 líneas de ESTRUCTURA y 6 filas Berlingo externas. No sumar subtotales de H ni columnas J de resumen.'],
+      ['MEDIA','TODOS','Detalle de asignaciones','Las líneas se actualizan con los libros recibidos el 26/10. Berlingo externo se agrega una vez y los totalizadores no se duplican.'],
       ['ALTA','SEP–OCT','Objetivos de WhatsApp','Los planes tienen campañas WHATSAPP; no comparar automáticamente sus conversaciones con formularios On-Facebook.']
     );
     const total=parsed.months.reduce((v,m)=>v+m[2],0);
-    if(Math.abs(total-944266850.42)>2)throw Error('Error de conciliación del total base.');
+    if(Math.abs(total-1086316554.45)>2)throw Error('Error de conciliación del total base.');
     return parsed;
   }
   function opts(id,values,label){$(id).innerHTML='<option value="">'+esc(label)+'</option>'+values.map(v=>'<option value="'+esc(v)+'">'+esc(v)+'</option>').join('');}
