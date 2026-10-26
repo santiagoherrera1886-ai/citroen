@@ -58,7 +58,7 @@ function bind(el,handle,mode){
  if(!handle||installed.has(handle))return;
  installed.add(handle);handle.style.touchAction='none';
  handle.addEventListener('pointerdown',e=>{
-  if(!editing()||e.button!==0&&e.pointerType!=='touch')return;
+  if(!state.enabled||!editing()||(e.button!==0&&e.pointerType!=='touch'))return;
   e.preventDefault();e.stopPropagation();
   const k=el.dataset.panelKey,start=state.items[k];if(!start)return;
   const init={...start},sx=e.clientX,sy=e.clientY;
