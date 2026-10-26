@@ -23,6 +23,10 @@ jobs:
           node --check metric-editor.js
           node --check style-engine.js
           node --check photo-editor.js
+          node --check access.js
+          node --check api/auth.js
+          node --check api/users.js
+          node --check lib/editor-auth.mjs
           node --check data/revision_2026.js
       - name: Verify structure and no simulated data
         run: node scripts/verify.cjs
@@ -40,3 +44,5 @@ jobs:
         run: node scripts/smoke-style.cjs
       - name: Browser-like chart gallery and vehicle photo editor
         run: node scripts/smoke-gallery.cjs
+      - name: Browser-like secured Design authentication and master users
+        run: node scripts/smoke-access.cjs
