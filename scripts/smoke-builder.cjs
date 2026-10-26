@@ -14,7 +14,7 @@ w.fetch=async(url,opt={})=>{
  const json=(body,ok=true)=>({ok,json:async()=>body});
  if(url==='/api/dashboard'){
   if(opt.method==='POST'){if(!isEditor)return json({error:'Unauthorized'},false);published=JSON.parse(opt.body).workspace;writeCount++;return json({ok:true,workspace:published});}
-  return json({ok:true,workspace:published});
+  return json({ok:true,workspace:JSON.parse(JSON.stringify(published))});
  }
  if(url==='/api/data-connect')return json({ok:true,source:'Public Sheet test',columns:['Modelo','Leads'],rows:[{Modelo:'C3',Leads:'32'}],previewOnly:true});
  return json(daily);
