@@ -152,3 +152,72 @@ body:has(.c3-dashboard.studio-edit-on) .concept3-shell .content{max-width:none;p
 .metric-universe-status{font-size:10px;line-height:1.5;font-weight:600;color:#8a5a26}
 .metric-reach-formula{margin:9px 0 8px;padding:9px;background:#fffdf7;border:1px solid #f2e3c1;color:#7a5930;border-radius:8px;font-size:11px;font-weight:700}
 .metric-reach-note small{display:block;line-height:1.6;font-size:9px;color:#876b45}
+
+
+/* Looker-style editor · Datos / Estilo / Diseño. Scoped and reversible: default design is untouched. */
+.metric-inspector-tabs button{flex:1;min-width:0;cursor:pointer;border:0;border-bottom:2px solid transparent;background:transparent;padding:12px 5px;font:800 11px Manrope,Arial,sans-serif;color:#899ba9}
+.metric-inspector-tabs button.is-active{border-bottom-color:#ee4656;color:#e44350}
+.metric-data-pane,.metric-style-pane,.metric-layout-pane{overflow-y:auto;min-height:0;flex:1;scrollbar-width:thin;scrollbar-color:#cadce7 transparent}
+.metric-data-pane[hidden],.metric-style-pane[hidden],.metric-layout-pane[hidden]{display:none!important}
+.metric-data-pane .metric-fields{overflow-y:visible;flex:initial}
+.metric-style-pane,.metric-layout-pane{padding:14px 15px 28px}
+.metric-style-kicker{color:#e94755;font-size:9px;font-weight:900;letter-spacing:.12em}
+.metric-style-intro{font-size:11px;line-height:1.6;color:#7b92a5;margin:5px 0 14px}
+.metric-style-section{padding:14px 0;border-top:1px solid #edf2f5}
+.metric-style-section>strong{display:block;color:#1c455d;font-size:12px;margin-bottom:12px}
+.metric-style-presets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.metric-style-presets button{border:1px solid #e2eaf0;border-radius:9px;background:#fff;min-width:0;padding:10px 7px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:7px;font-size:9px;color:#4c6d83}
+.metric-style-presets button:hover,.metric-style-presets button:focus-visible{border-color:#69b7e8;background:#f6fbff}
+.metric-style-presets button:disabled{opacity:.35;cursor:not-allowed}
+.metric-palette-dots{display:flex;gap:0;width:85%;height:22px;overflow:hidden;border-radius:5px;border:1px solid #e5edf2}
+.metric-palette-dots i{flex:1}
+.metric-color-row,.metric-style-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:9px 0;color:#365e75;font-size:11px;font-weight:700}
+.metric-color-row input[type=color]{border:1px solid #dce8ee;min-width:60px;width:70px;height:37px;border-radius:8px;cursor:pointer;padding:3px;background:#fff}
+.metric-style-row select,.metric-layout-title-label input{min-width:120px;max-width:158px;width:52%;padding:8px 7px;border:1px solid #d9e7f0;border-radius:8px;font:600 10px Manrope,Arial,sans-serif;background:#f9fcfd;color:#284e66}
+.metric-layout-title-label{display:flex;flex-direction:column;gap:8px;color:#5a7d91;font-size:10px}
+.metric-layout-title-label input{max-width:none;width:100%;box-sizing:border-box}
+.metric-style-row input[type=range]{width:55%;accent-color:#ed4a5a}
+.metric-style-check{display:flex;gap:10px;align-items:center;padding:8px 2px;color:#456a7e;font-size:11px;font-weight:650}
+.metric-style-check input{accent-color:#e84958}
+.metric-style-actions{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}
+.metric-style-actions button,.metric-style-fullbutton{border:1px solid #d5e3ed;border-radius:8px;background:#f4f9fc;padding:9px 10px;color:#34586d;font-size:10px;font-weight:800;flex:1;min-width:95px;cursor:pointer}
+.metric-style-actions button:disabled{opacity:.4;cursor:not-allowed}
+.metric-style-actions button:hover:enabled,.metric-style-fullbutton:hover{background:#e5f3fc;border-color:#90c7ea}
+.metric-style-note{font-size:10px;color:#8799a7;line-height:1.6}
+.metric-empty{padding:14px;color:#8ca0af;font-size:11px;line-height:1.6}
+
+/* Original five report panels and all new custom cards adopt user-scoped design variables. */
+.c3-dashboard .studio-visual-customized{background:var(--studio-bg)!important;color:var(--studio-text)!important;border-color:var(--studio-border)!important;border-radius:var(--studio-radius)!important;border-width:var(--studio-border-width)!important;border-style:solid!important;box-shadow:var(--studio-shadow)!important;font-family:var(--studio-font-family)!important}
+.c3-dashboard .studio-visual-customized .c3-panel-heading h3{color:var(--studio-text)!important;font-family:var(--studio-font-family)!important;font-size:calc(16px * var(--studio-font-scale))!important}
+.c3-dashboard .studio-visual-customized .c3-panel-heading p,.c3-dashboard .studio-visual-customized .studio-card-note{color:var(--studio-text)!important;opacity:.7}
+.c3-dashboard .studio-visual-customized.c3-kpi strong{color:var(--studio-text)!important;font-family:var(--studio-font-family)!important;font-size:calc(23px * var(--studio-font-scale))!important}
+.c3-dashboard .studio-visual-customized.c3-kpi h4{color:var(--studio-text)!important;opacity:.7;font-family:var(--studio-font-family)!important;font-size:calc(10px * var(--studio-font-scale))!important}
+.c3-dashboard .studio-visual-customized .c3-model-data b{color:var(--studio-text)!important}
+.c3-dashboard .studio-visual-customized .c3-model-card{border-color:var(--studio-border);background:var(--studio-bg)}
+.c3-dashboard .studio-visual-customized .c3-insight .n{color:var(--studio-text);background:var(--studio-primary)}
+.c3-dashboard .studio-visual-customized.c3-kpi .c3-kpi-ico{color:var(--studio-primary);background:color-mix(in srgb,var(--studio-primary) 19%,white)}
+.c3-dashboard .studio-visual-customized .c3-chart-controls button.active{background:var(--studio-secondary)!important;box-shadow:none}
+.c3-dashboard .studio-visual-customized .c3-dot.planned,.c3-dashboard .studio-visual-customized .studio-dot.plan{background:var(--studio-primary)}
+.c3-dashboard .studio-visual-customized .c3-dot.actual,.c3-dashboard .studio-visual-customized .studio-dot.meta{background:var(--studio-secondary)}
+.c3-dashboard .studio-visual-customized .c3-funnel-step{background:color-mix(in srgb,var(--studio-primary) 72%,white)}
+.c3-dashboard .studio-visual-customized .c3-funnel-step:nth-child(2){background:color-mix(in srgb,var(--studio-primary) 54%,white)}
+.c3-dashboard .studio-visual-customized .c3-funnel-step:nth-child(3){background:color-mix(in srgb,var(--studio-primary) 35%,white)}
+.c3-dashboard .studio-visual-customized .c3-funnel-step.action{background:color-mix(in srgb,var(--studio-secondary) 32%,white);color:var(--studio-text)}
+.c3-dashboard .studio-visual-customized svg text{fill:var(--studio-text)!important}
+.c3-dashboard .studio-visual-customized #c3CompareChart svg rect[fill="#a9d4eb"]{fill:var(--studio-primary)!important}
+.c3-dashboard .studio-visual-customized #c3CompareChart svg rect[fill="#f46b74"]{fill:var(--studio-secondary)!important}
+.c3-dashboard .studio-visual-customized #c3CompareChart svg polyline[stroke="#173b58"]{stroke:var(--studio-primary)!important}
+.c3-dashboard .studio-visual-customized #c3CompareChart svg circle[fill="#163d59"]{fill:var(--studio-primary)!important}
+.c3-dashboard .studio-visual-customized #c3CompareChart svg #c3hatch rect[fill="#fae0e3"]{fill:color-mix(in srgb,var(--studio-secondary) 26%,white)!important}
+.c3-dashboard .studio-visual-customized #c3CompareChart svg #c3hatch rect[fill="#ef7780"]{fill:var(--studio-secondary)!important}
+.c3-dashboard .studio-visual-customized .studio-svg rect[fill="#2f6590"],.c3-dashboard .studio-visual-customized .studio-svg circle[fill="#2f6590"]{fill:var(--studio-primary)!important}
+.c3-dashboard .studio-visual-customized .studio-svg rect[fill="#f07583"],.c3-dashboard .studio-visual-customized .studio-svg circle[fill="#f07583"]{fill:var(--studio-secondary)!important}
+.c3-dashboard .studio-visual-customized .studio-svg polyline[stroke="#2f6590"]{stroke:var(--studio-primary)!important}
+.c3-dashboard .studio-visual-customized .studio-svg polyline[stroke="#f07583"]{stroke:var(--studio-secondary)!important}
+.c3-dashboard .studio-visual-customized .studio-svg rect,.c3-dashboard .studio-visual-customized .studio-svg circle,.c3-dashboard .studio-visual-customized #c3CompareChart svg rect{opacity:var(--studio-chart-opacity)}
+.c3-dashboard .studio-no-grid #c3CompareChart svg line,.c3-dashboard .studio-no-grid .studio-svg line{display:none!important}
+.c3-dashboard .studio-no-legend .c3-legend,.c3-dashboard .studio-no-legend .studio-legend{display:none!important}
+.c3-dashboard .studio-visual-customized .studio-card-title{color:var(--studio-text)!important;font-size:calc(15px * var(--studio-font-scale))!important}
+.c3-dashboard .studio-visual-customized .c3-campaign-table th{background:color-mix(in srgb,var(--studio-primary) 18%,var(--studio-bg));color:var(--studio-text)}
+.c3-dashboard .studio-visual-customized .c3-campaign-table td{color:var(--studio-text)}
+@media(max-width:900px){.metric-style-pane,.metric-layout-pane{padding:11px}}
