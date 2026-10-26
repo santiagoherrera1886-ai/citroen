@@ -332,7 +332,9 @@ function setupEditorModals(){
   '<div id="builderInsightDialog" class="builder-dialog" hidden><div class="builder-dialog-panel"><button type="button" class="builder-close" data-builder-close="builderInsightDialog">×</button><h3>Escribir insight</h3><label>Título<input id="builderInsightTitle"></label><label>Hallazgo y recomendación<textarea rows="12" id="builderInsightBody"></textarea></label><div class="builder-dialog-buttons"><button type="button" id="builderInsightDelete">Eliminar</button><button type="button" id="builderInsightSave">Guardar insight</button></div></div></div>');
  document.querySelectorAll('[data-builder-close]').forEach(b=>b.onclick=()=>$(b.dataset.builderClose).hidden=true);
 }
+let booted=false;
 function wire(){
+ if(booted)return;booted=true;
  initSections();setupEditorModals();
  document.addEventListener('citroen:studio-layout',render);
  document.addEventListener('hashchange',()=>{const id=locationHash();if($(id)&&id!==current)navTo(id);});
