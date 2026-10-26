@@ -12,8 +12,8 @@ function clean(state){
  const validId=id=>typeof id==='string'&&/^[\w-]{3,80}$/.test(id);
  const fixCard=c=>{
   if(!c||!validId(c.id)||!['metric','note','chart','image','filter'].includes(c.type))return null;
-  const metric=['spend','forms','messages','impressions','reach','clicks','ctr','cpl'].includes(c.metric)?c.metric:'spend';
-  const dimension=['month','model'].includes(c.dimension)?c.dimension:'month';
+  const metric=c.source==='external'&&typeof c.metric==='string'&&c.metric.length<=90?c.metric:['spend','forms','messages','impressions','reach','clicks','ctr','cpl'].includes(c.metric)?c.metric:'spend';
+  const dimension=c.source==='external'&&typeof c.dimension==='string'&&c.dimension.length<=90?c.dimension:['month','model'].includes(c.dimension)?c.dimension:'month';
   const shape=['bar','line','area','table'].includes(c.shape)?c.shape:'bar';
   const number=(v,min,max,def)=>Number.isFinite(Number(v))?Math.max(min,Math.min(max,Math.round(Number(v)))):def;
   return {id:c.id,type:c.type,title:safeText(c.title,100),text:safeText(c.text,7000),source:c.source==='external'?'external':'meta',metric,dimension,shape,
