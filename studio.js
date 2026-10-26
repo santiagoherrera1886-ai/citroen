@@ -3,6 +3,7 @@
 "use strict";
 const $=id=>document.getElementById(id);
 const html=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const norm=s=>String(s||'').trim().toUpperCase();
 const COP=x=>x==null?"—":new Intl.NumberFormat("es-CO",{style:"currency",currency:"COP",maximumFractionDigits:0}).format(x);
 const N=x=>x==null?"—":new Intl.NumberFormat("es-CO",{maximumFractionDigits:1}).format(x);
 const SHORT=x=>x==null?"—":Math.abs(x)>=1000000?N(x/1000000)+" M":Math.abs(x)>=1000?N(x/1000)+" mil":N(x);
@@ -30,8 +31,8 @@ function rowsFor(card){
  const useModel=card.model||state.model;
  const groupVals=card.dimension==="month"?selectedMonths:selectedModels.filter(m=>!useModel||useModel===m);
  return groupVals.map(key=>{
-  const p=plan.models.filter(r=>(card.dimension==="month"?plan.months[r[0]][0]===key: r[1]===key)&&(!state.month||plan.months[r[0]][0]===state.month)&&(!useModel||r[1]===useModel));
-  const a=meta.filter(r=>(card.dimension==="month"?r.month===key:r.model===key)&&(!state.month||r.month===state.month)&&(!useModel||r.model===useModel));
+  const p=plan.models.filter(r=>(card.dimension==="month"?plan.months[r[0]][0]===key: norm(r[1])===norm(key))&&(!state.month||plan.months[r[0]][0]===state.month)&&(!useModel||norm(r[1])===norm(useModel)));
+  const a=meta.filter(r=>(card.dimension==="month"?r.month===key:norm(r.model)===norm(key))&&(!state.month||r.month===state.month)&&(!useModel||norm(r.model)===norm(useModel)));
   const included=card.metric==="leads"||card.metric==="cpl" ? p.filter(r=>useModel||card.dimension==="model"||r[1]!=="BERLINGO") : p;
   const pi=p.reduce((v,r)=>v+(Number(r[2])||0),0);
   const pl=included.some(r=>r[3]==null)?null:included.reduce((v,r)=>v+(Number(r[3])||0),0);
@@ -88,8 +89,8 @@ function cardHtml(card,index){
  '<button type="button" data-act="down" title="Mover abajo" aria-label="Mover panel a la derecha">→</button>'+
  '<button type="button" data-act="remove" class="studio-danger" title="Eliminar gráfico" aria-label="Eliminar gráfico">×</button></div>':"";
  const notes=card.source==="compare"?"El plan incluye varios medios; la ejecución cubre solo Meta. No representa cumplimiento. Las metas de leads y los formularios no son equivalentes.":card.source==="meta"?"Resultados Meta Ads del export cargado, hasta el 20 de octubre. No son resultados multicanal.":"Plan de inversión o metas comerciales, no ejecución. Mayo tiene una diferencia pendiente de conciliación de $992.624.";
- return '<article class="studio-card" data-id="'+html(card.id)+'" draggable="'+state.edit+'" role="group" aria-label="'+html(card.title)+'">'+
- '<div class="studio-card-head"><span class="studio-drag" title="Arrastrar tarjeta">⠿</span><input class="studio-card-title" aria-label="Título de gráfico" value="'+html(card.title)+'" '+(state.edit?"":"readonly")+'><span class="studio-card-label">'+html(card.source==="compare"?"COMPARATIVO":card.source==="plan"?"PROYECCIÓN":"META REAL")+"</span></div>"+
+ return '<article class="studio-card" data-id="'+html(card.id)+'" role="group" aria-label="'+html(card.title)+'">'+
+ '<div class="studio-card-head"><span class="studio-drag" title="Arrastrar tarjeta" draggable="'+state.edit+'">⠿</span><input class="studio-card-title" aria-label="Título de gráfico" value="'+html(card.title)+'" '+(state.edit?"":"readonly")+'><span class="studio-card-label">'+html(card.source==="compare"?"COMPARATIVO":card.source==="plan"?"PROYECCIÓN":"META REAL")+"</span></div>"+
  controls+'<div class="studio-visual">'+(card.chart==="table"?table(data,card):chartSvg(data,card))+'</div>'+
  (card.source==="compare"?'<div class="studio-legend"><span><i class="studio-dot plan"></i> Planeado total</span><span><i class="studio-dot meta"></i> Meta Ads</span></div>':"")+
  '<p class="studio-card-note">'+html(notes)+"</p></article>";
