@@ -22,6 +22,7 @@ jobs:
           node --check studio.js
           node --check metric-editor.js
           node --check style-engine.js
+          node --check photo-editor.js
           node --check data/revision_2026.js
       - name: Verify structure and no simulated data
         run: node scripts/verify.cjs
@@ -37,3 +38,5 @@ jobs:
         run: node scripts/smoke-metrics.cjs
       - name: Browser-like advanced visual editor
         run: node scripts/smoke-style.cjs
+      - name: Browser-like chart gallery and vehicle photo editor
+        run: node scripts/smoke-gallery.cjs
