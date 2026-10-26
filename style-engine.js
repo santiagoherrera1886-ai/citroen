@@ -23,6 +23,7 @@ const valid=(input)=>{
   if(s[k]!==undefined&&Number.isFinite(v)&&v>=domain[0]&&v<=domain[1])o[k]=v;
  }
  if(["none","soft","strong"].includes(s.shadow))o.shadow=s.shadow;
+ if(["bar","line","area"].includes(s.chartType))o.chartType=s.chartType;
  if(["Manrope","Arial","Georgia","Inter"].includes(s.fontFamily))o.fontFamily=s.fontFamily;
  for(const k of ["showLegend","showGrid","showLabels"])if(typeof s[k]==="boolean")o[k]=s[k];
  return o;
@@ -102,6 +103,7 @@ function refresh(){
   const pane=$("metricStylePane");if(!pane)return;
   const v=get(selected);
   const disabled=!selected||!panel(selected);
+  $("metricStyleChartType").hidden=selected!=="n:c3ComparePanel";
   pane.querySelectorAll("[data-style-field]").forEach(el=>{
    if(Object.hasOwn(v,el.dataset.styleField))el.type==="checkbox"?el.checked=!!v[el.dataset.styleField]:el.value=String(v[el.dataset.styleField]);
    el.disabled=disabled;
