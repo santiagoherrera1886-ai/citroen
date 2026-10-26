@@ -13,7 +13,7 @@
 <link rel="stylesheet" href="./concept3.css">
 <link rel="stylesheet" href="./model-fix.css?v=20261021b">
 <link rel="stylesheet" href="./audit.css?v=1">
-<link rel="stylesheet" href="./studio.css?v=20261026-style2">
+<link rel="stylesheet" href="./studio.css?v=20261026-gallery1">
 </head>
 <body>
 <svg xmlns="http://www.w3.org/2000/svg" class="symbols" aria-hidden="true">
@@ -101,6 +101,18 @@
 
   <div class="studio-inline-tools" id="studioTools" hidden>
     <div class="studio-inline-title"><span class="studio-inline-icon">✦</span><div><strong>Modo edición del resumen</strong><span>Selecciona un gráfico o indicador y cambia sus métricas desde la barra derecha. También puedes mover y redimensionar.</span></div></div>
+    <div class="studio-creation-bar">
+      <div class="studio-creation-heading"><div><span class="studio-creation-kicker">CONSTRUCTOR VISUAL</span><strong>Añadir visualización</strong><small>Elige un gráfico y aparece directamente en tu Resumen</small></div><div class="studio-creation-main-actions"><button type="button" id="studioPhotos" class="studio-creation-secondary">▧ Fotos de los carros</button><button type="button" id="studioThemes" class="studio-creation-secondary">◉ Paleta general</button></div></div>
+      <div class="studio-gallery" id="studioGallery" role="group" aria-label="Galería de visualizaciones">
+        <button type="button" data-gallery-chart="bar" data-gallery-source="meta"><svg viewBox="0 0 66 41" aria-hidden="true"><path d="M6 37H61" stroke="#c1cedb" stroke-width="2"/><rect x="12" y="18" width="9" height="19" rx="2" fill="#a9d4eb"/><rect x="25" y="8" width="9" height="29" rx="2" fill="#f46b74"/><rect x="38" y="14" width="9" height="23" rx="2" fill="#a9d4eb"/><rect x="51" y="2" width="9" height="35" rx="2" fill="#f46b74"/></svg><strong>Barras</strong></button>
+        <button type="button" data-gallery-chart="line" data-gallery-source="meta"><svg viewBox="0 0 66 41" aria-hidden="true"><path d="M5 33L20 22L34 29L49 10L61 15" fill="none" stroke="#ee6676" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 24L20 12L34 19L49 6L61 8" fill="none" stroke="#7daed0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg><strong>Líneas</strong></button>
+        <button type="button" data-gallery-chart="area" data-gallery-source="meta"><svg viewBox="0 0 66 41" aria-hidden="true"><path d="M5 32L22 17L35 24L48 8L61 14V38H5Z" fill="#dceefa"/><path d="M5 32L22 17L35 24L48 8L61 14" fill="none" stroke="#639fc7" stroke-width="2.8"/></svg><strong>Área</strong></button>
+        <button type="button" data-gallery-chart="table" data-gallery-source="meta"><svg viewBox="0 0 66 41" aria-hidden="true"><rect x="7" y="5" width="52" height="32" rx="3" fill="#edf4f9" stroke="#a4bfd2"/><rect x="7" y="5" width="52" height="9" fill="#aacfe5"/><path d="M7 22H59M7 30H59M29 14V37M45 14V37" stroke="#c8d9e6"/></svg><strong>Tabla</strong></button>
+        <button type="button" data-gallery-chart="bar" data-gallery-source="compare"><svg viewBox="0 0 66 41" aria-hidden="true"><path d="M4 37H62" stroke="#ccdbe5" stroke-width="2"/><rect x="10" y="12" width="8" height="25" fill="#acd6ec"/><rect x="19" y="19" width="8" height="18" fill="#f46b74"/><rect x="34" y="4" width="8" height="33" fill="#acd6ec"/><rect x="43" y="15" width="8" height="22" fill="#f46b74"/></svg><strong>Comparativo</strong></button>
+        <button type="button" data-gallery-chart="line" data-gallery-source="plan"><svg viewBox="0 0 66 41" aria-hidden="true"><path d="M7 33L19 28L31 30L43 15L57 7" fill="none" stroke="#24638a" stroke-width="3"/><circle cx="19" cy="28" r="3" fill="#f46b74"/><circle cx="43" cy="15" r="3" fill="#f46b74"/></svg><strong>Proyección</strong></button>
+      </div>
+      <div class="studio-quick-theme" id="studioQuickThemes" hidden><span>Paleta del dashboard</span><button type="button" data-global-palette="montecarlo">Montecarlo</button><button type="button" data-global-palette="citroen">Citroën</button><button type="button" data-global-palette="emerald">Esmeralda</button><button type="button" data-global-palette="violet">Lavanda</button><button type="button" data-global-palette="sunset">Atardecer</button><button type="button" data-global-palette="night">Nocturno</button><button type="button" id="studioResetPalette">Restaurar</button></div>
+    </div>
     <div class="studio-toolbar">
       <label>Período del gráfico <select id="studioMonth"><option value="">Enero – Octubre</option></select></label>
       <label>Modelo del gráfico <select id="studioModel"><option value="">Todos los modelos</option></select></label>
@@ -390,6 +402,12 @@
     </main>
   </div>
 </div>
+<div id="studioPhotoDialog" class="studio-photo-dialog" role="dialog" aria-modal="true" aria-labelledby="studioPhotoTitle" hidden>
+  <div class="studio-photo-backdrop" data-photo-close="true"></div>
+  <div class="studio-photo-modal"><div class="studio-photo-header"><div><span>ESTUDIO VISUAL · CITROËN</span><h2 id="studioPhotoTitle">Fotos de los vehículos</h2><p>Cambia las imágenes de los modelos y de la portada, sin tocar los datos.</p></div><button type="button" id="studioPhotoClose" aria-label="Cerrar editor de fotos">×</button></div>
+  <div id="studioPhotoModels" class="studio-photo-models"></div><p id="studioPhotoStatus" role="status" class="studio-photo-status">Sube una imagen JPG, PNG o WebP (hasta 5 MB) o pega una URL segura HTTPS.</p>
+  <div class="studio-photo-footer"><button type="button" id="studioPhotoResetAll">Restaurar fotos originales</button><button type="button" id="studioPhotoDone">Terminar</button></div></div>
+</div>
 <div id="toast" role="status" aria-live="polite" class="toast"></div>
 <script src="./app.js?v=20261021b" defer></script>
 <script src="./data/proyecciones_2026.js" defer></script>
@@ -399,8 +417,9 @@
 <script src="./audit.js" defer></script>
 <script src="./meta.js" defer></script>
 <script src="./reach-math.js?v=20261026b" defer></script>
-<script src="./concept3.js?v=20261026-style2" defer></script>
-<script src="./studio.js?v=20261026-style2" defer></script>
+<script src="./concept3.js?v=20261026-gallery1" defer></script>
+<script src="./studio.js?v=20261026-gallery1" defer></script>
 <script src="./metric-editor.js?v=20261026-style2" defer></script>
-<script src="./style-engine.js?v=20261026-style2" defer></script>
+<script src="./style-engine.js?v=20261026-gallery1" defer></script>
+<script src="./photo-editor.js?v=20261026-gallery1" defer></script>
 </body></html>
