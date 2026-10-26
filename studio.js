@@ -9,7 +9,7 @@ const N=x=>x==null?"—":new Intl.NumberFormat("es-CO",{maximumFractionDigits:1}
 const SHORT=x=>x==null?"—":Math.abs(x)>=1000000?N(x/1000000)+" M":Math.abs(x)>=1000?N(x/1000)+" mil":N(x);
 const monthNames=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct"];
 const categories={month:"Mes",model:"Modelo"};
-const metricLabels={investment:'Inversión',leads:'Formularios',cpl:'Costo por formulario',impressions:'Impresiones',reach:'Alcance sumado*',clicks:'Clics enlace',all_clicks:'Clics totales',messages:'Conversaciones',ctr:'CTR enlace',cpm:'CPM',cost_message:'Costo/conversación'};
+const metricLabels={investment:'Inversión',leads:'Formularios',cpl:'Costo por formulario',impressions:'Impresiones',reach:'Alcance estimado*',clicks:'Clics enlace',all_clicks:'Clics totales',messages:'Conversaciones',ctr:'CTR enlace',cpm:'CPM',cost_message:'Costo/conversación'};
 const legacyDefaults=[
  {id:"a",title:"Inversión planeada vs. Meta",source:"compare",metric:"investment",dimension:"month",chart:"bar",model:""},
  {id:"b",title:"Presupuesto por modelo",source:"plan",metric:"investment",dimension:"model",chart:"bar",model:""},
@@ -41,7 +41,7 @@ function rowsFor(card){
   const pi=p.reduce((v,r)=>v+(Number(r[2])||0),0);
   const pl=included.some(r=>r[3]==null)?null:included.reduce((v,r)=>v+(Number(r[3])||0),0);
   const passengerBudget=included.reduce((v,r)=>v+(Number(r[2])||0),0);
-  const sum=f=>a.reduce((v,r)=>v+(r[f]||0),0),ai=sum('spend'),al=sum('forms'),msg=sum('messages'),imp=sum('impressions'),reach=sum('reach'),clicks=sum('clicks'),allClicks=sum('all_clicks');
+  const sum=f=>a.reduce((v,r)=>v+(r[f]||0),0),ai=sum('spend'),al=sum('forms'),msg=sum('messages'),imp=sum('impressions'),reach=window.CITROEN_REACH_MATH?.estimate(a.map(r=>r.reach),window.CITROEN_REACH_MATH.currentUniverse())??null,clicks=sum('clicks'),allClicks=sum('all_clicks');
   const planned=card.metric==="investment"?pi:card.metric==="leads"?pl:card.metric==="cpl"?(pl>0?passengerBudget/pl:null):null;
   const actual=card.metric==='investment'?ai:card.metric==='leads'?al:card.metric==='cpl'?(al>0?ai/al:null):card.metric==='impressions'?imp:card.metric==='reach'?reach:card.metric==='clicks'?clicks:card.metric==='all_clicks'?allClicks:card.metric==='messages'?msg:card.metric==='ctr'?(imp>0?100*clicks/imp:null):card.metric==='cpm'?(imp>0?1000*ai/imp:null):card.metric==='cost_message'?(msg>0?ai/msg:null):null;
   return {key,label:card.dimension==="month"?monthNames[Number(key.slice(-2))-1]||key:key,planned:p.length?planned:null,actual:a.length?actual:null};
@@ -93,7 +93,7 @@ function cardHtml(card,index){
  '<button type="button" data-act="down" title="Mover abajo" aria-label="Mover panel a la derecha">→</button>'+
  '<label>Tamaño<select data-card-size>'+sizeOptions(state.sizes["c:"+card.id]||3)+'</select></label>'+
  '<button type="button" data-act="remove" class="studio-danger" title="Eliminar gráfico" aria-label="Eliminar gráfico">×</button></div>':"";
- const notes=card.source==="compare"?"El plan incluye varios medios; la ejecución cubre solo Meta. No representa cumplimiento. Las metas de leads y los formularios no son equivalentes.":card.source==="meta"?"Resultados Meta Ads del export cargado, hasta el 20 de octubre. No son resultados multicanal.":"Plan de inversión o metas comerciales, no ejecución. Mayo tiene una diferencia pendiente de conciliación de $992.624.";
+ const notes=card.source==="compare"?"El plan incluye varios medios; la ejecución cubre solo Meta. No representa cumplimiento. Las metas de leads y los formularios no son equivalentes.":card.source==="meta"?"Resultados Meta Ads del export hasta el 20 de octubre. El alcance usa estimación Sainsbury solo cuando hay universo configurado.":"Plan de inversión o metas comerciales, no ejecución. Mayo tiene una diferencia pendiente de conciliación de $992.624.";
  return '<article class="studio-card" data-id="'+html(card.id)+'" role="group" aria-label="'+html(card.title)+'">'+
  '<div class="studio-card-head"><span class="studio-drag" title="Arrastrar tarjeta" draggable="'+state.edit+'">⠿</span><input class="studio-card-title" aria-label="Título de gráfico" value="'+html(card.title)+'" '+(state.edit?"":"readonly")+'><span class="studio-card-label">'+html(card.source==="compare"?"COMPARATIVO":card.source==="plan"?"PROYECCIÓN":"META REAL")+"</span></div>"+
  controls+'<div class="studio-visual">'+(card.chart==="table"?table(data,card):chartSvg(data,card))+'</div>'+
@@ -221,6 +221,7 @@ function exportCsv(){
 }
 
 function wire(){
+ document.addEventListener("citroen:metric-settings",()=>{if(ready)draw();});
  $("studioAdd").onclick=()=>add("plan");
  $("studioCompare").onclick=()=>add("compare");
  $("studioEdit").onclick=()=>{state.edit=!state.edit;persist();draw();};
