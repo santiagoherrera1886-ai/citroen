@@ -13,8 +13,9 @@ const decoded=JSON.parse(zlib.gunzipSync(Buffer.from(w.CITROEN_PLAN_PACKED,'base
 // Only replace the browser compression stream plumbing; the parsed source and
 // actual dashboard code remain unchanged.
 w.DecompressionStream=class{constructor(type){assert.equal(type,'gzip');}};
-w.Blob=class{stream(){return {pipeThrough(){return null;}};}};
-w.Response=class{async text(){return JSON.stringify(decoded);}};
+w.Blob=class{constructor(parts){this.parts=parts;}stream(){const that=this;return{pipeThrough(){return that;}};}};
+w.Response=class{constructor(stream){this.stream=stream;}async text(){return zlib.gunzipSync(Buffer.from(this.stream.parts[0])).toString('utf8');}};
+w.eval(fs.readFileSync('data/revision_2026.js','utf8'));
 w.alert=message=>{throw Error('Unexpected browser alert: '+message);};
 w.eval(script);
 w.document.dispatchEvent(new w.Event('DOMContentLoaded',{bubbles:true}));
@@ -28,8 +29,9 @@ w.document.dispatchEvent(new w.Event('DOMContentLoaded',{bubbles:true}));
   assert.equal(id('planMonth').options.length,11,'All 10 months did not populate');
   assert.equal(id('planModel').options.length,7,'All 6 models did not populate');
   assert.equal(id('planComparison').querySelectorAll('tr').length,10,'Missing 10 plan-vs-real rows');
-  assert.ok(id('planPreviewTotal').textContent.includes('944'),'Audited 944M total not rendered');
+  assert.ok(id('planPreviewTotal').textContent.includes('1.086'),'Revised 1.086B COP total not rendered');
   assert.ok(id('planTimeline').querySelector('.plan-month-chart'),'Budget chart not rendered');
+  assert.ok(id('planAlerts').textContent.includes('992.624'),'Unresolved May discrepancy was hidden');
   assert.ok(id('planModelsChart').querySelector('.plan-section-bars'),'Model allocation chart not rendered');
   assert.ok(id('planDetailRows').querySelectorAll('tr').length>0,'Missing original plan lines');
 
@@ -49,6 +51,6 @@ w.document.dispatchEvent(new w.Event('DOMContentLoaded',{bubbles:true}));
   assert.ok(id('planRealState').textContent.includes('COBERTURA PARCIAL'),'Meta-only scoping broken');
   assert.ok(id('planComparison').textContent.includes('1.000'),'Real September spend did not render');
   assert.ok(!id('planOverviewNote').textContent.includes('No fue posible abrir'),'Planning falsely reports source failure');
-  console.log('PASS: live-DOM Planning 2026 loaded 10 real plan months, 551 lines, filters, charts and Meta partial coverage.');
+  console.log('PASS: live-DOM Planning 2026 loaded 10 reconciled plan months, updated April/May detail, filters, charts and Meta partial coverage.');
   w.close();
 })().catch(e=>{console.error(e);process.exitCode=1;w.close();});
