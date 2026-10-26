@@ -18,6 +18,27 @@ const add=(rows,i)=>rows.reduce((a,r)=>a+(r.v[i]||0),0);
 const norm=s=>String(s||'').trim().toUpperCase();
 const filter=rows=>rows.filter(r=>(!state.month||r.month===state.month)&&(!state.model||norm(r.model)===norm(state.model))&&(!state.territory||r.territory===state.territory));
 const opt=(value,label)=>`<option value="${esc(value)}">${esc(label)}</option>`;
+const configured=(kind,slot,fallback)=>{const prefs=window.CITROEN_METRIC_OVERRIDES||{};return kind==='slot'?(prefs.slots&&prefs.slots[slot])||fallback:(prefs.native&&prefs.native[kind])||fallback;};
+const metricNames={planned:'Inversión planeada',spend:'Inversión Meta',forms:'Formularios',messages:'Conversaciones',impressions:'Impresiones',reach:'Alcance sumado*',clicks:'Clics en enlace',all_clicks:'Clics totales',ctr:'CTR de enlace',cpm:'CPM calculado',cpl:'Costo / formulario*',cost_message:'Costo / conversación*'};
+const metricNotes={planned:'Presupuesto proyectado · plan multicanal',spend:'Gasto Meta Ads · COP supuesto',forms:'Leads de formulario · sin conversaciones',messages:'Eventos de conversación · no leads únicos',impressions:'Impresiones entregadas · Meta Ads',reach:'Suma de alcances reportados; NO usuarios únicos',clicks:'Clics en enlace · Meta Ads',all_clicks:'Clics totales de Meta Ads',ctr:'Clics de enlace / impresiones',cpm:'Gasto Meta por 1.000 impresiones',cpl:'Gasto Meta / formularios; incluye otros objetivos',cost_message:'Gasto Meta / conversaciones; incluye otros objetivos'};
+const metricMoney=new Set(['planned','spend','cpm','cpl','cost_message']);
+function metricTotal(rows,key,plan){
+ if(key==='planned')return plan;
+ const v=i=>add(rows,i),spend=v(0),forms=v(1),messages=v(2),impressions=v(3),clicks=v(4);
+ if(key==='spend')return spend;
+ if(key==='forms')return forms;
+ if(key==='messages')return messages;
+ if(key==='impressions')return impressions;
+ if(key==='reach')return v(6); // Suma de reach por registro; no desduplicado.
+ if(key==='clicks')return clicks;
+ if(key==='all_clicks')return v(5);
+ if(key==='ctr')return impressions>0?100*clicks/impressions:null;
+ if(key==='cpm')return impressions>0?1000*spend/impressions:null;
+ if(key==='cpl')return forms>0?spend/forms:null;
+ if(key==='cost_message')return messages>0?spend/messages:null;
+ return null;
+}
+function fmtMetric(v,key){return v==null?'—':metricMoney.has(key)?money(v):key==='ctr'?v.toLocaleString('es-CO',{maximumFractionDigits:2})+' %':num(v);}
 const planRows=(month,model,includeBerlingo=true)=>state.plan.models.filter(r=>r[0]===months.indexOf(month)&&(!model||norm(r[1])===norm(model))&&(includeBerlingo||norm(r[1])!=='BERLINGO'));
 const planValue=(month,mode)=>{
  if(state.territory)return null;
@@ -45,17 +66,15 @@ function actualData(d,detail){
  return {rows,campaigns};
 }
 function setKpis(rows){
- const spending=add(rows,0),forms=add(rows,1),messages=add(rows,2),impressions=add(rows,3);
  const planned=state.territory?null:months.filter(m=>!state.month||state.month===m).reduce((a,m)=>a+(planValue(m,'investment')||0),0);
- const items=[
-  ['Inversión planeada',money(planned),state.territory?'Sin plan territorial equivalente':'Presupuesto general 2026','▥'],
-  ['Ejecutado · Meta',money(spending),'Solo Meta Ads · COP supuesto','◫'],
-  ['Formularios',num(forms),'On-Facebook leads','♙'],
-  ['Conversaciones',num(messages),'Eventos distintos de formularios','▤'],
-  ['Costo / formulario*',forms>0?money(spending/forms):'—','Inversión total Meta / formularios','◎'],
-  ['Impresiones',num(impressions),'Meta Ads · no usuarios únicos','▥']
- ];
- $('c3Kpis').innerHTML=items.map(x=>`<article class="c3-kpi"><div class="c3-kpi-ico">${x[3]}</div><div><h4>${x[0]}</h4><strong title="${esc(x[1])}">${x[1]}</strong><small class="muted">${esc(x[2])}</small></div></article>`).join('');
+ const defaults=['planned','spend','forms','messages','cpl','impressions'];
+ const icons=['▥','◫','♙','▤','◎','▥'];
+ $('c3Kpis').innerHTML=defaults.map((fallback,i)=>{
+  const key=configured('slot',i,fallback),value=metricTotal(rows,key,planned);
+  const title=key===fallback?(['Inversión planeada','Ejecutado · Meta','Formularios','Conversaciones','Costo / formulario*','Impresiones'][i]):metricNames[key]||metricNames[fallback];
+  const note=key==='planned'&&state.territory?'Sin plan territorial comparable':metricNotes[key]||'Meta Ads';
+  return '<article class="c3-kpi" data-metric-slot="'+i+'" tabindex="0" title="En modo edición, selecciona esta tarjeta para cambiar su métrica"><div class="c3-kpi-ico">'+icons[i]+'</div><div><h4>'+esc(title)+'</h4><strong title="'+esc(fmtMetric(value,key))+'">'+fmtMetric(value,key)+'</strong><small class="muted">'+esc(note)+'</small></div></article>';
+ }).join('');
  $('c3Context').textContent=(state.month?labels[months.indexOf(state.month)]+' 2026':'Enero–octubre de 2026')+' · '+(state.model||'Todos los modelos')+' · '+(state.territory||'Cobertura completa')+' · octubre contiene resultados hasta el 20/10. Cifras reales, no las de la maqueta.';
 }
 function comparison(rows){
