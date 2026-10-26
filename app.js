@@ -124,6 +124,7 @@
   function nav(id){
     const section=$(id);
     if(!section)return;
+    if(!document.querySelector('.nav-link[data-target="'+id+'"]'))id="resumen";
     document.querySelectorAll('.nav-link').forEach(b=>b.classList.toggle('active',b.dataset.target===id));
     document.querySelectorAll('.content > section.page-section').forEach(e=>e.classList.toggle('is-active',e.id===id));
     const b=document.querySelector('.nav-link[data-target="'+id+'"]');
@@ -252,7 +253,7 @@
     $('openMenu').onclick=()=>{$('sidebar').classList.add('open');$('sidebarOverlay').classList.add('show');};
     $('closeMenu').onclick=$('sidebarOverlay').onclick=()=>{$('sidebar').classList.remove('open');$('sidebarOverlay').classList.remove('show');};
     document.querySelectorAll('.nav-link').forEach(b=>b.onclick=()=>nav(b.dataset.target));
-    $('jumpToData').onclick=()=>nav('datos');
+    $('jumpToData').onclick=()=>nav('meta');
     ['filterModel','filterPlatform','filterCity','filterFrom','filterTo'].forEach(id=>$(id).onchange=render);
     $('resetFilters').onclick=()=>{['filterModel','filterPlatform','filterCity','filterFrom','filterTo'].forEach(id=>$(id).value='');render();};
     document.querySelector('.filter-icon').onclick=()=>$('filterModel').focus();
