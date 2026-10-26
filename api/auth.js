@@ -1,4 +1,4 @@
-import {ready,json,error,sameOrigin,emailOf,validEmail,validStrongPassword,hashPassword,matches,usersRead,usersWrite,findAccount,cookieHeader,clearCookie,currentUser,publicUser,newRecord,recordFailure,isRateLimited,resetFailures} from './_auth.mjs';
+import {ready,json,error,sameOrigin,emailOf,validEmail,validStrongPassword,hashPassword,matches,usersRead,usersWrite,findAccount,cookieHeader,clearCookie,currentUser,publicUser,newRecord,recordFailure,isRateLimited,resetFailures,ownerEmail,verifyActivation} from './_auth.mjs';
 
 export default async function handler(req,res){
  try{
@@ -13,6 +13,22 @@ export default async function handler(req,res){
   if(action==='logout'){
    res.setHeader('Set-Cookie',clearCookie());
    return json(res,200,{ok:true});
+  }
+  if(action==='activate'){
+   if(isRateLimited(req))return error(res,429,'Demasiados intentos.');
+   const email=emailOf(body.email);
+   if(email!==ownerEmail)return error(res,403,'Ese correo no corresponde al propietario.');
+   if(!verifyActivation(body.activationCode)){recordFailure(req);return error(res,403,'Código de activación incorrecto.');}
+   if(typeof body.password!=='string'||body.password.length<4||body.password.length>128)return error(res,400,'Introduce tu contraseña inicial de acceso.');
+   const db=await usersRead();
+   if(db.users[ownerEmail])return error(res,409,'Esta cuenta ya fue activada.');
+   const u={...newRecord(ownerEmail,'owner',hashPassword(body.password)),mustChange:true};
+   db.users[ownerEmail]=u;
+   await usersWrite(db);
+   resetFailures(req);
+   const session={email:ownerEmail,role:'owner',revision:u.revision,mustChange:true};
+   res.setHeader('Set-Cookie',cookieHeader(session));
+   return json(res,201,{ok:true,authenticated:true,user:publicUser(session)});
   }
   if(action==='login'){
    if(isRateLimited(req))return error(res,429,'Demasiados intentos. Intenta de nuevo más tarde.');
