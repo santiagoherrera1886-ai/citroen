@@ -153,6 +153,11 @@ async function createEditor(e){
   await renderUsers();
  }catch(e){status('citroenMasterStatus',e.message,true);}
 }
+async function checkSessionDuringEdit(){
+ if(!$('c3Dashboard')?.classList.contains('studio-edit-on'))return;
+ const wasLoggedIn=!!user,latest=await refresh();
+ if(wasLoggedIn&&!latest){window.CITROEN_STUDIO_LOCK?.();status('citroenAuthStatus','Tu sesión venció o tu cuenta fue suspendida. Vuelve a iniciar sesión.',true);}
+}
 function wire(){
  $('citroenActivateLink').onclick=showActivate;
  $('citroenBackLogin').onclick=showLogin;
@@ -168,6 +173,9 @@ function wire(){
  $('citroenGeneratePassword').onclick=()=>{$('citroenNewEditorForm').querySelector('[name="password"]').value=makePassword();};
  document.addEventListener('keydown',e=>{if(e.key==='Escape'){close(ui.login);close(ui.master);}});
  refresh();
+ // Revalidate server permissions while editing. All sensitive master actions check again server-side.
+ window.setInterval(()=>checkSessionDuringEdit().catch(()=>{}),90000);
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkSessionDuringEdit().catch(()=>{});});
 }
 window.CITROEN_ACCESS={requestEdit,canEdit:()=>Boolean(user&&!user.mustChange),logout,showMaster};
 document.addEventListener('DOMContentLoaded',wire);
