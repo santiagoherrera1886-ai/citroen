@@ -1,4 +1,4 @@
-import {ready,json,error,sameOrigin,emailOf,validEmail,validStrongPassword,hashPassword,matches,usersRead,usersWrite,findAccount,cookieHeader,clearCookie,currentUser,publicUser,newRecord,recordFailure,isRateLimited,resetFailures,ownerEmail,verifyActivation} from './_auth.mjs';
+import {ready,json,error,sameOrigin,emailOf,validEmail,validStrongPassword,hashPassword,matches,usersRead,usersWrite,findAccount,cookieHeader,clearCookie,currentUser,publicUser,newRecord,recordFailure,isRateLimited,resetFailures,ownerEmail,verifyActivation} from '../lib/editor-auth.mjs';
 
 export default async function handler(req,res){
  try{
