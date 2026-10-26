@@ -32,7 +32,7 @@ const pause=()=>new Promise(r=>setTimeout(r,0));
  assert.equal(w.CITROEN_METRIC_OVERRIDES.slots[5],'reach','Selection stored in shared data settings');
  $('c3ComparePanel').click();
  $('metricFields').querySelector('[data-field="reach"]').click();
- assert.ok($('c3CompareNote').textContent.includes('NO usuarios únicos'),'Comparison reach shows only actual data and warns about aggregation');
+ assert.ok($('c3CompareNote').textContent.includes('NO usuarios únicos'),'Comparison reach shows only actual data and warns about aggregation: '+$('c3CompareNote').textContent+' | '+JSON.stringify(w.CITROEN_METRIC_OVERRIDES.native));
  w.document.querySelector('[data-c3-metric="investment"]').click();
  assert.equal(w.CITROEN_METRIC_OVERRIDES.native.compareMetric,'investment','Original comparison metric button updates sidebar settings');
 
