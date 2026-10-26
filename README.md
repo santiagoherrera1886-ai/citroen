@@ -1,5 +1,27 @@
 # Citroën · Performance Intelligence
 
+## ACCESO PROTEGIDO AL DISEÑO — 26 DE OCTUBRE DE 2026
+
+El dashboard permanece público en **modo lectura**. La acción **Editar resumen** comprueba una sesión autorizada mediante `GET /api/auth`. Sin sesión válida, muestra la pantalla de inicio de sesión y mantiene bloqueados los controles. No se restaura automáticamente un modo de edición desde `localStorage`.
+
+**Cuenta maestra solicitada:** `santiago.herrera@vml.com`. La contraseña inicial facilitada por el propietario se usa **solo durante la activación**; jamás figura como texto ni hash de una clave débil en el código público. El administrador entra en **Primera vez → Activar administrador maestro**, con un **código privado de activación de alta entropía** entregado fuera del repositorio. El backend verifica el SHA-256 del código, permite configurar una contraseña inicial y la guarda cifrada mediante `scrypt` en Vercel Blob **privado**; la primera sesión exige sustituir esa contraseña por una de al menos 12 caracteres con letras y números. La activación de una cuenta maestra ya existente se rechaza.
+
+**Control maestro:** visible únicamente con sesión de propietario; crear nuevos editores con correo y contraseña robusta, generar contraseña aleatoria desde el navegador, listar, suspender, reactivar y cambiar contraseñas de editores. Las modificaciones se escriben en `private/citroen-editor-users-v1.json` dentro del almacén Blob privado del proyecto. Los editores solo pueden ingresar al modo Diseño y no pueden gestionar usuarios. Suspender o cambiar contraseñas invalida las sesiones correspondientes en la próxima verificación del servidor. Nunca se devuelve el hash de contraseña al navegador.
+
+**Protecciones de sesión:** cookie `HttpOnly` + `Secure` + `SameSite=Strict` firmada mediante HMAC, con vigencia máxima de 8 horas; cambio de clave con comprobación de la actual; API restringida por rol, validación de origen y tipo JSON en mutaciones, validación de entradas y límite de intentos por instancia. La clave de firma se deriva de un secreto privado de Vercel Blob o puede configurarse por variable de entorno. El código de activación no debe guardarse en un README, ticket o repositorio ni transmitirse a terceros.
+
+**Requisitos de infraestructura:** un almacén **Vercel Blob privado** enlazado al proyecto y la variable `BLOB_READ_WRITE_TOKEN` disponible exclusivamente del lado servidor. Instalación automática del SDK `@vercel/blob@2.8.2` vía `package.json`. Si faltan los secretos/servicios, el backend falla cerrado (`503`) y el Resumen sigue disponible en modo lectura. Los archivos HTML/JS y datos públicos del dashboard **no son secretos** y no requieren inicio de sesión para verlos. La autorización protege la interfaz de edición y la API maestra, no evita que un visitante modifique localmente su copia del HTML con herramientas del navegador. Los ajustes de diseño existentes siguen siendo locales a cada navegador.
+
+Para entrar:
+1. Abrir `https://citroen-rho.vercel.app/#resumen` y pulsar **Editar resumen**.
+2. Primera vez: **Activar administrador maestro** con correo, clave inicial y código privado de instalación; sustituir inmediatamente la contraseña inicial.
+3. En siguientes sesiones, usar correo y nueva contraseña. Desde **♛ Control maestro** administrar los otros editores.
+
+**Pruebas:** `scripts/smoke-access.cjs` verifica intentos inválidos, inicio válido simulado, bloqueo y panel maestro. Las pruebas de gráficos usan un mock de sesión autorizada para mantener cobertura funcional sin incluir contraseñas reales.
+
+---
+
+
 ## CITROËN VISUAL BUILDER — 26 DE OCTUBRE DE 2026
 
 **Editor enriquecido publicado en la sección Resumen:**
