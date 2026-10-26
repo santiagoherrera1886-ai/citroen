@@ -84,7 +84,7 @@
       <label class="c3-select"><span class="sr-only">Territorio</span><select id="c3Territory"><option value="">Todos los territorios</option></select></label>
       <label class="c3-select"><span class="sr-only">Modelo</span><select id="c3Model"><option value="">Todos los modelos</option></select></label>
       <span class="c3-source-pill"><span class="c3-live-dot"></span> META REAL + PLAN 2026</span>
-      <button type="button" id="studioEdit" class="studio-header-edit" aria-pressed="false"><span aria-hidden="true">✎</span> Editar resumen</button>
+      <button type="button" id="studioEdit" class="studio-header-edit" aria-pressed="false" hidden><span aria-hidden="true">✎</span> Editar resumen</button>
       <button type="button" id="citroenMasterOpen" class="citroen-auth-master-link" hidden>♛ Control maestro</button>
       <button type="button" id="citroenAuthLogout" class="citroen-auth-exit" hidden>Cerrar sesión</button>
     </div>
@@ -446,7 +446,7 @@
       <form id="citroenActivateForm">
         <label>Usuario administrador<input type="email" name="email" value="santiago.herrera@vml.com" required autocomplete="username"></label>
         <label>Contraseña inicial<input type="password" name="password" required autocomplete="new-password"></label>
-        <label>Código maestro de activación<input type="password" name="activationCode" required autocomplete="off" placeholder="Código único entregado por el administrador"></label>
+        <label>Código maestro de activación<input type="text" name="activationCode" required autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="Pega el código de instalación"></label><button type="button" id="citroenPasteActivation" class="citroen-auth-activate">Pegar código desde el portapapeles</button>
         <button type="submit" class="citroen-auth-submit">Activar mi cuenta</button>
       </form>
       <button type="button" id="citroenBackLogin" class="citroen-auth-activate">Volver a iniciar sesión</button>
