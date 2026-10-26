@@ -5,12 +5,12 @@
 A partir de esta versión, cuando el usuario elige **Alcance estimado · Sainsbury** en el Resumen, **no se suman** los alcances de los registros de Meta Ads para presentarlos como alcance neto.
 
 - **Fórmula**: `alcance estimado = U × (1 − PRODUCTO(1 − reach_i/U))`, con `U` = tamaño del universo de audiencia objetivo configurado por el usuario y `reach_i` = alcance de cada unidad de información disponible.
-- **Universo obligatorio**: en Propiedades del gráfico aparece un campo numérico para definir la audiencia potencial de manera explícita. No hay un universo predeterminado inventado. Si no se ingresa o es inválido, se muestra `—`.
+- **Universo aprobado (26/10/2026): 15.000.000 de personas**. En Propiedades del gráfico el campo aparece precargado con ese valor y Sainsbury calcula de inmediato. Se pueden evaluar escenarios cambiándolo manualmente; restablecer diseño retorna a 15 M. No es alcance observado ni se deducen personas únicas verificadas.
 - **Validaciones**: el universo debe ser un entero positivo, al menos tan grande como cada alcance individual. El estimado queda entre el mayor alcance individual y el universo. Se evalúa la fórmula con operaciones numéricamente estables.
 - **Interpretación**: Sainsbury asume exposiciones estadísticamente independientes (solapamiento aleatorio). **No mide usuarios únicos reales deduplicados** ni sustituye los reportes oficiales de Meta. La estimación puede variar con el desglose y los grupos de entrada, especialmente entre días, anuncios o campañas.
 - **Capa de datos**: se mantiene el total de alcance **sumado bruto** como dato fuente de auditoría, con etiqueta explícita; el Resumen presenta el estimado solo con universo. Nunca usar la suma bruta como alcance único.
 - **Funnel**: cuando usa alcance estimado como primera etapa, los clics divididos por alcance se muestran como **Clics / alcance estimado**, no como CTR.
-- **Pruebas**: `scripts/smoke-metrics.cjs` verifica que con `U=100` y alcances 50 y 40 el estimado sea 70; rechaza universos ausentes o inconsistentes, y comprueba las sustituciones en todo el Resumen.
+- **Pruebas**: `scripts/smoke-metrics.cjs` verifica que con `U=100` y alcances 50 y 40 el estimado sea 70; prueba el universo base 15 M y la migración sin perder métricas personalizadas, y comprueba las sustituciones en todo el Resumen.
 
 Fuentes metodológicas: https://help.bunkerdb.com/es/articles/9534739-como-se-calculan-los-totales-de-alcance-para-medios-pagos y https://fluzo.com/article/battle-of-century-how-good-is-sainsbury-against-reality
 
