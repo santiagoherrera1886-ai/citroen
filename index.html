@@ -132,10 +132,10 @@
     <div id="metricFields" class="metric-fields" role="group" aria-label="Métricas disponibles"></div>
     <div id="metricNote" class="metric-reach-note" hidden>
       <strong>Estimación de alcance · Sainsbury</strong>
-      <p>El alcance se calcula con un universo de audiencia fijo y solapamiento aleatorio. No representa usuarios únicos medidos por Meta.</p>
+      <p>El alcance se estima con Sainsbury sobre un universo base de 15.000.000 de personas. No representa usuarios únicos medidos por Meta.</p>
       <label for="metricUniverse" class="metric-universe-label">Universo de audiencia potencial (personas)</label>
-      <input id="metricUniverse" class="metric-universe-input" inputmode="numeric" type="number" min="1" step="1" placeholder="Ej. 15000000" aria-describedby="metricUniverseStatus">
-      <p id="metricUniverseStatus" class="metric-universe-status" role="status">Ingresa el universo para calcular el alcance estimado.</p>
+      <input id="metricUniverse" class="metric-universe-input" inputmode="numeric" type="number" min="1" step="1" value="15000000" placeholder="15000000" aria-describedby="metricUniverseStatus">
+      <p id="metricUniverseStatus" class="metric-universe-status" role="status">Universo predeterminado Citroën: 15.000.000 personas.</p>
       <div class="metric-reach-formula">U × [1 − Π(1 − alcanceᵢ / U)]</div>
       <small>No se suman los registros para presentar alcance neto. La estimación supone exposiciones independientes y no mide duplicación real.</small>
     </div>
@@ -368,5 +368,5 @@
 <script src="./reach-math.js?v=20261026b" defer></script>
 <script src="./concept3.js?v=20261026d" defer></script>
 <script src="./studio.js?v=20261026d" defer></script>
-<script src="./metric-editor.js?v=20261026b" defer></script>
+<script src="./metric-editor.js?v=20261026e" defer></script>
 </body></html>
