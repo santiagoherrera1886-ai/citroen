@@ -19,6 +19,8 @@ jobs:
           node --check meta.js
           node --check concept3.js
           node --check audit.js
+          node --check studio.js
+          node --check data/revision_2026.js
       - name: Verify structure and no simulated data
         run: node scripts/verify.cjs
       - name: Install lightweight DOM test runner
@@ -27,3 +29,5 @@ jobs:
         run: node scripts/smoke-planning.cjs
       - name: Browser-like audit detail test
         run: node scripts/smoke-audit.cjs
+      - name: Browser-like custom Studio editor test
+        run: node scripts/smoke-studio.cjs
