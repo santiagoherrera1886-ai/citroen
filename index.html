@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="./concept3.css">
 <link rel="stylesheet" href="./model-fix.css?v=20261021b">
 <link rel="stylesheet" href="./audit.css?v=1">
+<link rel="stylesheet" href="./studio.css?v=20261026">
 </head>
 <body>
 <svg xmlns="http://www.w3.org/2000/svg" class="symbols" aria-hidden="true">
@@ -54,6 +55,7 @@
       <button class="nav-link" data-target="territorios"><svg><use href="#i-pin"/></svg> Geografía <span>06</span></button>
       <button class="nav-link" data-target="campanas"><svg><use href="#i-layers"/></svg> Campañas <span>05</span></button>
       <button class="nav-link" data-target="creativos"><svg><use href="#i-image"/></svg> Creativos <span>08</span></button>
+      <button class="nav-link" data-target="studio"><svg><use href="#i-layers"/></svg> Editor de informes <span>09</span></button>
       <button class="nav-link" data-target="datos"><svg><use href="#i-db"/></svg> Datos & fuentes <span>07</span></button>
     </nav>
     <div class="sidebar-bottom">
@@ -158,7 +160,7 @@
   </div>
   <div class="audit-rules">
   <div><span>ENERO · VERSIÓN</span><strong>Escenario ampliado</strong><small>117 M + 13 M Berlingo; existe una versión previa por 92,5 M</small></div>
-  <div><span>ABRIL · ADICIONAL</span><strong>$13,5 M sin confirmar</strong><small>Hoja PPTO ADICIONAL; no incluida en la base proyectada</small></div>
+  <div><span>ABRIL · ADICIONAL</span><strong>$13,5 M no incluidos</strong><small>Hoja PPTO ADICIONAL; no incluida en la base proyectada</small></div>
   <div><span>BERLINGO · LEADS</span><strong>BOT cambia desde junio</strong><small>De enero a mayo: 5 modelos; desde junio: incluye Berlingo</small></div>
 </div><div id="planOverviewNote" class="plan-small-note">Cargando proyecciones auditadas…</div>
   <div class="plan-kpis" id="planKpis"></div>
@@ -176,7 +178,7 @@
     <p class="plan-footnote">* CPL del plan solo se muestra cuando hay leads informados para todo el alcance seleccionado. Los reales proceden exclusivamente del archivo cargado en «Datos & fuentes».</p>
   </article>
   <article class="panel plan-detail">
-    <div class="panel-head"><div><div class="section-overline">557 ASIGNACIONES AUDITADAS</div><h3>Distribución detallada del plan</h3><p>551 líneas originales de estructura + 6 presupuestos Berlingo que estaban en anexos independientes. Las celdas originales están identificadas; los filtros de región y tipo no modifican la base mensual.</p></div><span id="planDetailCount" class="mini-pill">557 FILAS</span></div>
+    <div class="panel-head"><div><div class="section-overline">ASIGNACIONES REVISADAS</div><h3>Distribución detallada del plan</h3><p>Detalle de las versiones vigentes de 2026, con Berlingo separado para evitar duplicidades. Mayo tiene una diferencia de $992.624 entre BOT y estructura que sigue pendiente.</p></div><span id="planDetailCount" class="mini-pill">DETALLE ACTUALIZADO</span></div>
     <div class="table-toolbar"><label class="table-search"><svg><use href="#i-search"/></svg><input id="planSearch" placeholder="Buscar campaña, región, conjunto…" aria-label="Buscar distribución del plan"></label><span id="planDetailBudget"></span></div>
     <div class="table-scroll"><table><thead><tr><th>MES</th><th>CAMPAÑA</th><th>TIPO</th><th>REGIÓN</th><th>CONJUNTO / ÁMBITO</th><th>MODELO</th><th>PRESUPUESTO</th><th>ORIGEN</th></tr></thead><tbody id="planDetailRows"></tbody></table></div>
     <div class="plan-table-foot">Mostrando un máximo de 120 filas en pantalla; la exportación contiene todas las filas filtradas. Los importes por región no representan alcance geográfico único.</div>
@@ -188,7 +190,7 @@
 <section id="auditoria" class="page-section cit-audit-page" aria-labelledby="auditTitle">
   <div class="section-header">
     <div><div class="section-overline">AUDITORÍA FORENSE · 10 EXCEL ORIGINALES · 2026</div>
-      <h2 id="auditTitle">La verdad detrás del plan</h2>
+      <h2 id="auditTitle">Plan actualizado, con diferencias visibles</h2>
       <p>Versiones, presupuestos, metas, Berlingo, fórmulas rotas y conciliación de cada mes — con referencias de hoja y celda.</p></div>
     <button type="button" id="auditToPlan" class="secondary-button"><svg><use href="#i-chart"/></svg> Volver a Planeación</button>
   </div>
@@ -198,7 +200,7 @@
       <p>Separamos el escenario base, las versiones anteriores, los adicionales pendientes de aprobación y los resultados realmente ejecutados.</p></div>
     <div class="cit-audit-hero-meta"><b id="auditBaseHero">—</b><small>Presupuesto base · COP</small><span>NO ES GASTO EJECUTADO</span></div>
   </div>
-  <div id="auditStatus" class="cit-audit-status">Verificando los diez libros y las 557 asignaciones…</div>
+  <div id="auditStatus" class="cit-audit-status">Revisando las versiones actualizadas y sus diferencias…</div>
   <div class="cit-audit-stats" id="auditStats"></div>
   <div class="cit-audit-tools">
     <label>MES <select id="auditMonth"><option value="">Todos los meses</option></select></label>
@@ -225,7 +227,7 @@
     <div id="auditScenarioList" class="cit-scenario-list"></div>
   </article>
   <article class="panel cit-audit-panel" data-audit-panel="alerts" hidden>
-    <div class="panel-head"><div><div class="section-overline">EXCEL QUALITY REVIEW</div><h3>Hallazgos con hoja y celda</h3><p>Observaciones auditadas de las fuentes originales, con acción recomendada.</p></div><span id="auditAlertCount" class="mini-pill">30 ALERTAS</span></div>
+    <div class="panel-head"><div><div class="section-overline">EXCEL QUALITY REVIEW</div><h3>Hallazgos con hoja y celda</h3><p>Observaciones auditadas de las fuentes originales, con acción recomendada.</p></div><span id="auditAlertCount" class="mini-pill">ALERTAS DOCUMENTADAS</span></div>
     <div id="auditAlertList" class="cit-audit-alert-list"></div>
   </article>
   <article class="panel cit-audit-provenance">
@@ -299,6 +301,51 @@
       <section id="creativos" class="page-section">
         <div class="section-header"><div><div class="section-overline">CREATIVE EXPLORER</div><h2>Creatividad respaldada por datos.</h2><p>Imágenes de pauta únicamente cuando existan URLs de piezas reales en tu fuente de campañas.</p></div></div><div id="creativeGrid" class="creative-grid"></div>
       </section>
+      
+      <section id="studio" class="page-section studio-section">
+        <div class="studio-heading">
+          <div><div class="studio-kicker">CITROËN / CUSTOM REPORT BUILDER</div>
+            <h2>Tu dashboard, a tu manera.</h2>
+            <p>Construye tus propios informes: agrega comparativos, cambia las métricas y los tipos de gráfico, mueve las tarjetas y guarda tus vistas. Inspirado en Looker Studio, sin perder los datos originales.</p>
+          </div>
+          <span class="studio-chip">EDICIÓN FLEXIBLE · 2026</span>
+        </div>
+        <div class="studio-alert">
+          <b>Fuentes diferenciadas:</b> presupuesto y metas del plan enero–octubre no son resultados reales.
+          El ejecutado cubre exclusivamente Meta Ads (enero a 20 de octubre).
+          <b>Mayo:</b> el BOT y la estructura tienen una diferencia sin conciliar de $992.624 COP.
+        </div>
+        <div class="studio-toolbar">
+          <label>Período
+            <select id="studioMonth"><option value="">Enero – Octubre</option></select>
+          </label>
+          <label>Modelo
+            <select id="studioModel"><option value="">Todos los modelos</option></select>
+          </label>
+          <div class="studio-actions">
+            <button type="button" id="studioAdd" class="studio-btn primary">＋ Agregar gráfico</button>
+            <button type="button" id="studioCompare" class="studio-btn coral">⊞ Nuevo comparativo</button>
+            <button type="button" id="studioEdit" class="studio-btn">Bloquear diseño</button>
+            <button type="button" id="studioSave" class="studio-btn">Guardar vista</button>
+          </div>
+        </div>
+        <div class="studio-secondary">
+          <span id="studioCount">Preparando vistas personalizadas…</span>
+          <div class="studio-smallactions">
+            <button type="button" id="studioExport" class="studio-btn">Exportar diseño JSON</button>
+            <label for="studioImport" class="studio-btn" style="cursor:pointer">Importar diseño</label>
+            <input type="file" id="studioImport" accept="application/json,.json" class="studio-hidden-input">
+            <button type="button" id="studioCsv" class="studio-btn">Exportar datos CSV</button>
+            <button type="button" id="studioReset" class="studio-btn">Restablecer vista</button>
+          </div>
+        </div>
+        <div id="studioCards" class="studio-cards" aria-live="polite"></div>
+        <div class="studio-footer">
+          <b>Cómo editar:</b> cambia fuente, indicador, eje o formato dentro de cada tarjeta; arrastra para reorganizar (o usa las flechas).
+          Los diseños se guardan en el navegador. Para compartirlos con otro equipo o dispositivo, exporta e importa el archivo JSON.
+          <p id="studioStatus">Cargando proyecciones y ejecución…</p>
+        </div>
+      </section>
       <section id="datos" class="page-section">
         <div class="section-header"><div><div class="section-overline">TRUSTED DATA LAYER</div><h2>Datos reales, decisiones reales.</h2><p>Carga datos reales y visualiza su origen. Nada de inversiones históricas inventadas.</p></div></div>
         <div class="data-grid">
@@ -314,9 +361,11 @@
 <div id="toast" role="status" aria-live="polite" class="toast"></div>
 <script src="./app.js?v=20261021b" defer></script>
 <script src="./data/proyecciones_2026.js" defer></script>
+<script src="./data/revision_2026.js?v=20261026" defer></script>
 <script src="./planning.js?v=20261021-audit-v2" defer></script>
 <script src="./data/auditoria_2026.js" defer></script>
 <script src="./audit.js" defer></script>
 <script src="./meta.js" defer></script>
-<script src="./concept3.js?v=20261021b" defer></script>
+<script src="./concept3.js?v=20261026" defer></script>
+<script src="./studio.js?v=20261026" defer></script>
 </body></html>
