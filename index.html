@@ -13,7 +13,7 @@
 <link rel="stylesheet" href="./concept3.css">
 <link rel="stylesheet" href="./model-fix.css?v=20261021b">
 <link rel="stylesheet" href="./audit.css?v=1">
-<link rel="stylesheet" href="./studio.css?v=20261026d">
+<link rel="stylesheet" href="./studio.css?v=20261026-style1">
 </head>
 <body>
 <svg xmlns="http://www.w3.org/2000/svg" class="symbols" aria-hidden="true">
@@ -125,8 +125,9 @@
 
   <aside id="metricInspector" class="metric-inspector" aria-label="Propiedades del gráfico y campos" hidden>
     <div class="metric-inspector-head"><div><span class="metric-eyebrow">CITROËN · VISUALIZACIONES</span><h2>Propiedades del gráfico</h2></div><button id="metricInspectorClose" type="button" aria-label="Deseleccionar gráfico" title="Deseleccionar">×</button></div>
-    <div class="metric-inspector-tabs"><span class="is-active">Configuración</span><span>Datos</span></div>
+    <div class="metric-inspector-tabs" role="tablist" aria-label="Propiedades del gráfico"><button type="button" role="tab" aria-selected="true" class="is-active" data-inspector-tab="data">Datos</button><button type="button" role="tab" aria-selected="false" data-inspector-tab="style">Estilo</button></div>
     <div class="metric-selection"><small>ELEMENTO SELECCIONADO</small><strong id="metricCurrent">Selecciona un indicador</strong><span id="metricCurrentSub">Haz clic en un gráfico o tarjeta del resumen</span></div>
+    <div id="metricDataPane" class="metric-data-pane" role="tabpanel" aria-label="Configuración de datos">
     <div class="metric-inspector-label"><strong>Métrica</strong><span>CAMBIAR CAMPO</span></div>
     <label for="metricFieldInput" class="metric-search-label"><span aria-hidden="true">⌕</span><input id="metricFieldInput" type="search" placeholder="Buscar campos..." autocomplete="off" aria-label="Buscar métricas"></label>
     <div id="metricFields" class="metric-fields" role="group" aria-label="Métricas disponibles"></div>
@@ -140,6 +141,25 @@
       <small>No se suman los registros para presentar alcance neto. La estimación supone exposiciones independientes y no mide duplicación real.</small>
     </div>
     <p id="metricHint" class="metric-inspector-hint">Selecciona una métrica para reemplazar la que aparece en la tarjeta.</p>
+    </div>
+    <div id="metricStylePane" class="metric-style-pane" role="tabpanel" aria-label="Estilo del gráfico" hidden>
+      <div class="metric-style-kicker">DISEÑO DEL ELEMENTO</div>
+      <div class="metric-style-intro">Personaliza esta tarjeta y sus series. Tus cifras no cambian.</div>
+      <div class="metric-style-section"><strong>Paletas rápidas</strong><div id="metricStylePresets" class="metric-style-presets" role="group" aria-label="Paletas de color"></div></div>
+      <div class="metric-style-section"><strong>Colores personalizados</strong>
+        <label class="metric-color-row">Serie principal <input type="color" data-style-field="primary" value="#a9d4eb"></label>
+        <label class="metric-color-row">Serie secundaria <input type="color" data-style-field="secondary" value="#f46b74"></label>
+        <label class="metric-color-row">Fondo de tarjeta <input type="color" data-style-field="background" value="#ffffff"></label>
+        <label class="metric-color-row">Texto y valores <input type="color" data-style-field="text" value="#193a55"></label>
+        <label class="metric-color-row">Borde de tarjeta <input type="color" data-style-field="border" value="#e9f0f5"></label>
+      </div>
+      <div class="metric-style-section"><strong>Formato</strong>
+        <label class="metric-style-row">Esquinas <select data-style-field="radius"><option value="0">Cuadradas</option><option value="8">Sutiles</option><option value="15">Redondeadas</option><option value="24">Muy redondeadas</option></select></label>
+        <label class="metric-style-row">Tamaño de texto <select data-style-field="fontSize"><option value="0.9">Compacto</option><option value="1">Normal</option><option value="1.1">Grande</option><option value="1.2">Muy grande</option></select></label>
+      </div>
+      <div class="metric-style-actions"><button id="metricStyleReset" type="button">Restablecer este estilo</button><button id="metricStyleApplyAll" type="button">Aplicar a todas</button></div>
+      <p class="metric-style-note">Los cambios se muestran al instante y se guardan en este navegador. Puedes exportar el diseño para reutilizarlo.</p>
+    </div>
     <div class="metric-inspector-foot"><span class="metric-foot-dot"></span> Meta Ads real + planeación 2026</div>
   </aside>
   <div id="studioCards" class="c3-summary-grid" aria-label="Paneles del resumen personalizable">
@@ -366,7 +386,7 @@
 <script src="./audit.js" defer></script>
 <script src="./meta.js" defer></script>
 <script src="./reach-math.js?v=20261026b" defer></script>
-<script src="./concept3.js?v=20261026d" defer></script>
-<script src="./studio.js?v=20261026d" defer></script>
-<script src="./metric-editor.js?v=20261026e" defer></script>
+<script src="./concept3.js?v=20261026-style1" defer></script>
+<script src="./studio.js?v=20261026-style1" defer></script>
+<script src="./metric-editor.js?v=20261026-style1" defer></script>
 </body></html>
