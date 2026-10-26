@@ -281,3 +281,45 @@ body:has(.c3-dashboard.studio-edit-on) .concept3-shell .content{max-width:none;p
 .studio-photo-footer button:last-child{background:#f34c5e;color:#fff;border-color:#f34c5e}
 @media(max-width:1150px){.studio-gallery{grid-template-columns:repeat(3,minmax(0,1fr))}.studio-photo-card{grid-template-columns:95px minmax(0,1fr)}.studio-photo-card>img{height:110px}}
 @media(max-width:690px){.studio-gallery{grid-template-columns:repeat(3,minmax(0,1fr))}.studio-creation-heading{align-items:flex-start}.studio-photo-dialog{padding:9px}.studio-photo-modal{padding:13px;max-height:95vh}.studio-photo-models{grid-template-columns:1fr}.studio-photo-card{grid-template-columns:96px minmax(0,1fr)}.studio-photo-header h2{font-size:20px}.studio-photo-card>img{height:115px}.studio-creation-secondary{font-size:10px;padding:8px}}
+
+
+/* Owner-only Design login and master user directory. Read-only dashboard stays untouched. */
+.citroen-auth-master-link,.citroen-auth-exit{border:1px solid #d7e6f0;background:#fff;color:#326380;border-radius:9px;padding:10px 12px;cursor:pointer;font:800 11px Manrope,Arial,sans-serif;white-space:nowrap}
+.citroen-auth-master-link:hover,.citroen-auth-exit:hover{border-color:#ed5667;color:#d63d52}
+.citroen-auth-master-link[hidden],.citroen-auth-exit[hidden]{display:none!important}
+.citroen-auth-overlay[hidden]{display:none!important}
+.citroen-auth-overlay{position:fixed;inset:0;z-index:250;display:flex;align-items:center;justify-content:center;padding:24px}
+.citroen-auth-shade{position:absolute;inset:0;background:rgba(12,31,50,.76);backdrop-filter:blur(9px)}
+.citroen-auth-card{position:relative;box-sizing:border-box;width:min(100%,455px);max-height:94vh;overflow-y:auto;background:#fff;border:1px solid #e0e9f0;border-radius:22px;padding:32px 34px;box-shadow:0 22px 80px #09263870;font-family:Manrope,Arial,sans-serif;color:#173b55}
+.citroen-auth-close{position:absolute;top:14px;right:15px;font-size:23px;width:35px;height:35px;background:#f4f8fc;border:1px solid #dbe8f0;border-radius:10px;cursor:pointer;color:#829aaa}
+.citroen-auth-top{display:flex;gap:9px;align-items:center;padding-right:31px}
+.citroen-auth-top span{font-size:9px;letter-spacing:.15em;color:#e34b5b;font-weight:900}
+.citroen-auth-emblem{display:grid;place-items:center;font-size:24px;color:white;background:#ec4556;border-radius:12px;width:42px;height:42px;flex:none}
+.citroen-auth-card h2{font-size:clamp(23px,2.1vw,31px);font-weight:850;letter-spacing:-.04em;line-height:1.2;margin:19px 0 9px;color:#153a55}
+.citroen-auth-card p{font-size:12px;line-height:1.7;color:#778fa1;margin:9px 0 18px}
+.citroen-auth-card form{display:flex;flex-direction:column;gap:14px}
+.citroen-auth-card form label{display:flex;flex-direction:column;gap:6px;color:#3c657d;font-size:11px;font-weight:850}
+.citroen-auth-card input{box-sizing:border-box;width:100%;padding:12px;border-radius:10px;border:1px solid #d4e4ee;background:#f9fcff;color:#1d475f;font:600 12px Manrope,Arial,sans-serif;outline:none}
+.citroen-auth-card input:focus{border-color:#59a9d6;box-shadow:0 0 0 3px #59a9d620}
+.citroen-auth-submit{background:#f14659;border:1px solid #f14659;color:white;padding:13px 16px;border-radius:10px;font:800 12px Manrope,Arial,sans-serif;cursor:pointer;margin-top:2px}
+.citroen-auth-submit:hover{background:#d9364b}
+.citroen-auth-activate{border:0;background:transparent;color:#497e9c;font:700 11px Manrope,Arial,sans-serif;margin-top:16px;padding:7px 0;text-decoration:underline;cursor:pointer}
+.citroen-auth-status{font-size:11px!important;margin-top:17px!important;background:#f0f8fe;border-radius:9px;color:#315f7d!important;padding:10px 12px;line-height:1.6!important}
+.citroen-auth-status:empty{display:none}
+.citroen-auth-status.error{background:#fff0f1;color:#b53d4f!important}
+.citroen-auth-footnote{font-size:10px!important;color:#95a8b6!important;margin-bottom:0!important}
+.citroen-master-card{width:min(100%,870px)}
+.citroen-master-toolbar{display:flex;justify-content:space-between;align-items:center;border:1px solid #e2ebf2;background:#f5f9fc;border-radius:10px;padding:10px 13px;margin-bottom:20px;gap:12px;font-size:11px;color:#52778d;font-weight:750}
+.citroen-master-toolbar button,.citroen-auth-outline{border:1px solid #d5e4ef;background:#fff;padding:9px 11px;border-radius:8px;font:750 10px Manrope,Arial,sans-serif;cursor:pointer;color:#366981}
+.citroen-master-grid{display:grid;grid-template-columns:1fr 1fr;gap:19px}
+.citroen-master-grid>section{background:#fafcfe;border:1px solid #e0eaf1;border-radius:13px;padding:17px;min-width:0}
+.citroen-master-grid h3{margin:0 0 16px;color:#1a465f;font-size:13px}
+.citroen-master-users-list{max-height:340px;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
+.citroen-user-row{border:1px solid #e0eaf1;background:#fff;border-radius:10px;padding:11px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:9px}
+.citroen-user-row>div:first-child{min-width:0;flex:1}
+.citroen-user-row strong{font-size:10px;display:block;overflow-wrap:anywhere}
+.citroen-user-row small{font-size:9px;color:#8aa0b0;display:block;margin-top:3px}
+.citroen-user-actions{display:flex;gap:5px;flex-wrap:wrap}
+.citroen-user-actions button{border:1px solid #daebf4;background:#f0f7fc;color:#376b89;border-radius:7px;padding:7px;cursor:pointer;font:750 9px Manrope,Arial,sans-serif}
+.citroen-user-actions button:hover{color:#d24456;background:#fff1f3}
+@media(max-width:760px){.citroen-auth-overlay{padding:11px}.citroen-auth-card{padding:23px 17px}.citroen-master-grid{grid-template-columns:1fr}.citroen-master-card{max-height:94vh}.citroen-auth-master-link,.citroen-auth-exit{padding:8px}}
