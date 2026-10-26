@@ -34,7 +34,7 @@ function rowsFor(card){
  const selectedModels=Array.from(new Set(plan.models.map(x=>x[1])));
  const useModel=card.model||state.model;
  const groupVals=card.dimension==="month"?selectedMonths:selectedModels.filter(m=>!useModel||useModel===m);
- return groupVals.map(key=>{
+ const rows=groupVals.map(key=>{
   const p=plan.models.filter(r=>(card.dimension==="month"?plan.months[r[0]][0]===key: norm(r[1])===norm(key))&&(!state.month||plan.months[r[0]][0]===state.month)&&(!useModel||norm(r[1])===norm(useModel)));
   const a=meta.filter(r=>(card.dimension==="month"?r.month===key:norm(r.model)===norm(key))&&(!state.month||r.month===state.month)&&(!useModel||norm(r.model)===norm(useModel)));
   const included=card.metric==="leads"||card.metric==="cpl" ? p.filter(r=>useModel||card.dimension==="model"||r[1]!=="BERLINGO") : p;
@@ -46,31 +46,46 @@ function rowsFor(card){
   const actual=card.metric==='investment'?ai:card.metric==='leads'?al:card.metric==='cpl'?(al>0?ai/al:null):card.metric==='impressions'?imp:card.metric==='reach'?reach:card.metric==='clicks'?clicks:card.metric==='all_clicks'?allClicks:card.metric==='messages'?msg:card.metric==='ctr'?(imp>0?100*clicks/imp:null):card.metric==='cpm'?(imp>0?1000*ai/imp:null):card.metric==='cost_message'?(msg>0?ai/msg:null):null;
   return {key,label:card.dimension==="month"?monthNames[Number(key.slice(-2))-1]||key:key,planned:p.length?planned:null,actual:a.length?actual:null};
  }).filter(x=>x.planned!=null||x.actual!=null);
+ if(["asc","desc"].includes(card.sort)){
+  const dir=card.sort==="asc"?1:-1,key=card.source==="meta"?"actual":"planned";
+  rows.sort((a,b)=>((a[key]||0)-(b[key]||0))*dir);
+ }
+ return Number(card.limit)>0?rows.slice(0,Number(card.limit)):rows;
 }
 function modeValues(card,data){return data.map(x=>({label:x.label,one:card.source==="meta"?x.actual:x.planned,two:card.source==="compare"?x.actual:null}));}
 function chartSvg(data,card){
  if(!data.length)return '<p class="studio-empty">No existen registros para los filtros elegidos.</p>';
- const s=modeValues(card,data);const max=Math.max(1,...s.map(r=>Math.max(r.one||0,r.two||0)));const W=760,H=245,l=58,r=20,t=30,b=46,pw=W-l-r,ph=H-t-b,step=pw/s.length;
+ const styling=window.CITROEN_STYLE_EDITOR?.get("c:"+card.id)||{},values=styling.showLabels===true;
+ const s=modeValues(card,data),max=Math.max(1,...s.map(r=>Math.max(r.one||0,r.two||0)));
+ const W=760,H=245,l=58,r=20,t=30,b=46,pw=W-l-r,ph=H-t-b,step=pw/s.length;
  const sy=v=>t+ph-(Math.max(0,v||0)/max)*ph;
- let grid="";
+ let grid="",marks="",p1=[],p2=[];
  for(let i=0;i<=4;i++){const y=t+ph*i/4;grid+='<line x1="'+l+'" x2="'+(W-r)+'" y1="'+y+'" y2="'+y+'" stroke="#e5edf4"/><text x="'+(l-7)+'" y="'+(y+4)+'" font-size="10" text-anchor="end" fill="#60798b">'+html(SHORT(max*(1-i/4)))+"</text>";}
- let marks="";let path1=[],path2=[];
  s.forEach((v,i)=>{
-  const x=l+step*(i+.5),barW=Math.min(24,step*.29);
+  const x=l+step*(i+.5),w=Math.min(24,step*.29);
   if(card.chart==="bar"){
-   if(v.one!=null)marks+='<rect x="'+(x-(v.two!=null?barW+2:barW/2))+'" y="'+sy(v.one)+'" width="'+barW+'" height="'+Math.max(0,t+ph-sy(v.one))+'" rx="3" fill="#2f6590"><title>'+html(v.label+" · "+N(v.one))+"</title></rect>";
-   if(v.two!=null)marks+='<rect x="'+(x+2)+'" y="'+sy(v.two)+'" width="'+barW+'" height="'+Math.max(0,t+ph-sy(v.two))+'" rx="3" fill="#f07583"><title>'+html(v.label+" · "+N(v.two))+"</title></rect>";
+   if(v.one!=null){
+    const bx=x-(v.two!=null?w+2:w/2);
+    marks+='<rect x="'+bx+'" y="'+sy(v.one)+'" width="'+w+'" height="'+Math.max(0,t+ph-sy(v.one))+'" rx="3" fill="#2f6590"><title>'+html(v.label+" · "+N(v.one))+"</title></rect>";
+    if(values)marks+='<text x="'+(bx+w/2)+'" y="'+Math.max(13,sy(v.one)-5)+'" font-size="10" text-anchor="middle" fill="#2f6590">'+html(SHORT(v.one))+"</text>";
+   }
+   if(v.two!=null){
+    marks+='<rect x="'+(x+2)+'" y="'+sy(v.two)+'" width="'+w+'" height="'+Math.max(0,t+ph-sy(v.two))+'" rx="3" fill="#f07583"><title>'+html(v.label+" · "+N(v.two))+"</title></rect>";
+    if(values)marks+='<text x="'+(x+2+w/2)+'" y="'+Math.max(13,sy(v.two)-5)+'" font-size="10" text-anchor="middle" fill="#f07583">'+html(SHORT(v.two))+"</text>";
+   }
   }else{
-   if(v.one!=null)path1.push(x+","+sy(v.one));
-   if(v.two!=null)path2.push(x+","+sy(v.two));
-   if(v.one!=null)marks+='<circle cx="'+x+'" cy="'+sy(v.one)+'" r="4" fill="#2f6590"/>';
-   if(v.two!=null)marks+='<circle cx="'+x+'" cy="'+sy(v.two)+'" r="4" fill="#f07583"/>';
+   if(v.one!=null){p1.push([x,sy(v.one)]);marks+='<circle cx="'+x+'" cy="'+sy(v.one)+'" r="4" fill="#2f6590"/>';if(values)marks+='<text x="'+x+'" y="'+Math.max(13,sy(v.one)-10)+'" font-size="10" text-anchor="middle" fill="#2f6590">'+html(SHORT(v.one))+"</text>";}
+   if(v.two!=null){p2.push([x,sy(v.two)]);marks+='<circle cx="'+x+'" cy="'+sy(v.two)+'" r="4" fill="#f07583"/>';if(values)marks+='<text x="'+x+'" y="'+Math.max(13,sy(v.two)-10)+'" font-size="10" text-anchor="middle" fill="#f07583">'+html(SHORT(v.two))+"</text>";}
   }
   marks+='<text x="'+x+'" y="'+(H-14)+'" text-anchor="middle" font-size="'+(s.length>10?9:11)+'" fill="#385267">'+html(v.label.length>13?v.label.slice(0,12)+"…":v.label)+"</text>";
  });
- if(card.chart==="line"){
-  if(path1.length>1)marks+='<polyline points="'+path1.join(" ")+'" fill="none" stroke="#2f6590" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>';
-  if(path2.length>1)marks+='<polyline points="'+path2.join(" ")+'" fill="none" stroke="#f07583" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>';
+ if(card.chart==="line"||card.chart==="area"){
+  for(const [points,color] of [[p1,"#2f6590"],[p2,"#f07583"]]){
+   if(points.length<2)continue;
+   const coords=points.map(([x,y])=>x+","+y).join(" ");
+   if(card.chart==="area")marks+='<polygon points="'+points[0][0]+','+(t+ph)+' '+coords+' '+points[points.length-1][0]+','+(t+ph)+'" fill="'+color+'" opacity=".14"/>';
+   marks+='<polyline points="'+coords+'" fill="none" stroke="'+color+'" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>';
+  }
  }
  return '<svg class="studio-svg" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+html(card.title)+'">'+grid+marks+"</svg>";
 }
@@ -88,7 +103,7 @@ function cardHtml(card,index){
  '<label>Fuente<select data-control="source">'+opt([["plan","Plan 2026"],["meta","Meta Ads real"],["compare","Comparar plan y Meta"]],card.source)+"</select></label>"+
  '<label>Métrica<select data-control="metric">'+opt(metrics,current)+"</select></label>"+
  '<label>Eje<select data-control="dimension">'+opt([["month","Mes"],["model","Modelo"]],card.dimension)+"</select></label>"+
- '<label>Vista<select data-control="chart">'+opt([["bar","Barras"],["line","Líneas"],["table","Tabla"]],card.chart)+"</select></label>"+
+ '<label>Vista<select data-control="chart">'+opt([["bar","Barras"],["line","Líneas"],["area","Área"],["table","Tabla"]],card.chart)+"</select></label>"+
  '<button type="button" data-act="up" title="Mover arriba" aria-label="Mover panel a la izquierda">←</button>'+
  '<button type="button" data-act="down" title="Mover abajo" aria-label="Mover panel a la derecha">→</button>'+
  '<label>Tamaño<select data-card-size>'+sizeOptions(state.sizes["c:"+card.id]||3)+'</select></label>'+
@@ -214,6 +229,29 @@ function add(source){
  document.dispatchEvent(new CustomEvent("citroen:studio-created",{detail:{key:"c:"+id}}));
  if(card)card.scrollIntoView({behavior:"smooth",block:"center"});
 }
+window.CITROEN_STUDIO_ACTIONS={
+ getCustom(k){const c=state.cards.find(x=>"c:"+x.id===k);return c?{...c}:null;},
+ updateCustom(k,changes){
+  const c=state.cards.find(x=>"c:"+x.id===k);if(!c||!changes||typeof changes!=="object")return;
+  for(const [prop,val] of Object.entries(changes)){
+   if(prop==="chart"&&["bar","line","area","table"].includes(val))c.chart=val;
+   if(prop==="source"&&["plan","meta","compare"].includes(val))c.source=val;
+   if(prop==="dimension"&&["month","model"].includes(val))c.dimension=val;
+   if(prop==="sort"&&["original","asc","desc"].includes(val))c.sort=val;
+   if(prop==="limit"&&["0","3","5","10"].includes(String(val)))c.limit=String(val);
+   if(prop==="model"&&typeof val==="string")c.model=val;
+  }
+  if(c.source!=="meta"&&!["investment","leads","cpl"].includes(c.metric))c.metric="investment";
+  persist();draw();
+ },
+ duplicate(k){
+  const c=state.cards.find(x=>"c:"+x.id===k);if(!c)return;
+  const id=nextId(),idx=state.order.indexOf(k);
+  state.cards.push({...c,id,title:(c.title+" · copia").slice(0,90)});
+  state.order.splice(idx+1,0,"c:"+id);state.sizes["c:"+id]=state.sizes[k]||3;
+  persist();draw();document.dispatchEvent(new CustomEvent("citroen:studio-created",{detail:{key:"c:"+id}}));
+ }
+};
 function exportCsv(){
  let lines=[["Panel","Fuente","Eje","Grupo","Planeado","Meta Ads"].join(";")];
  for(const card of state.cards)for(const r of rowsFor(card))lines.push([card.title,card.source,card.dimension,r.label,r.planned==null?"":r.planned,r.actual==null?"":r.actual].map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(";"));
@@ -222,12 +260,13 @@ function exportCsv(){
 
 function wire(){
  document.addEventListener("citroen:metric-settings",()=>{if(ready)draw();});
+ document.addEventListener("citroen:style-settings",()=>{if(ready)draw();});
  $("studioAdd").onclick=()=>add("plan");
  $("studioCompare").onclick=()=>add("compare");
  $("studioEdit").onclick=()=>{state.edit=!state.edit;persist();draw();};
  $("studioSave").onclick=()=>{persist();alertStatus("Vista del resumen guardada en este navegador. Puedes exportarla para compartirla.");};
  $("studioExport").onclick=()=>{
-  download(JSON.stringify({schema:"citroen-workspace/v2",cards:state.cards,month:state.month,model:state.model,order:state.order,sizes:state.sizes,hidden:state.hidden,titles:state.titles,metrics:window.CITROEN_METRIC_EDITOR?window.CITROEN_METRIC_EDITOR.export():null},null,2),"citroen_resumen_editable.json");
+  download(JSON.stringify({schema:"citroen-workspace/v2",cards:state.cards,month:state.month,model:state.model,order:state.order,sizes:state.sizes,hidden:state.hidden,titles:state.titles,metrics:window.CITROEN_METRIC_EDITOR?window.CITROEN_METRIC_EDITOR.export():null,styles:window.CITROEN_STYLE_EDITOR?.export()||null},null,2),"citroen_resumen_editable.json");
  };
  $("studioCsv").onclick=exportCsv;
  $("studioImport").onchange=async e=>{
@@ -236,7 +275,7 @@ function wire(){
    const o=JSON.parse(await file.text());
    if(!["citroen-workspace/v1","citroen-workspace/v2"].includes(o.schema)||!Array.isArray(o.cards)||o.cards.length>40)throw Error("Formato de diseño no válido");
    const idMap={};
-   state.cards=o.cards.filter(c=>["plan","meta","compare"].includes(c.source)&&["bar","line","table"].includes(c.chart)&&["month","model"].includes(c.dimension)&&typeof c.title==="string").map(c=>{
+   state.cards=o.cards.filter(c=>["plan","meta","compare"].includes(c.source)&&["bar","line","area","table"].includes(c.chart)&&["month","model"].includes(c.dimension)&&typeof c.title==="string").map(c=>{
     const id=nextId();idMap["c:"+c.id]="c:"+id;
     return {id,title:c.title.slice(0,90),source:c.source,metric:Object.keys(metricLabels).includes(c.metric)?c.metric:"investment",dimension:c.dimension,chart:c.chart,model:""};
    });
@@ -246,13 +285,19 @@ function wire(){
    state.titles=typeof o.titles==="object"&&o.titles&&!Array.isArray(o.titles)?o.titles:{};
    state.month=typeof o.month==="string"?o.month:"";state.model=typeof o.model==="string"?o.model:"";
    $("studioMonth").value=state.month;$("studioModel").value=state.model;
-   state.edit=true;if(o.metrics&&window.CITROEN_METRIC_EDITOR)window.CITROEN_METRIC_EDITOR.replace(o.metrics);persist();draw();alertStatus("Diseño del resumen importado correctamente.");
+   state.edit=true;
+   if(o.metrics&&window.CITROEN_METRIC_EDITOR)window.CITROEN_METRIC_EDITOR.replace(o.metrics);
+   if(o.styles&&window.CITROEN_STYLE_EDITOR){
+    const changed={};for(const [k,v] of Object.entries(o.styles.elements||{}))changed[idMap[k]||k]=v;
+    window.CITROEN_STYLE_EDITOR.replace({elements:changed});
+   }
+   persist();draw();alertStatus("Diseño del resumen importado correctamente.");
   }catch(err){alertStatus("No se pudo importar: "+err.message);}
   e.target.value="";
  };
  $("studioReset").onclick=()=>{
   if(!confirm("¿Restaurar la disposición original del Resumen y quitar gráficos personalizados?"))return;
-  state.cards=[];state.order=[...defaultOrder];state.sizes={};state.hidden=[];state.titles={};state.month="";state.model="";if(window.CITROEN_METRIC_EDITOR)window.CITROEN_METRIC_EDITOR.reset();
+  state.cards=[];state.order=[...defaultOrder];state.sizes={};state.hidden=[];state.titles={};state.month="";state.model="";if(window.CITROEN_METRIC_EDITOR)window.CITROEN_METRIC_EDITOR.reset();if(window.CITROEN_STYLE_EDITOR)window.CITROEN_STYLE_EDITOR.resetAll();
   $("studioMonth").value="";$("studioModel").value="";
   for(const id of nativeIds){const heading=$(id)?.querySelector(".c3-panel-heading h3");if(heading){heading.dataset.studioApplied="";if(id==="c3ComparePanel")heading.textContent="Planeado vs Ejecutado";if(id==="c3FunnelPanel")heading.textContent="Funnel de conversión";if(id==="c3ModelsPanel")heading.textContent="Desempeño por modelo";if(id==="c3CampaignPanel")heading.textContent="Campañas principales";if(id==="c3InsightsPanel")heading.textContent="✳ Hallazgos clave";}}
   persist();draw();alertStatus("Resumen restaurado.");
