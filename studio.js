@@ -9,7 +9,7 @@ const N=x=>x==null?"—":new Intl.NumberFormat("es-CO",{maximumFractionDigits:1}
 const SHORT=x=>x==null?"—":Math.abs(x)>=1000000?N(x/1000000)+" M":Math.abs(x)>=1000?N(x/1000)+" mil":N(x);
 const monthNames=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct"];
 const categories={month:"Mes",model:"Modelo"};
-const metricLabels={investment:"Inversión",leads:"Leads / formularios",cpl:"Costo por lead / formulario",impressions:"Impresiones"};
+const metricLabels={investment:'Inversión',leads:'Formularios',cpl:'Costo por formulario',impressions:'Impresiones',reach:'Alcance sumado*',clicks:'Clics enlace',all_clicks:'Clics totales',messages:'Conversaciones',ctr:'CTR enlace',cpm:'CPM',cost_message:'Costo/conversación'};
 const legacyDefaults=[
  {id:"a",title:"Inversión planeada vs. Meta",source:"compare",metric:"investment",dimension:"month",chart:"bar",model:""},
  {id:"b",title:"Presupuesto por modelo",source:"plan",metric:"investment",dimension:"model",chart:"bar",model:""},
@@ -41,9 +41,9 @@ function rowsFor(card){
   const pi=p.reduce((v,r)=>v+(Number(r[2])||0),0);
   const pl=included.some(r=>r[3]==null)?null:included.reduce((v,r)=>v+(Number(r[3])||0),0);
   const passengerBudget=included.reduce((v,r)=>v+(Number(r[2])||0),0);
-  const ai=a.reduce((v,r)=>v+r.spend,0),al=a.reduce((v,r)=>v+r.forms,0),imp=a.reduce((v,r)=>v+r.impressions,0);
+  const sum=f=>a.reduce((v,r)=>v+(r[f]||0),0),ai=sum('spend'),al=sum('forms'),msg=sum('messages'),imp=sum('impressions'),reach=sum('reach'),clicks=sum('clicks'),allClicks=sum('all_clicks');
   const planned=card.metric==="investment"?pi:card.metric==="leads"?pl:card.metric==="cpl"?(pl>0?passengerBudget/pl:null):null;
-  const actual=card.metric==="investment"?ai:card.metric==="leads"?al:card.metric==="cpl"?(al>0?ai/al:null):card.metric==="impressions"?imp:null;
+  const actual=card.metric==='investment'?ai:card.metric==='leads'?al:card.metric==='cpl'?(al>0?ai/al:null):card.metric==='impressions'?imp:card.metric==='reach'?reach:card.metric==='clicks'?clicks:card.metric==='all_clicks'?allClicks:card.metric==='messages'?msg:card.metric==='ctr'?(imp>0?100*clicks/imp:null):card.metric==='cpm'?(imp>0?1000*ai/imp:null):card.metric==='cost_message'?(msg>0?ai/msg:null):null;
   return {key,label:card.dimension==="month"?monthNames[Number(key.slice(-2))-1]||key:key,planned:p.length?planned:null,actual:a.length?actual:null};
  }).filter(x=>x.planned!=null||x.actual!=null);
 }
@@ -79,10 +79,10 @@ function table(data,card){
  let head="<tr><th>"+html(categories[card.dimension])+"</th><th>"+(card.source==="meta"?"Meta Ads":"Planeado")+"</th>"+(card.source==="compare"?"<th>Meta Ads</th>":"")+"</tr>";
  return '<div class="studio-table-wrap"><table><thead>'+head+"</thead><tbody>"+data.map(r=>"<tr><td>"+html(r.label)+"</td><td>"+(card.source==="meta"?format(r.actual,card.metric):format(r.planned,card.metric))+"</td>"+(card.source==="compare"?"<td>"+format(r.actual,card.metric)+"</td>":"")+"</tr>").join("")+"</tbody></table></div>";
 }
-function format(v,metric){return metric==="investment"||metric==="cpl"?COP(v):N(v);}
+function format(v,metric){return v==null?"—":["investment","cpl","cpm","cost_message"].includes(metric)?COP(v):metric==="ctr"?N(v)+" %":N(v);}
 function cardHtml(card,index){
  const data=rowsFor(card);
- const metrics=card.source==="plan"?[["investment","Inversión"],["leads","Metas de leads"],["cpl","CPL proyectado"]]:card.source==="meta"?[["investment","Inversión"],["leads","Formularios"],["cpl","Costo por formulario"],["impressions","Impresiones"]]:[["investment","Inversión"],["leads","Leads*"],["cpl","Costos*"]];
+ const metrics=card.source==="plan"?[["investment","Inversión"],["leads","Metas de leads"],["cpl","CPL proyectado"]]:card.source==="meta"?[["investment","Inversión"],["leads","Formularios"],["cpl","Costo por formulario"],...Object.entries(metricLabels).filter(([k])=>!["investment","leads","cpl"].includes(k)).map(([k,v])=>[k,v])]:[["investment","Inversión"],["leads","Leads*"],["cpl","Costos*"]];
  const current=metrics.some(x=>x[0]===card.metric)?card.metric:"investment";
  const controls=state.edit?'<div class="studio-card-tools">'+
  '<label>Fuente<select data-control="source">'+opt([["plan","Plan 2026"],["meta","Meta Ads real"],["compare","Comparar plan y Meta"]],card.source)+"</select></label>"+
@@ -174,7 +174,7 @@ function bindCustom(el){
  el.querySelector(".studio-card-title").onchange=e=>{card.title=e.target.value.slice(0,90)||"Gráfico sin título";persist();draw();};
  el.querySelectorAll("[data-control]").forEach(sel=>sel.onchange=e=>{
   card[sel.dataset.control]=e.target.value;
-  if(["plan","compare"].includes(card.source)&&card.metric==="impressions")card.metric="investment";
+  if(["plan","compare"].includes(card.source)&&!["investment","leads","cpl"].includes(card.metric))card.metric="investment";
   persist();draw();
  });
  el.querySelectorAll("[data-act]").forEach(b=>b.onclick=()=>{
@@ -202,7 +202,8 @@ function draw(){
  $("studioTools").hidden=!state.edit;
  $("studioEdit").innerHTML=state.edit?"✓ Terminar edición":"✎ Editar resumen";
  $("studioEdit").setAttribute("aria-pressed",String(state.edit));
- $("studioCount").textContent=(nativeIds.length+state.cards.length-state.hidden.length)+" gráficos visibles · arrastra para mover, cambia anchura o edita títulos";
+ $("studioCount").textContent=(nativeIds.length+state.cards.length-state.hidden.length)+" gráficos visibles · selecciona un gráfico para editar sus métricas";
+ document.dispatchEvent(new Event("citroen:studio-layout"));
 }
 function add(source){
  const id=nextId();
@@ -210,6 +211,7 @@ function add(source){
  state.order.push("c:"+id);
  state.edit=true;persist();draw();
  const card=document.querySelector('#studioCards .studio-card[data-id="'+id+'"]');
+ document.dispatchEvent(new CustomEvent("citroen:studio-created",{detail:{key:"c:"+id}}));
  if(card)card.scrollIntoView({behavior:"smooth",block:"center"});
 }
 function exportCsv(){
@@ -224,7 +226,7 @@ function wire(){
  $("studioEdit").onclick=()=>{state.edit=!state.edit;persist();draw();};
  $("studioSave").onclick=()=>{persist();alertStatus("Vista del resumen guardada en este navegador. Puedes exportarla para compartirla.");};
  $("studioExport").onclick=()=>{
-  download(JSON.stringify({schema:"citroen-workspace/v2",cards:state.cards,month:state.month,model:state.model,order:state.order,sizes:state.sizes,hidden:state.hidden,titles:state.titles},null,2),"citroen_resumen_editable.json");
+  download(JSON.stringify({schema:"citroen-workspace/v2",cards:state.cards,month:state.month,model:state.model,order:state.order,sizes:state.sizes,hidden:state.hidden,titles:state.titles,metrics:window.CITROEN_METRIC_EDITOR?window.CITROEN_METRIC_EDITOR.export():null},null,2),"citroen_resumen_editable.json");
  };
  $("studioCsv").onclick=exportCsv;
  $("studioImport").onchange=async e=>{
@@ -235,7 +237,7 @@ function wire(){
    const idMap={};
    state.cards=o.cards.filter(c=>["plan","meta","compare"].includes(c.source)&&["bar","line","table"].includes(c.chart)&&["month","model"].includes(c.dimension)&&typeof c.title==="string").map(c=>{
     const id=nextId();idMap["c:"+c.id]="c:"+id;
-    return {id,title:c.title.slice(0,90),source:c.source,metric:["investment","leads","cpl","impressions"].includes(c.metric)?c.metric:"investment",dimension:c.dimension,chart:c.chart,model:""};
+    return {id,title:c.title.slice(0,90),source:c.source,metric:Object.keys(metricLabels).includes(c.metric)?c.metric:"investment",dimension:c.dimension,chart:c.chart,model:""};
    });
    state.order=Array.isArray(o.order)?o.order.map(k=>idMap[k]||k):defaultOrder.concat(state.cards.map(c=>"c:"+c.id));
    state.sizes={};for(const [key,value] of Object.entries(o.sizes||{})){const dest=idMap[key]||key;if([2,3,4,6].includes(Number(value)))state.sizes[dest]=Number(value);}
@@ -243,13 +245,13 @@ function wire(){
    state.titles=typeof o.titles==="object"&&o.titles&&!Array.isArray(o.titles)?o.titles:{};
    state.month=typeof o.month==="string"?o.month:"";state.model=typeof o.model==="string"?o.model:"";
    $("studioMonth").value=state.month;$("studioModel").value=state.model;
-   state.edit=true;persist();draw();alertStatus("Diseño del resumen importado correctamente.");
+   state.edit=true;if(o.metrics&&window.CITROEN_METRIC_EDITOR)window.CITROEN_METRIC_EDITOR.replace(o.metrics);persist();draw();alertStatus("Diseño del resumen importado correctamente.");
   }catch(err){alertStatus("No se pudo importar: "+err.message);}
   e.target.value="";
  };
  $("studioReset").onclick=()=>{
   if(!confirm("¿Restaurar la disposición original del Resumen y quitar gráficos personalizados?"))return;
-  state.cards=[];state.order=[...defaultOrder];state.sizes={};state.hidden=[];state.titles={};state.month="";state.model="";
+  state.cards=[];state.order=[...defaultOrder];state.sizes={};state.hidden=[];state.titles={};state.month="";state.model="";if(window.CITROEN_METRIC_EDITOR)window.CITROEN_METRIC_EDITOR.reset();
   $("studioMonth").value="";$("studioModel").value="";
   for(const id of nativeIds){const heading=$(id)?.querySelector(".c3-panel-heading h3");if(heading){heading.dataset.studioApplied="";if(id==="c3ComparePanel")heading.textContent="Planeado vs Ejecutado";if(id==="c3FunnelPanel")heading.textContent="Funnel de conversión";if(id==="c3ModelsPanel")heading.textContent="Desempeño por modelo";if(id==="c3CampaignPanel")heading.textContent="Campañas principales";if(id==="c3InsightsPanel")heading.textContent="✳ Hallazgos clave";}}
   persist();draw();alertStatus("Resumen restaurado.");
@@ -279,7 +281,7 @@ async function start(){
   try{
    const response=await fetch("./data/meta_2026_daily.json",{cache:"no-store"});
    if(response.ok){const raw=await response.json(),dict=raw.dictionaries;
-    meta=raw.daily.map(r=>({month:String(dict.dates[r[0]]).slice(0,7),model:String(dict.models[r[1]]),spend:Number(r[4])||0,forms:Number(r[5])||0,impressions:Number(r[7])||0}));
+    meta=raw.daily.map(r=>({month:String(dict.dates[r[0]]).slice(0,7),model:String(dict.models[r[1]]),spend:Number(r[4])||0,forms:Number(r[5])||0,messages:Number(r[6])||0,impressions:Number(r[7])||0,clicks:Number(r[8])||0,all_clicks:Number(r[9])||0,reach:Number(r[10])||0}));
    }
   }catch(err){console.warn("Studio: ejecución Meta no disponible",err);}
   const store=saved();
