@@ -11,6 +11,7 @@ w.Response=class{constructor(stream){this.stream=stream;}async text(){return zli
 const actuals=JSON.parse(fs.readFileSync('data/meta_2026_daily.json','utf8'));
 w.fetch=async url=>({ok:true,json:async()=>actuals});
 w.confirm=()=>true;
+w.CITROEN_ACCESS={canEdit:()=>true,requestEdit:()=>{w.CITROEN_STUDIO_UNLOCK?.();return Promise.resolve(true);}};
 w.eval(fs.readFileSync('studio.js','utf8'));
 w.document.dispatchEvent(new w.Event('DOMContentLoaded',{bubbles:true}));
 (async()=>{
