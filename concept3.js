@@ -100,6 +100,15 @@ function comparison(rows){
  }
  $('c3CompareChart').innerHTML=`<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" role="img" aria-label="Planeado contra ejecutado, alcance de Meta Ads"><defs><pattern id="c3hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="#fae0e3"/><rect width="3" height="7" fill="#ef7780"/></pattern></defs>${ticks}${bar}${path}</svg>`;
  const notes={
+ impressions:'Meta Ads: impresiones reales por mes. No hay plan comparable de impresiones.',
+ reach:'Meta Ads: alcance SUMADO de registros, NO usuarios únicos ni meta comparable.',
+ clicks:'Meta Ads: clics en enlace, sin meta homologada.',
+ all_clicks:'Meta Ads: clics totales, sin meta homologada.',
+ forms:'Meta Ads: formularios, no necesariamente el mismo objetivo comercial del plan.',
+ messages:'Meta Ads: conversaciones, distintas de formularios.',
+ ctr:'CTR = clics enlace / impresiones; sin proyección equivalente.',
+ cpm:'CPM = gasto Meta / impresiones × 1.000.',
+ cost_message:'Gasto Meta / conversaciones; no representa CPL de negocio.',
  investment:state.territory?'El plan no se puede desagregar por esta geografía inferida. Se muestra ejecución Meta únicamente.':'Barras azules: plan general. Rojas: Meta ejecutado. Línea: proporción Meta/plan, NO cumplimiento total. *Octubre parcial.',
  leads:'Azul: metas comerciales del plan si son completas. Rojo: formularios de Meta. Las definiciones son distintas y no equivalen a cumplimiento. *Octubre parcial.',
  cpl:'Azul: CPL planificado (portafolio: cinco modelos sin Berlingo). Rojo: gasto total Meta / formularios; incluye WhatsApp y no es un CPL comercial comparable.'
