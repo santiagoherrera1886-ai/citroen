@@ -176,6 +176,16 @@ function updateLayout(e){
   window.CITROEN_STUDIO_ACTIONS?.updateCustom?.(k,{[field]:value});
  }
 }
+
+function applyGlobalPalette(id){
+ const p=PALETTES.find(x=>x.id===id);if(!p)return false;
+ commit();
+ const colors=Object.fromEntries(["primary","secondary","background","text","border"].map((name,i)=>[name,p.colors[i]]));
+ const keys=["k:0","k:1","k:2","k:3","k:4","k:5","n:c3ComparePanel","n:c3FunnelPanel","n:c3ModelsPanel","n:c3CampaignPanel","n:c3InsightsPanel",...Array.from(document.querySelectorAll("#studioCards .studio-card")).map(el=>"c:"+el.dataset.id)];
+ for(const k of keys)state.elements[k]=valid({...get(k),...colors});
+ persist();applyAll();refresh();document.dispatchEvent(new Event("citroen:style-settings"));
+ return true;
+}
 function resetAllStyles(){commit();state={elements:{}};persist();applyAll();refresh();document.dispatchEvent(new Event("citroen:style-settings"));}
 function wire(){
  const inspector=$("metricInspector");if(!inspector)return;
@@ -194,6 +204,6 @@ function wire(){
  document.addEventListener("citroen:summary-rendered",applyAll);
  applyAll();tab("data");
 }
-window.CITROEN_STYLE_EDITOR={get,export:()=>JSON.parse(JSON.stringify(state)),replace,resetAll:resetAllStyles,reset,apply:applyAll};
+window.CITROEN_STYLE_EDITOR={get,export:()=>JSON.parse(JSON.stringify(state)),replace,resetAll:resetAllStyles,reset,apply:applyAll,applyGlobalPalette};
 document.addEventListener("DOMContentLoaded",wire);
 })();
