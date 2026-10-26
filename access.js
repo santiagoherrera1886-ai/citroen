@@ -29,12 +29,31 @@ async function refresh(){
 function showLogin(){
  $('citroenAuthLoginPane').hidden=false;
  $('citroenAuthChangePane').hidden=true;
+ $('citroenActivatePane').hidden=true;
  $('citroenAuthTitle').textContent='Acceso al modo Diseño';
  status('citroenAuthStatus','');
  open(ui.login);
 }
+function showActivate(){
+ $('citroenAuthLoginPane').hidden=true;
+ $('citroenAuthChangePane').hidden=true;
+ $('citroenActivatePane').hidden=false;
+ $('citroenAuthTitle').textContent='Activación del control maestro';
+ status('citroenAuthStatus','Utiliza tu correo, la contraseña inicial y el código de activación privado.');
+ open(ui.login);
+}
+async function activate(e){
+ e.preventDefault();
+ const f=e.currentTarget,data=new FormData(f);
+ status('citroenAuthStatus','Activando cuenta de administrador…');
+ try{
+  const res=await request('/api/auth','POST',{action:'activate',email:data.get('email'),password:data.get('password'),activationCode:data.get('activationCode')});
+  f.reset();user=res.user;publicState();showChange();
+ }catch(ex){status('citroenAuthStatus',ex.message,true);}
+}
 function showChange(){
  $('citroenAuthLoginPane').hidden=true;
+ $('citroenActivatePane').hidden=true;
  $('citroenAuthChangePane').hidden=false;
  $('citroenAuthTitle').textContent='Protege tu cuenta de administrador';
  status('citroenAuthStatus','La contraseña inicial debe cambiarse antes de entrar a Diseño.');
@@ -135,6 +154,9 @@ async function createEditor(e){
  }catch(e){status('citroenMasterStatus',e.message,true);}
 }
 function wire(){
+ $('citroenActivateLink').onclick=showActivate;
+ $('citroenBackLogin').onclick=showLogin;
+ $('citroenActivateForm').addEventListener('submit',activate);
  $('citroenLoginForm').addEventListener('submit',login);
  $('citroenChangeForm').addEventListener('submit',changePassword);
  $('citroenNewEditorForm').addEventListener('submit',createEditor);
