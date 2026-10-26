@@ -1,5 +1,29 @@
 # Citroën · Performance Intelligence
 
+## BUILDER 2.0 — PÁGINAS, CREATIVOS, INSIGHTS Y CONEXIONES (26/10/2026)
+
+**Modo lectura y entrada:** el botón de edición de la cabecera se oculta sin sesión. Visitantes encuentran el acceso discreto **🔒 Ingresar a Diseño** al final del menú lateral. Tras iniciar sesión y entrar en Diseño aparecen la barra de gráficos, panel de estilo, botón de movimiento libre y control maestro. La primera activación acepta pegar el código completo o su parte posterior al prefijo `CITROEN-`, ignorando espacios y caracteres invisibles comunes; la contraseña inicial debe sustituirse por una fuerte.
+
+**Páginas nuevas:** en la barra izquierda, el editor autenticado dispone de **＋ Nueva página**. Cada página ofrece lienzo de tarjetas con posición absoluta, arrastre por manejador, redimensionar desde la esquina, y tipos: indicador, gráfico (barras/línea/área/tabla), imagen, filtro y texto/insight. El lienzo original de Resumen también ofrece **↔ Mover libremente** y permite volver a la cuadrícula tradicional. Las tarjetas de Meta utilizan `meta_2026_daily.json` y su diccionario, no datos de demostración.
+
+**Creativos:** sección pública **Creativos** con piezas cargadas por el editor: título, campaña, formato, URL HTTPS o archivo JPG/PNG/WebP comprimido en el navegador, y notas. Las imágenes publicadas quedan visibles para quienes ven el tablero. No se inventan previews ni métricas de anuncios.
+
+**Insights:** sección de hallazgos escritos por el equipo, título, contenido y fecha de actualización. El texto se trata como contenido plano escapado, no HTML ejecutable. Los editores escriben, revisan y publican.
+
+**Filtros:** desde Diseño > Filtros puedes mostrar u ocultar período, modelo y territorio en Resumen. Las nuevas páginas soportan tarjetas de filtro para mes y modelo, con cambios instantáneos en los gráficos de la página.
+
+**Publicación real:** `POST /api/dashboard` requiere sesión de editor/propietario y guarda páginas, creativos, filtros, insights y posición libre de Resumen en **Vercel Blob privado**; `GET /api/dashboard` devuelve la versión publicada para visitantes. No es solo localStorage. El botón **Publicar cambios** es obligatorio; el navegador conserva un borrador local entre ediciones. La publicación almacena solo la estructura aprobada y contenido de piezas, no credenciales externas.
+
+**Conexiones a datos (acceso privado):** sección **Conexiones de datos** solo al editar, con `POST /api/data-connect` autenticado:
+- Google Sheets público: URL normal de `docs.google.com/spreadsheets/d/...`; lee hasta 100 filas de la pestaña mediante CSV. No funciona si la hoja no permite exportación pública.
+- Google Sheets privado: requiere `GOOGLE_SERVICE_ACCOUNT_JSON` en variables privadas de Vercel y compartir el Sheet con el correo de la cuenta de servicio; lectura mediante API Sheets.
+- BigQuery: usa la misma cuenta de servicio, con permiso de consultar la tabla y de crear jobs de solo lectura en el proyecto. Consulta `SELECT * ... LIMIT 100` con límite de datos escaneados de 100 MB por consulta. Sin credenciales aún no hay conexión activa.
+- Los resultados son **vistas previas privadas** durante la sesión del editor: pueden agregarse como tabla/gráfico en una página. **No se publica la extracción privada** con las páginas; al recargar debe reconectarse para ver sus filas. Nunca se almacenan claves ni tokens OAuth en el HTML del dashboard.
+
+**Límites honestos:** el nuevo lienzo soporta gráficos y tarjetas de fuentes especificadas, no todas las 49 visualizaciones ni conectores arbitrarios de Looker Studio. No hay colaboración simultánea multiusuario o versionado histórico de informes; publicación es último guardado (last-write-wins). Para producción con bases privadas, configurar la cuenta de servicio de Google con permisos mínimos y habilitar las APIs BigQuery y Sheets.
+
+---
+
 ## ACCESO PROTEGIDO AL DISEÑO — 26 DE OCTUBRE DE 2026
 
 El dashboard permanece público en **modo lectura**. La acción **Editar resumen** comprueba una sesión autorizada mediante `GET /api/auth`. Sin sesión válida, muestra la pantalla de inicio de sesión y mantiene bloqueados los controles. No se restaura automáticamente un modo de edición desde `localStorage`.
