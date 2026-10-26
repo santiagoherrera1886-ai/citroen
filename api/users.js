@@ -1,5 +1,5 @@
 import {randomUUID} from 'node:crypto';
-import {ready,json,error,sameOrigin,emailOf,validEmail,validStrongPassword,hashPassword,usersRead,usersWrite,currentUser,newRecord} from './_auth.mjs';
+import {ready,json,error,sameOrigin,emailOf,validEmail,validStrongPassword,hashPassword,usersRead,usersWrite,currentUser,newRecord} from '../lib/editor-auth.mjs';
 
 export default async function handler(req,res){
  try{
