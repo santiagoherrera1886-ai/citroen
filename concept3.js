@@ -79,6 +79,7 @@ function setKpis(rows){
 }
 function comparison(rows){
  const selected=configured('compareMetric','metric',state.metric);state.metric=selected;
+ const theme=window.CITROEN_STYLE_EDITOR?.get("n:c3ComparePanel")||{},chartMode=theme.chartType||"bar",showLabels=theme.showLabels===true;
   const periods=months.filter(m=>!state.month||state.month===m);
  const series=periods.map(m=>{const d=rows.filter(r=>r.month===m),k=state.metric,which=k==='investment'?'spend':k==='leads'?'forms':k;return {month:m,label:labels[months.indexOf(m)],planned:['investment','leads','cpl'].includes(k)?planValue(m,k):null,actual:metricTotal(d,which,null)};});
  const max=Math.max(1,...series.flatMap(s=>[s.planned||0,s.actual||0]));
@@ -92,13 +93,33 @@ function comparison(rows){
    if(s.actual!=null)ret+=`<rect x="${x+3}" y="${y(s.actual)}" height="${Math.max(0,t+ph-y(s.actual))}" width="${bw}" rx="2" fill="${s.month==='2026-10'?'url(#c3hatch)':'#f46b74'}"><title>${s.label} Meta: ${['investment','cpl','cpm','cost_message'].includes(state.metric)?money(s.actual):state.metric==='ctr'?fmtMetric(s.actual,'ctr'):num(s.actual)}${s.month==='2026-10'?' (parcial)':''}</title></rect>`;
    return ret+`<text x="${x}" y="${h-7}" text-anchor="middle" font-size="11" font-weight="700" fill="#7896aa">${s.label.toUpperCase()}${s.month==='2026-10'?'*':''}</text>`;
  }).join('');
+ let visual=bar;
+ if(chartMode==="line"||chartMode==="area"){
+  const points=(key)=>series.map((a,i)=>a[key]==null?null:[l+step*(i+.5),y(a[key])]).filter(Boolean);
+  visual=series.map((x,i)=>'<text x="'+(l+step*(i+.5))+'" y="'+(h-7)+'" text-anchor="middle" font-size="11" font-weight="700" fill="#7896aa">'+x.label.toUpperCase()+(x.month==='2026-10'?'*':'')+'</text>').join('');
+  for(const [k,col] of [["planned","#a9d4eb"],["actual","#f46b74"]]){
+   const pts=points(k);if(pts.length<2)continue;
+   const coords=pts.map(p=>p.join(",")).join(" ");
+   if(chartMode==="area")visual+='<polygon points="'+pts[0][0]+','+(t+ph)+' '+coords+' '+pts[pts.length-1][0]+','+(t+ph)+'" fill="'+col+'" opacity=".15"/>';
+   visual+='<polyline points="'+coords+'" stroke="'+col+'" stroke-width="3" fill="none" stroke-linejoin="round" stroke-linecap="round"/>';
+   visual+=pts.map(p=>'<circle cx="'+p[0]+'" cy="'+p[1]+'" r="3.5" fill="'+col+'"/>').join('');
+  }
+ }
+ if(showLabels){
+  visual+=series.map((v,i)=>{
+   const x=l+step*(i+.5),items=[];
+   if(v.planned!=null)items.push('<text x="'+(x-(chartMode==="bar"?bw+3:0))+'" y="'+Math.max(12,y(v.planned)-8)+'" font-size="9" text-anchor="middle" fill="#a9d4eb">'+short(v.planned)+'</text>');
+   if(v.actual!=null)items.push('<text x="'+(x+(chartMode==="bar"?bw+3:0))+'" y="'+Math.max(12,y(v.actual)-8)+'" font-size="9" text-anchor="middle" fill="#f46b74">'+short(v.actual)+'</text>');
+   return items.join("");
+  }).join("");
+ }
  let path='';
- if(state.metric==='investment'&&!state.territory){
+ if(chartMode==="bar"&&state.metric==='investment'&&!state.territory){
    const pts=series.map((s,i)=>s.planned>0?{x:l+step*(i+.5),coverage:s.actual/s.planned}:null).filter(Boolean);
    const topRatio=Math.max(1.1,...pts.map(p=>p.coverage));
    if(pts.length>1)path=`<polyline fill="none" stroke="#173b58" stroke-width="2" points="${pts.map(p=>p.x+','+(t+ph*(1-p.coverage/topRatio))).join(' ')}"/>`+pts.map(p=>`<circle cx="${p.x}" cy="${t+ph*(1-p.coverage/topRatio)}" r="3.8" stroke="#fff" stroke-width="1" fill="#163d59"><title>Meta/plan: ${(p.coverage*100).toFixed(1)}% del presupuesto, no cumplimiento total</title></circle>`).join('');
  }
- $('c3CompareChart').innerHTML=`<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" role="img" aria-label="Planeado contra ejecutado, alcance de Meta Ads"><defs><pattern id="c3hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="#fae0e3"/><rect width="3" height="7" fill="#ef7780"/></pattern></defs>${ticks}${bar}${path}</svg>`;
+ $('c3CompareChart').innerHTML=`<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" role="img" aria-label="Planeado contra ejecutado, alcance de Meta Ads"><defs><pattern id="c3hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="#fae0e3"/><rect width="3" height="7" fill="#ef7780"/></pattern></defs>${ticks}${visual}${path}</svg>`;
  const notes={
  impressions:'Meta Ads: impresiones reales por mes. No hay plan comparable de impresiones.',
  reach:'Alcance ESTIMADO con Sainsbury y universo configurado, no usuarios únicos medidos ni meta comparable.',
@@ -168,6 +189,7 @@ function wire(){
  for(const [id,key] of [['c3Month','month'],['c3Model','model'],['c3Territory','territory']])$(id).onchange=e=>{state[key]=e.target.value;render();};
  for(const b of document.querySelectorAll('[data-c3-metric]'))b.onclick=()=>{state.metric=b.dataset.c3Metric;for(const el of document.querySelectorAll('[data-c3-metric]'))el.classList.toggle('active',el===b);render();};
  document.addEventListener('citroen:metric-settings',()=>{state.metric=configured('compareMetric','metric','investment');document.querySelectorAll('[data-c3-metric]').forEach(el=>el.classList.toggle('active',el.dataset.c3Metric===state.metric));render();});
+ document.addEventListener('citroen:style-settings',()=>{if(state.ready)render();});
  Promise.all([
  loadPlan(),
  fetch('./data/meta_2026_daily.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Reporte diario no disponible.');return r.json();}),
