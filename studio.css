@@ -221,3 +221,10 @@ body:has(.c3-dashboard.studio-edit-on) .concept3-shell .content{max-width:none;p
 .c3-dashboard .studio-visual-customized .c3-campaign-table th{background:color-mix(in srgb,var(--studio-primary) 18%,var(--studio-bg));color:var(--studio-text)}
 .c3-dashboard .studio-visual-customized .c3-campaign-table td{color:var(--studio-text)}
 @media(max-width:900px){.metric-style-pane,.metric-layout-pane{padding:11px}}
+
+.c3-dashboard .studio-visual-customized #c3CompareChart svg polyline[stroke="#a9d4eb"]{stroke:var(--studio-primary)!important}
+.c3-dashboard .studio-visual-customized #c3CompareChart svg polyline[stroke="#f46b74"]{stroke:var(--studio-secondary)!important}
+.c3-dashboard .studio-visual-customized #c3CompareChart svg circle[fill="#a9d4eb"],.c3-dashboard .studio-visual-customized #c3CompareChart svg polygon[fill="#a9d4eb"]{fill:var(--studio-primary)!important}
+.c3-dashboard .studio-visual-customized #c3CompareChart svg circle[fill="#f46b74"],.c3-dashboard .studio-visual-customized #c3CompareChart svg polygon[fill="#f46b74"]{fill:var(--studio-secondary)!important}
+.c3-dashboard .studio-visual-customized .studio-svg polygon[fill="#2f6590"]{fill:var(--studio-primary)!important}
+.c3-dashboard .studio-visual-customized .studio-svg polygon[fill="#f07583"]{fill:var(--studio-secondary)!important}
