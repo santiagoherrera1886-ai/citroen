@@ -1,5 +1,16 @@
 # Citroën · Performance Intelligence
 
+## REDISEÑO DEL RESUMEN — 26/10/2026 (versión activa)
+
+- El editor de informes dejó de existir como página independiente: **“Editar resumen”** aparece dentro del encabezado de Resumen.
+- En modo normal se conserva la visual de Citroën, con el hero, seis KPI y cinco paneles nativos. En modo edición se pueden mover estos paneles (arrastre o flechas), cambiar su ancho, ocultarlos y editar sus títulos.
+- Los gráficos adicionales se crean directamente entre los paneles del mismo Resumen. Permiten seleccionar fuente, métrica, eje, tabla/barras/líneas y tamaño. El usuario puede crear comparativos Plan vs. Meta, sin confundirlos con cumplimiento total.
+- Guardar / exportar / importar diseño: almacenamiento local del navegador + archivo JSON, **no hay colaboración en la nube**.
+- Se retiraron del menú Medios, Creativos, Datos & fuentes y Editor de informes. Las secciones técnicas antiguas siguen ocultas en el DOM por compatibilidad con los cálculos y la importación; no son accesibles desde la navegación.
+- La validación automatizada verifica la posición del editor dentro de `#resumen`, los cinco paneles nativos, la edición y el menú reducido.
+
+---
+
 ## ACTUALIZACIÓN VIGENTE — 26 de octubre de 2026
 
 **La fuente activa del dashboard está corregida con los diez Excel recibidos el 26/10/2026.** La auditoría histórica del 21 de octubre que aparece más abajo se conserva como referencia de la versión anterior, no como presupuesto vigente.
