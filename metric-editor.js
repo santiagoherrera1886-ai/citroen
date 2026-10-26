@@ -147,8 +147,7 @@ function wire(){
  });
  // El botón de métricas incorporado en el comparativo también conserva su configuración.
  document.querySelectorAll("[data-c3-metric]").forEach(btn=>btn.addEventListener("click",()=>{
-  preferences.native.compareMetric=btn.dataset.c3Metric;persist();
-  if(selected==="n:c3ComparePanel")updateUI();
+  preferences.native.compareMetric=btn.dataset.c3Metric;sync();
  }));
  document.addEventListener("citroen:studio-layout",()=>{
   if($("c3Dashboard").classList.contains("studio-edit-on")&&!selected)selected="k:5";
