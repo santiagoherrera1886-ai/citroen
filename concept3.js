@@ -33,6 +33,7 @@ async function loadPlan(){
  const txt=await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
  const p=JSON.parse(txt);
  if(p.schema!=='citroen-planning-2026/v1'||p.months.length!==10||p.models.length!==60)throw Error('Proyecciones incompletas.');
+ if(window.CITROEN_PATCH_PLAN)await window.CITROEN_PATCH_PLAN(p);
  return p;
 }
 function actualData(d,detail){
