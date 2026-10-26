@@ -212,14 +212,31 @@ function renderCreatives(){
 }
 function editCreative(target){
  if(!authorized())return;
- const title=prompt('Nombre del creativo',target?.title||'Nueva pieza');if(!title)return;
- const link=prompt('URL HTTPS de la imagen (puedes dejarla vacía y agregarla después)',target?.image?.startsWith('https:')?target.image:'');if(link===null)return;
- const campaign=prompt('Campaña asociada',target?.campaign||'');if(campaign===null)return;
- const notes=prompt('Insight de esta pieza (qué funcionó, recomendación, etc.)',target?.notes||'');if(notes===null)return;
- const row=target||{id:uid(),format:'Imagen'};
- Object.assign(row,{title:title.slice(0,110),campaign:campaign.slice(0,150),notes:notes.slice(0,1000),image:cleanURL(link)||row.image||''});
- if(!target)state.creatives.push(row);
- stash();renderCreatives();
+ const modal=$('builderCreativeDialog');modal.hidden=false;
+ $('builderCreativeTitle').value=target?.title||'';
+ $('builderCreativeCampaign').value=target?.campaign||'';
+ $('builderCreativeFormat').value=target?.format||'Imagen';
+ $('builderCreativeUrl').value=target?.image?.startsWith('https://')?target.image:'';
+ $('builderCreativeNotes').value=target?.notes||'';
+ let uploaded=target?.image?.startsWith('data:')?target.image:'';
+ $('builderCreativeUpload').value='';
+ $('builderCreativeUpload').onchange=async e=>{
+  const file=e.target.files?.[0];
+  if(!file||!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5*1024*1024){status('Usa JPG, PNG o WebP hasta 5 MB.');return;}
+  uploaded=await downsize(file);if(!uploaded)status('No se pudo comprimir la imagen. Prueba con una más pequeña.');
+ };
+ $('builderCreativeSave').onclick=()=>{
+  const title=$('builderCreativeTitle').value.trim(),campaign=$('builderCreativeCampaign').value,format=$('builderCreativeFormat').value,notes=$('builderCreativeNotes').value;
+  const raw=$('builderCreativeUrl').value.trim(),image=raw?cleanURL(raw):uploaded;
+  if(!title)return status('Escribe un título para el creativo.');
+  if(raw&&!image)return status('La URL debe ser HTTPS.');
+  const row=target||{id:uid()};
+  Object.assign(row,{title:title.slice(0,110),campaign:campaign.slice(0,150),format,notes:notes.slice(0,1000),image:image||row.image||''});
+  if(!target)state.creatives.push(row);
+  stash();modal.hidden=true;renderCreatives();status('Creativo guardado como borrador; pulsa Publicar cambios para compartirlo.');
+ };
+ $('builderCreativeDelete').hidden=!target;
+ $('builderCreativeDelete').onclick=()=>{if(target&&confirm('¿Eliminar este creativo?'))state.creatives=state.creatives.filter(c=>c.id!==target.id);stash();modal.hidden=true;renderCreatives();};
 }
 function renderInsights(){
  const actions=$('citroen-insightsActions');actions.replaceChildren();
@@ -311,7 +328,8 @@ function render(){
 function setupEditorModals(){
  document.body.insertAdjacentHTML('beforeend',
  '<div id="builderCardEditor" class="builder-dialog" hidden><div class="builder-dialog-panel"><button type="button" data-builder-close="builderCardEditor" class="builder-close">×</button><h3>Editar tarjeta</h3><form id="builderCardForm"><label>Título<input name="title" maxlength="100"></label><label>Contenido / insight<textarea name="text" rows="5"></textarea></label><label>Métrica<select name="metric">'+Object.entries(CL).map(([k,v])=>'<option value="'+k+'">'+v+'</option>').join('')+'</select></label><label>Visualización<select name="shape"><option value="bar">Barras</option><option value="line">Líneas</option><option value="area">Área</option><option value="table">Tabla</option></select></label><label>Dimensión<select name="dimension"><option value="month">Mes</option><option value="model">Modelo</option></select></label><label>Filtro<select name="filter"><option value="month">Mes</option><option value="model">Modelo</option></select></label><label>URL HTTPS de imagen<input name="image" type="url"></label><label>O subir imagen<input type="file" id="builderCardUpload" accept="image/png,image/jpeg,image/webp"></label></form><div class="builder-dialog-buttons"><button id="builderCardRemove" type="button">Eliminar</button><button id="builderCardSave" type="button">Guardar tarjeta</button></div></div></div>'+
- '<div id="builderInsightDialog" class="builder-dialog" hidden><div class="builder-dialog-panel"><button type="button" class="builder-close" data-builder-close="builderInsightDialog">×</button><h3>Escribir insight</h3><label>Título<input id="builderInsightTitle"></label><label>Hallazgo y recomendación<textarea rows="12" id="builderInsightBody"></textarea></label><div class="builder-dialog-buttons"><button type="button" id="builderInsightDelete">Eliminar</button><button type="button" id="builderInsightSave">Guardar insight</button></div></div></div>');
+ '<div id="builderCreativeDialog" class="builder-dialog" hidden><div class="builder-dialog-panel"><button type="button" class="builder-close" data-builder-close="builderCreativeDialog">×</button><h3>Biblioteca de creativos</h3><label>Título de pieza<input id="builderCreativeTitle" maxlength="110"></label><label>Campaña<input id="builderCreativeCampaign" maxlength="150"></label><label>Formato<select id="builderCreativeFormat"><option>Imagen</option><option>Vídeo</option><option>Carrusel</option><option>Otro</option></select></label><label>Imagen por URL HTTPS<input id="builderCreativeUrl" type="url" placeholder="https://..."></label><label>O subir imagen JPG/PNG/WebP<input type="file" id="builderCreativeUpload" accept="image/png,image/jpeg,image/webp"></label><label>Notas, aprendizaje o recomendación<textarea id="builderCreativeNotes" rows="5"></textarea></label><div class="builder-dialog-buttons"><button type="button" id="builderCreativeDelete">Eliminar</button><button type="button" id="builderCreativeSave">Guardar creativo</button></div></div></div>'+ 
+  '<div id="builderInsightDialog" class="builder-dialog" hidden><div class="builder-dialog-panel"><button type="button" class="builder-close" data-builder-close="builderInsightDialog">×</button><h3>Escribir insight</h3><label>Título<input id="builderInsightTitle"></label><label>Hallazgo y recomendación<textarea rows="12" id="builderInsightBody"></textarea></label><div class="builder-dialog-buttons"><button type="button" id="builderInsightDelete">Eliminar</button><button type="button" id="builderInsightSave">Guardar insight</button></div></div></div>');
  document.querySelectorAll('[data-builder-close]').forEach(b=>b.onclick=()=>$(b.dataset.builderClose).hidden=true);
 }
 function wire(){
