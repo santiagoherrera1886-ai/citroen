@@ -28,7 +28,7 @@ const pause=()=>new Promise(r=>setTimeout(r,0));
  $('metricFields').querySelector('[data-field="reach"]').click();
  assert.ok($('c3Kpis').querySelector('[data-metric-slot="5"]').textContent.includes('Alcance sumado'),'KPI switches to reach');
  assert.ok($('c3Kpis').querySelector('[data-metric-slot="5"]').textContent.includes('113.191.745'),'KPI has true source reach sum');
- assert.ok($('metricNote').textContent.includes('no equivale'),'Reach is labeled as not deduplicated');
+ assert.ok($('metricNote').textContent.toLowerCase().includes('no equivale'),'Reach is labeled as not deduplicated');
  assert.equal(w.CITROEN_METRIC_OVERRIDES.slots[5],'reach','Selection stored in shared data settings');
  const note=w.localStorage.getItem('citroen_metric_preferences_v1');
  assert.ok(note.includes('"reach"'),'Reach saved to browser');
