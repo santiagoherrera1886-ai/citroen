@@ -22,6 +22,7 @@ w.fetch=async url=>({ok:true,json:async()=>String(url).includes('detail')?detail
 w.confirm=()=>true;
 // Simular navegador con preferencias anteriores, incluso con universo previo distinto.
 w.localStorage.setItem('citroen_metric_preferences_v1',JSON.stringify({slots:{"0":"planned"},native:{},universe:12345678}));
+w.CITROEN_ACCESS={canEdit:()=>true,requestEdit:()=>{w.CITROEN_STUDIO_UNLOCK?.();return Promise.resolve(true);}};
 for(const file of ['concept3.js','studio.js','metric-editor.js'])w.eval(fs.readFileSync(file,'utf8'));
 w.document.dispatchEvent(new w.Event('DOMContentLoaded',{bubbles:true}));
 const pause=()=>new Promise(r=>setTimeout(r,0));
