@@ -27,6 +27,10 @@ jobs:
           node --check api/auth.js
           node --check api/users.js
           node --check lib/editor-auth.mjs
+          node --check builder.js
+          node --check free-layout.js
+          node --check api/dashboard.js
+          node --check api/data-connect.js
           node --check data/revision_2026.js
       - name: Verify structure and no simulated data
         run: node scripts/verify.cjs
@@ -46,3 +50,5 @@ jobs:
         run: node scripts/smoke-gallery.cjs
       - name: Browser-like secured Design authentication and master users
         run: node scripts/smoke-access.cjs
+      - name: Public page builder, creatives, insights, filter and free-canvas regression
+        run: node scripts/smoke-builder.cjs
