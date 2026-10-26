@@ -60,6 +60,7 @@ function persist(){
 function sync(){persist();document.dispatchEvent(new Event("citroen:metric-settings"));updateUI();}
 window.CITROEN_METRIC_EDITOR={
  export:()=>JSON.parse(JSON.stringify(preferences)),
+ selected:()=>selected,
  replace:data=>{preferences=normalized(data);sync();},
  reset:()=>{preferences=normalized(defaults);sync();}
 };
@@ -130,7 +131,7 @@ function updateUI(){
  }
 }
 function choose(k){
- selected=k;search="";updateUI();
+ selected=k;search="";updateUI();document.dispatchEvent(new CustomEvent("citroen:selection-changed",{detail:{key:k}}));
 }
 function updateMetric(key){
  const info=panelInfo();
@@ -152,7 +153,7 @@ function updateMetric(key){
 function wire(){
  const inspector=$("metricInspector");
  if(!inspector)return;
- $("metricInspectorClose").onclick=()=>{selected=null;updateUI();};
+ $("metricInspectorClose").onclick=()=>{selected=null;updateUI();document.dispatchEvent(new CustomEvent("citroen:selection-changed",{detail:{key:null}}));};
  $("metricFieldInput").oninput=e=>{search=e.target.value;updateUI();$("metricFieldInput").focus();};
  $("metricFields").onclick=e=>{const button=e.target.closest("[data-field]");if(button)updateMetric(button.dataset.field);};
  $("metricUniverse").onchange=e=>{
