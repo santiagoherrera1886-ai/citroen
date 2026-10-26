@@ -439,6 +439,17 @@
         <label>Contraseña<input type="password" name="password" required autocomplete="current-password" placeholder="Tu contraseña"></label>
         <button type="submit" class="citroen-auth-submit">Entrar a Diseño</button>
       </form>
+      <button type="button" id="citroenActivateLink" class="citroen-auth-activate">¿Primera vez? Activar administrador maestro</button>
+    </div>
+    <div id="citroenActivatePane" hidden>
+      <p>Esta activación solo se realiza una vez con el código privado de instalación.</p>
+      <form id="citroenActivateForm">
+        <label>Usuario administrador<input type="email" name="email" value="santiago.herrera@vml.com" required autocomplete="username"></label>
+        <label>Contraseña inicial<input type="password" name="password" required autocomplete="new-password"></label>
+        <label>Código maestro de activación<input type="password" name="activationCode" required autocomplete="off" placeholder="Código único entregado por el administrador"></label>
+        <button type="submit" class="citroen-auth-submit">Activar mi cuenta</button>
+      </form>
+      <button type="button" id="citroenBackLogin" class="citroen-auth-activate">Volver a iniciar sesión</button>
     </div>
     <div id="citroenAuthChangePane" hidden>
       <p>Por seguridad, antes de editar o administrar usuarios debes reemplazar la contraseña inicial por una más segura.</p>
