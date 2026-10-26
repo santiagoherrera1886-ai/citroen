@@ -13,7 +13,7 @@
 <link rel="stylesheet" href="./concept3.css">
 <link rel="stylesheet" href="./model-fix.css?v=20261021b">
 <link rel="stylesheet" href="./audit.css?v=1">
-<link rel="stylesheet" href="./studio.css?v=20261026-gallery1">
+<link rel="stylesheet" href="./studio.css?v=20261026-auth1">
 </head>
 <body>
 <svg xmlns="http://www.w3.org/2000/svg" class="symbols" aria-hidden="true">
@@ -85,6 +85,8 @@
       <label class="c3-select"><span class="sr-only">Modelo</span><select id="c3Model"><option value="">Todos los modelos</option></select></label>
       <span class="c3-source-pill"><span class="c3-live-dot"></span> META REAL + PLAN 2026</span>
       <button type="button" id="studioEdit" class="studio-header-edit" aria-pressed="false"><span aria-hidden="true">✎</span> Editar resumen</button>
+      <button type="button" id="citroenMasterOpen" class="citroen-auth-master-link" hidden>♛ Control maestro</button>
+      <button type="button" id="citroenAuthLogout" class="citroen-auth-exit" hidden>Cerrar sesión</button>
     </div>
   </div>
   <div class="c3-hero">
@@ -418,8 +420,63 @@
 <script src="./meta.js" defer></script>
 <script src="./reach-math.js?v=20261026b" defer></script>
 <script src="./concept3.js?v=20261026-gallery1" defer></script>
-<script src="./studio.js?v=20261026-gallery1" defer></script>
+<script src="./access.js?v=20261026-auth1" defer></script>
+<script src="./studio.js?v=20261026-auth1" defer></script>
 <script src="./metric-editor.js?v=20261026-style2" defer></script>
 <script src="./style-engine.js?v=20261026-gallery1" defer></script>
 <script src="./photo-editor.js?v=20261026-gallery1" defer></script>
+
+<div id="citroenAuthModal" class="citroen-auth-overlay" role="dialog" aria-modal="true" aria-labelledby="citroenAuthTitle" hidden>
+  <div class="citroen-auth-shade"></div>
+  <div class="citroen-auth-card">
+    <button type="button" id="citroenAuthClose" class="citroen-auth-close" aria-label="Cerrar acceso">×</button>
+    <div class="citroen-auth-top"><div class="citroen-auth-emblem">⌘</div><span>PERFORMANCE INTELLIGENCE · ACCESO PRIVADO</span></div>
+    <h2 id="citroenAuthTitle">Acceso al modo Diseño</h2>
+    <p id="citroenAuthDescription">El dashboard es público en modo lectura. Para editarlo, entra con una cuenta autorizada.</p>
+    <div id="citroenAuthLoginPane">
+      <form id="citroenLoginForm" autocomplete="on">
+        <label>Correo de acceso<input type="email" name="email" required autocomplete="username" placeholder="correo@empresa.com" maxlength="254"></label>
+        <label>Contraseña<input type="password" name="password" required autocomplete="current-password" placeholder="Tu contraseña"></label>
+        <button type="submit" class="citroen-auth-submit">Entrar a Diseño</button>
+      </form>
+    </div>
+    <div id="citroenAuthChangePane" hidden>
+      <p>Por seguridad, antes de editar o administrar usuarios debes reemplazar la contraseña inicial por una más segura.</p>
+      <form id="citroenChangeForm">
+        <label>Contraseña actual<input type="password" name="currentPassword" required autocomplete="current-password"></label>
+        <label>Nueva contraseña<input type="password" name="newPassword" required minlength="12" autocomplete="new-password" placeholder="12+ caracteres, letras y números"></label>
+        <button type="submit" class="citroen-auth-submit">Guardar nueva contraseña</button>
+      </form>
+    </div>
+    <p id="citroenAuthStatus" class="citroen-auth-status" role="status"></p>
+    <p class="citroen-auth-footnote">Sesión protegida · Acceso exclusivamente para los controles de edición</p>
+  </div>
+</div>
+<div id="citroenMasterModal" class="citroen-auth-overlay" role="dialog" aria-modal="true" aria-labelledby="citroenMasterTitle" hidden>
+  <div class="citroen-auth-shade"></div>
+  <div class="citroen-auth-card citroen-master-card">
+    <button type="button" id="citroenMasterClose" class="citroen-auth-close" aria-label="Cerrar panel maestro">×</button>
+    <div class="citroen-auth-top"><div class="citroen-auth-emblem">♛</div><span>ADMINISTRACIÓN · CITROËN</span></div>
+    <h2 id="citroenMasterTitle">Control maestro de editores</h2>
+    <p>Gestiona quién puede entrar al modo Diseño. Los editores no pueden administrar otras cuentas.</p>
+    <div class="citroen-master-toolbar"><span id="citroenMasterIdentity"></span><button type="button" id="citroenMasterLogout">Cerrar sesión</button></div>
+    <div class="citroen-master-grid">
+      <section class="citroen-master-create">
+        <h3>Crear un editor</h3>
+        <form id="citroenNewEditorForm">
+          <label>Correo electrónico<input type="email" name="email" required maxlength="254" placeholder="editor@empresa.com"></label>
+          <label>Contraseña nueva<input type="text" name="password" required minlength="12" maxlength="128" autocomplete="off" placeholder="Genera una clave segura"></label>
+          <button type="button" id="citroenGeneratePassword" class="citroen-auth-outline">Generar contraseña segura</button>
+          <button type="submit" class="citroen-auth-submit">Crear acceso de edición</button>
+        </form>
+        <p class="citroen-auth-footnote">Entrega al nuevo editor su correo y clave por un canal seguro. La contraseña se guarda cifrada mediante hash, no como texto.</p>
+      </section>
+      <section class="citroen-master-users">
+        <h3>Usuarios autorizados</h3>
+        <div id="citroenMasterUsers" class="citroen-master-users-list"></div>
+      </section>
+    </div>
+    <p id="citroenMasterStatus" class="citroen-auth-status" role="status"></p>
+  </div>
+</div>
 </body></html>
