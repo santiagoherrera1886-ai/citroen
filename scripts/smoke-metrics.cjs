@@ -6,6 +6,13 @@ const w=dom.window;
 const $=id=>w.document.getElementById(id);
 w.eval(fs.readFileSync('data/proyecciones_2026.js','utf8'));
 w.eval(fs.readFileSync('data/revision_2026.js','utf8'));
+
+w.eval(fs.readFileSync('reach-math.js','utf8'));
+assert.equal(w.CITROEN_REACH_MATH.estimate([50,40],100),70,'Sainsbury should exclude probable overlap: 50 + 40 - 20');
+assert.equal(w.CITROEN_REACH_MATH.estimate([80,80],100),96,'Sainsbury two 80% audiences should estimate 96%');
+assert.equal(w.CITROEN_REACH_MATH.estimate([50,40],null),null,'Universe is mandatory');
+assert.equal(w.CITROEN_REACH_MATH.estimate([110,40],100),null,'Unrealistic reach larger than universe is invalid');
+
 const daily=JSON.parse(fs.readFileSync('data/meta_2026_daily.json','utf8'));
 const detail=JSON.parse(fs.readFileSync('data/meta_2026_detail.json','utf8'));
 w.DecompressionStream=class{constructor(type){assert.equal(type,'gzip');}};
@@ -13,7 +20,7 @@ w.Blob=class{constructor(parts){this.parts=parts;}stream(){const that=this;retur
 w.Response=class{constructor(stream){this.stream=stream;}async text(){return zlib.gunzipSync(Buffer.from(this.stream.parts[0])).toString('utf8');}};
 w.fetch=async url=>({ok:true,json:async()=>String(url).includes('detail')?detail:daily});
 w.confirm=()=>true;
-for(const file of ['reach-math.js','concept3.js','studio.js','metric-editor.js'])w.eval(fs.readFileSync(file,'utf8'));
+for(const file of ['concept3.js','studio.js','metric-editor.js'])w.eval(fs.readFileSync(file,'utf8'));
 w.document.dispatchEvent(new w.Event('DOMContentLoaded',{bubbles:true}));
 const pause=()=>new Promise(r=>setTimeout(r,0));
 (async()=>{
