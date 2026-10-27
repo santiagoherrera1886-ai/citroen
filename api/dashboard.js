@@ -53,12 +53,16 @@ function clean(state){
  if(pages.length>15||creatives.length>40||insights.length>80)throw Error('El espacio supera el máximo de páginas, creativos o insights.');
  const validId=id=>typeof id==='string'&&/^[\w-]{3,80}$/.test(id);
  const fixCard=c=>{
-  if(!c||!validId(c.id)||!['metric','note','chart','comparison','image','filter'].includes(c.type))return null;
+  if(!c||!validId(c.id)||!['metric','note','chart','comparison','ab','image','filter'].includes(c.type))return null;
   const metric=c.source==='external'&&typeof c.metric==='string'&&c.metric.length<=90?c.metric:['spend','forms','messages','impressions','reach','clicks','ctr','cpl'].includes(c.metric)?c.metric:'spend';
   const dimension=c.source==='external'&&typeof c.dimension==='string'&&c.dimension.length<=90?c.dimension:['date','week','month','quarter','model','territory','account'].includes(c.dimension)?c.dimension:'month';
   const shape=['bar','barh','line','area','table','pie','donut','gauge'].includes(c.shape)?c.shape:'bar';
-  const number=(v,min,max,def)=>Number.isFinite(Number(v))?Math.max(min,Math.min(max,Math.round(Number(v)))):def;
-  return {id:c.id,type:c.type,title:safeText(c.title,100),text:safeText(c.text,7000),source:c.source==='external'?'external':'meta',metric,dimension,shape,
+  const number=(v,min,max,def)=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v))?Math.max(min,Math.min(max,Math.round(Number(v)))):def;
+  const iso=x=>typeof x==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x)&&Number.isFinite(Date.parse(x+'T00:00:00Z'))&&new Date(x+'T00:00:00Z').toISOString().slice(0,10)===x?x:'';
+  const abGroup=['model','territory','account'].includes(c.abGroup)?c.abGroup:'model';
+  return {id:c.id,type:c.type,title:safeText(c.title,100),text:safeText(c.text,7000),source:c.type==='ab'?'meta':c.source==='external'?'external':'meta',metric,dimension,shape,
+   abGroup,aStart:iso(c.aStart),aEnd:iso(c.aEnd),bStart:iso(c.bStart),bEnd:iso(c.bEnd),
+   abModel:safeText(c.abModel,100),abTerritory:safeText(c.abTerritory,100),
    x:number(c.x,0,2400,24),y:number(c.y,0,6000,24),w:number(c.w,220,1200,410),h:number(c.h,170,850,270),
    goal:Number.isFinite(Number(c.goal))&&Number(c.goal)>0?Math.min(1e12,Number(c.goal)):null,
    color:/^#[0-9a-f]{6}$/i.test(c.color||'')?c.color:'#8abbd8',background:/^#[0-9a-f]{6}$/i.test(c.background||'')?c.background:'#ffffff',textColor:/^#[0-9a-f]{6}$/i.test(c.textColor||'')?c.textColor:'#173e57',
