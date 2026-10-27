@@ -76,7 +76,8 @@ function setKpis(rows){
   const key=configured('slot',i,fallback),value=metricTotal(rows,key,planned);
   const title=key===fallback?(['Inversión planeada','Ejecutado · Meta','Formularios','Conversaciones','Costo / formulario*','Impresiones'][i]):metricNames[key]||metricNames[fallback];
   const note=key==='planned'&&state.territory?'Sin plan territorial comparable':metricNotes[key]||'Meta Ads';
-  return '<article class="c3-kpi" data-metric-slot="'+i+'" tabindex="0" title="En modo edición, selecciona esta tarjeta para cambiar su métrica"><div class="c3-kpi-ico">'+icons[i]+'</div><div><h4>'+esc(title)+'</h4><strong title="'+esc(fmtMetric(value,key))+'">'+fmtMetric(value,key)+'</strong><small class="muted">'+esc(note)+'</small></div></article>';
+  const number=fmtMetric(value,key),compact=$('c3Dashboard')?.classList.contains('studio-edit-on')&&typeof value==='number'&&Math.abs(value)>=1000000?(key==='planned'||key==='spend'||key==='cpl'?'$ ':'')+short(value):number;
+  return '<article class="c3-kpi" data-metric-slot="'+i+'" tabindex="0" title="'+esc(number)+' · En Diseño, selecciona y arrastra para mover"><div class="c3-kpi-ico">'+icons[i]+'</div><div><h4>'+esc(title)+'</h4><strong title="'+esc(number)+'">'+esc(compact)+'</strong><small class="muted">'+esc(note)+'</small></div></article>';
  }).join('');
  $('c3Context').textContent=(state.month?labels[months.indexOf(state.month)]+' 2026':'Enero–octubre de 2026')+' · '+(state.model||'Todos los modelos')+' · '+(state.territory||'Cobertura completa')+' · octubre contiene resultados hasta el 20/10. Cifras reales, no las de la maqueta.';
 }
