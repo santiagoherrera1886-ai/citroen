@@ -80,6 +80,12 @@ function setKpis(rows){
  }).join('');
  $('c3Context').textContent=(state.month?labels[months.indexOf(state.month)]+' 2026':'Enero–octubre de 2026')+' · '+(state.model||'Todos los modelos')+' · '+(state.territory||'Cobertura completa')+' · octubre contiene resultados hasta el 20/10. Cifras reales, no las de la maqueta.';
 }
+const hasDailyRange=()=>{
+ const f=window.CITROEN_FILTER_ENGINE;if(!f)return false;
+ const vals=f.getValues();
+ return f.getDefinitions().some(d=>d.enabled&&['date','relative'].includes(d.type)&&(d.scope==='report'||d.scope==='page'&&d.pageId==='resumen')&&
+  (d.type==='date'?Boolean(vals[d.id]?.start??d.start)||Boolean(vals[d.id]?.end??d.end):(vals[d.id]?.preset??d.preset)!=='all'));
+};
 function comparison(rows){
  const selected=configured('compareMetric','metric',state.metric);state.metric=selected;
  const theme=window.CITROEN_STYLE_EDITOR?.get("n:c3ComparePanel")||{},chartMode=theme.chartType||"bar",showLabels=theme.showLabels===true;
@@ -139,7 +145,7 @@ function comparison(rows){
  };
  $('c3CompareNote').textContent=state.metric==='reach'&&!window.CITROEN_REACH_MATH?.currentUniverse()
   ?'Sin universo de audiencia configurado: no se muestra estimación Sainsbury. Configúralo en Propiedades del gráfico.'
-  :notes[state.metric]||'Datos de Meta Ads, no ejecución global del plan.';
+  :((notes[state.metric]||'Datos de Meta Ads, no ejecución global del plan.')+(hasDailyRange()?' ⚠️ Meta se filtra por días; la planeación sigue siendo mensual y no se prorratea.':''));
 }
 function funnel(rows){
  const first=configured('funnelMetric','metric','impressions'),isReach=first==='reach';
