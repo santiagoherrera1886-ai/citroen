@@ -10,7 +10,7 @@ const CL={spend:'Inversión',forms:'Formularios',messages:'Conversaciones',impre
 const mk=(tag,attrs={},content='')=>{const el=document.createElement(tag);for(const [k,v] of Object.entries(attrs))el.setAttribute(k,v);el.innerHTML=content;return el;};
 const button=(text,fn,cls='builder-btn')=>{const b=mk('button',{type:'button',class:cls});b.textContent=text;b.onclick=fn;return b;};
 let state=empty(),current='resumen',data=[],external=null,localFilter={month:'',model:''},busy=false;
-let lastPublishedRevision='initial',baseRevision='initial',pendingDraft=null,dirty=false;
+let lastPublishedRevision='initial',baseRevision='initial',pendingDraft=null,dirty=false,summaryBaseline=null;
 function localDraft(){
  try{
   const raw=JSON.parse(localStorage.getItem(KEY)||'null');
@@ -38,6 +38,17 @@ function stash(){
  draftUI();
 }
 function status(s){if($('builderStatus'))$('builderStatus').textContent=s;}
+function watchSummary(){
+ const snapshot=window.CITROEN_STUDIO_ACTIONS?.exportPublished?.();
+ if(!snapshot)return;
+ const next=JSON.stringify(snapshot);
+ if(summaryBaseline===null){summaryBaseline=next;return;}
+ if(next===summaryBaseline)return;
+ summaryBaseline=next;
+ if(!authorized())return;
+ stash();
+ status('Cambios del Resumen guardados como borrador. Pulsa Publicar cambios para compartirlos.');
+}
 function cleanURL(s){try{const u=new URL(s);return u.protocol==='https:'&&!u.username&&!u.password?u.href:'';}catch{return typeof s==='string'&&/^data:image\/(?:jpeg|png|webp);base64,/.test(s)&&s.length<120000?s:'';}}
 function make(id,title,edit=false){const section=mk('section',{id,class:'page-section builder-page'});section.innerHTML='<div class="builder-section-head"><div><span class="builder-eyebrow">CITROËN · WORKSPACE</span><h2>'+esc(title)+'</h2></div><div class="builder-head-actions" id="'+id+'Actions"></div></div><div id="'+id+'Body"></div>';return section;}
 function navTo(id){
@@ -484,6 +495,7 @@ async function loadPublished(){
   const d=await response.json();
   state=d.workspace||empty();
   if(state.summary)window.CITROEN_STUDIO_ACTIONS?.importPublished?.(state.summary);
+  summaryBaseline=JSON.stringify(window.CITROEN_STUDIO_ACTIONS?.exportPublished?.()||null);
   lastPublishedRevision=d.revision||state.revision||'initial';
   baseRevision=lastPublishedRevision;
   window.CITROEN_FREE_LAYOUT?.import(state.summaryLayout||{enabled:false,items:{}});
@@ -567,7 +579,8 @@ let booted=false;
 function wire(){
  if(booted)return;booted=true;
  initSections();setupEditorModals();
- document.addEventListener('citroen:studio-layout',render);
+ document.addEventListener('citroen:studio-layout',()=>{watchSummary();render();});
+ document.addEventListener('citroen:summary-rendered',watchSummary);
  document.addEventListener('citroen:advanced-filter-changed',()=>{window.CITROEN_FILTER_ENGINE?.render('lkGlobalFilters','resumen');render();});
  document.addEventListener('hashchange',()=>{const id=locationHash();if($(id)&&id!==current)navTo(id);});
  loadPublished();loadMeta();
