@@ -1,7 +1,7 @@
 (function(root){
 'use strict';
 const FIELDS={date:'Fecha',month:'Mes',model:'Modelo',territory:'Territorio',account:'Cuenta',platform:'Plataforma',spend:'Inversión',forms:'Formularios',messages:'Conversaciones',impressions:'Impresiones',reach:'Alcance por fila',clicks:'Clics de enlace'};
-const TYPES={date:'Calendario',relative:'Fecha relativa',select:'Desplegable',multi:'Selección múltiple',list:'Lista fija',search:'Buscar',number:'Rango numérico',checkbox:'Casilla',advanced:'Condición avanzada'};
+const TYPES={date:'Calendario',relative:'Fecha relativa',select:'Desplegable',multi:'Selección múltiple',list:'Lista fija',radio:'Botones de opción',search:'Buscar',number:'Rango numérico',slider:'Deslizadores de métricas',checkbox:'Casilla',advanced:'Condición avanzada'};
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const date=s=>typeof s==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s)&&!Number.isNaN(Date.parse(s+'T00:00:00Z'))&&new Date(s+'T00:00:00Z').toISOString().slice(0,10)===s;
 const shift=(s,n)=>{if(!date(s))return '';const d=new Date(s+'T00:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);};
@@ -24,7 +24,7 @@ function normalize(d){
  if(!d||typeof d!=='object'||typeof d.id!=='string'||!/^[\w-]{3,85}$/.test(d.id))return null;
  const type=TYPES[d.type]?d.type:'select',field=Object.hasOwn(FIELDS,d.field)?d.field:'model';
  if((type==='date'||type==='relative')&&field!=='date')return null;
- if(type==='number'&&!['spend','forms','messages','impressions','reach','clicks'].includes(field))return null;
+ if(['number','slider'].includes(type)&&!['spend','forms','messages','impressions','reach','clicks'].includes(field))return null;
  return {id:d.id,type,field,label:String(d.label||FIELDS[field]).slice(0,80),
  scope:['report','page','chart'].includes(d.scope)?d.scope:'page',pageId:String(d.pageId||'resumen').slice(0,100),cardId:String(d.cardId||'').slice(0,100),
  operator:['contains','equals','starts','ends','notcontains','gt','gte','lt','lte','between','in','notin','empty','notempty','regex'].includes(d.operator)?d.operator:'contains',
@@ -39,11 +39,12 @@ function condition(row,d,setting={},ref=today()){
  if(d.type==='date'||d.type==='relative'){
   const period=d.type==='relative'?range(setting.preset??d.preset,ref):{start:setting.start??d.start,end:setting.end??d.end};
   match=(!period.start&&!period.end)||(date(String(raw||'').slice(0,10))&&(!period.start||raw>=period.start)&&(!period.end||raw<=period.end));
- }else if(d.type==='number'){
+ }else if(d.type==='number'||d.type==='slider'){
   const n=Number(raw),lo=setting.min??d.min,hi=setting.max??d.max;
   match=raw!=null&&Number.isFinite(n)&&(lo==null||n>=lo)&&(hi==null||n<=hi);
  }else if(d.type==='multi'||d.type==='list'){const selected=setting.values??d.values;match=!selected.length||selected.includes(text);}
- else if(d.type==='checkbox'||d.type==='select')match=!q||text===q;
+ else if(d.type==='checkbox')match=q!=='true'||(typeof raw==='number'?raw>0:raw!=null&&text!=='');
+ else if(d.type==='radio'||d.type==='select')match=!q||text===q;
  else if(d.type==='search')match=!term||lower.includes(term);
  else {
   switch(d.operator){
@@ -51,7 +52,7 @@ function condition(row,d,setting={},ref=today()){
    case 'notcontains':match=!lower.includes(term);break;case 'gt':match=Number(raw)>Number(q);break;case 'gte':match=Number(raw)>=Number(q);break;case 'lt':match=Number(raw)<Number(q);break;case 'lte':match=Number(raw)<=Number(q);break;
    case 'in':match=term.split(',').map(x=>x.trim()).includes(lower);break;case 'notin':match=!term.split(',').map(x=>x.trim()).includes(lower);break;
    case 'empty':match=raw==null||!text;break;case 'notempty':match=raw!=null&&!!text;break;
-   case 'regex':try{match=q.length<=100&&new RegExp(q,'i').test(text.slice(0,300));}catch{match=false;}break;
+   case 'regex':try{match=q.length<=60&&!/[(){}\\]/.test(q)&&new RegExp(q,'i').test(text.slice(0,140));}catch{match=false;}break;
    case 'between':match=Number(raw)>=Number(setting.min??d.min)&&Number(raw)<=Number(setting.max??d.max);break;
    default:match=lower.includes(term);
   }
@@ -78,8 +79,15 @@ function render(host,page='resumen',card=''){
   if(d.type==='date')html='<div class="lk-pair"><input type="date" '+p+' data-part="start" value="'+esc(chosen.start??d.start)+'" aria-label="Desde"><input type="date" '+p+' data-part="end" value="'+esc(chosen.end??d.end)+'" aria-label="Hasta"></div>';
   else if(d.type==='relative')html='<select '+p+' data-part="preset" aria-label="'+s+'">'+[['all','Todo'],['today','Hoy'],['yesterday','Ayer'],['last7','Últimos 7 días'],['last14','Últimos 14 días'],['last28','Últimos 28 días'],['last30','Últimos 30 días'],['last90','Últimos 90 días'],['thisweek','Esta semana'],['lastweek','Semana pasada'],['thismonth','Este mes'],['lastmonth','Mes anterior'],['thisquarter','Este trimestre'],['thisyear','Este año'],['lastyear','Año anterior']].map(([a,b])=>'<option value="'+a+'" '+((chosen.preset??d.preset)===a?'selected':'')+'>'+b+'</option>').join('')+'</select>';
   else if(d.type==='number')html='<div class="lk-pair"><input type="number" '+p+' data-part="min" value="'+(chosen.min??d.min??'')+'" placeholder="Mín." aria-label="Mínimo"><input type="number" '+p+' data-part="max" value="'+(chosen.max??d.max??'')+'" placeholder="Máx." aria-label="Máximo"></div>';
+  else if(d.type==='slider'){
+   const nums=dataset.map(r=>Number(value(r,d.field))).filter(Number.isFinite),low=nums.length?Math.floor(Math.min(...nums)):0,high=nums.length?Math.ceil(Math.max(...nums)):100;
+   const min=chosen.min??d.min??low,max=chosen.max??d.max??high;
+   html='<div class="lk-slider"><label>Mín. '+esc(min)+'<input type="range" data-lk-id="'+id+'" data-part="min" min="'+low+'" max="'+high+'" value="'+min+'"></label><label>Máx. '+esc(max)+'<input type="range" data-lk-id="'+id+'" data-part="max" min="'+low+'" max="'+high+'" value="'+max+'"></label></div>';
+  }
+  else if(d.type==='checkbox')html='<label class="lk-binary"><input type="checkbox" '+p+' data-part="value" value="true" '+((chosen.value??d.value)==='true'?'checked':'')+'> Solo registros con valor</label>';
+  else if(d.type==='radio')html='<div class="lk-list lk-radio">'+['',...values].map(v=>'<label><input type="radio" name="radio-'+id+'" '+p+' data-part="value" value="'+esc(v)+'" '+((chosen.value??d.value)===v?'checked':'')+'>'+esc(v||'Todos')+'</label>').join('')+'</div>';
   else if(d.type==='multi'||d.type==='list')html='<div class="lk-list">'+values.map(v=>'<label><input type="checkbox" '+p+' data-part="values" value="'+esc(v)+'" '+((chosen.values??d.values).includes(v)?'checked':'')+'>'+esc(v)+'</label>').join('')+'</div>';
-  else if(d.type==='select'||d.type==='checkbox')html='<select '+p+' data-part="value" aria-label="'+s+'"><option value="">Todos</option>'+values.map(v=>'<option value="'+esc(v)+'" '+((chosen.value??d.value)===v?'selected':'')+'>'+esc(v)+'</option>').join('')+'</select>';
+  else if(d.type==='select')html='<select '+p+' data-part="value" aria-label="'+s+'"><option value="">Todos</option>'+values.map(v=>'<option value="'+esc(v)+'" '+((chosen.value??d.value)===v?'selected':'')+'>'+esc(v)+'</option>').join('')+'</select>';
   else html='<input type="search" '+p+' data-part="value" placeholder="'+(d.type==='advanced'?esc(d.operator):'Buscar…')+'" value="'+esc(chosen.value??d.value)+'" aria-label="'+s+'">';
   return '<div class="lk-control"><div class="lk-control-head">'+s+'<small>'+esc(FIELDS[d.field])+'</small></div>'+html+'</div>';
  }).join('')+'<button class="lk-reset" type="button" data-lk-reset>Limpiar</button></div>':'';
@@ -92,7 +100,7 @@ function update(input,host){
  const next={...(settings[id]||{})};
  if(part==='values')next.values=Array.from(host.querySelectorAll('input[data-lk-id="'+id+'"]:checked')).map(x=>x.value);
  else if(part==='min'||part==='max')next[part]=input.value===''?null:Number(input.value);
- else next[part]=input.value;
+ else next[part]=input.type==='checkbox'?(input.checked?'true':''):input.value;
  settings[id]=next;event();
 }
 function setDefinitions(d){definitions=normalizeAll(d);settings={};event();}
