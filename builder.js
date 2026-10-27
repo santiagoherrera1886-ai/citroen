@@ -192,7 +192,7 @@ function renderChart(card,page){
   let last=0;const cx=120,cy=103,rad=77,small=shape==='donut';
   const palette=['#ea5668','#99c9e1','#245977','#f4b26b','#7cc1ad','#ae9ada','#e0accc','#75afdc'];
   const slices=arr.map((a,i)=>{
-   const start=last,last+=a.value/total;
+   const start=last;last+=a.value/total;
    if(a.value<=0)return '';
    const x1=cx+rad*Math.cos(start*Math.PI*2-Math.PI/2),y1=cy+rad*Math.sin(start*Math.PI*2-Math.PI/2);
    const end=Math.min(last,.9999999999),x2=cx+rad*Math.cos(end*Math.PI*2-Math.PI/2),y2=cy+rad*Math.sin(end*Math.PI*2-Math.PI/2);
