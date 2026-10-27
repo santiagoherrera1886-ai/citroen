@@ -7,8 +7,8 @@ w.DecompressionStream=class{constructor(type){assert.equal(type,'gzip')}};
 w.Blob=class{constructor(parts){this.parts=parts}stream(){const that=this;return{pipeThrough(){return that}}}};
 w.Response=class{constructor(stream){this.stream=stream}async text(){return zlib.gunzipSync(Buffer.from(this.stream.parts[0])).toString('utf8')}};
 const daily=JSON.parse(fs.readFileSync('data/meta_2026_daily.json','utf8'));
-let isEditor=false,published={version:1,revision:'initial',summaryLayout:{enabled:false,items:{}},pages:[],creatives:[],insights:[],filters:{month:true,model:true,territory:true}},writeCount=0;
-w.CITROEN_ACCESS={canEdit:()=>isEditor,requestEdit:()=>{}};
+let isEditor=false,published={version:1,revision:'initial',summaryLayout:{enabled:false,items:{}},pages:[],creatives:[],insights:[],filters:{month:true,model:true,territory:true}},writeCount=0,history=[];
+w.CITROEN_ACCESS={canEdit:()=>isEditor,isOwner:()=>isEditor,requestEdit:()=>{}};
 w.confirm=()=>true;let answer='';w.prompt=()=>answer;
 w.fetch=async(url,opt={})=>{
  const json=(body,ok=true,status=ok?200:400)=>({ok,status,json:async()=>body});
@@ -17,12 +17,19 @@ w.fetch=async(url,opt={})=>{
    if(!isEditor)return json({error:'Unauthorized'},false,401);
    const request=JSON.parse(opt.body);
    if(request.expectedRevision!==published.revision)return json({ok:false,code:'REVISION_CONFLICT',error:'Version changed'},false,409);
+   if(published.revision!=='initial')history.push(JSON.parse(JSON.stringify(published)));
    writeCount++;published={...request.workspace,revision:'rev-'+writeCount,publishedAt:'2026-10-27T15:00:00.000Z'};
    return json({ok:true,workspace:JSON.parse(JSON.stringify(published)),revision:published.revision,publishedAt:published.publishedAt});
   }
   return json({ok:true,workspace:JSON.parse(JSON.stringify(published)),revision:published.revision});
  }
- if(url==='/api/data-connect')return json({ok:true,source:'Public Sheet test',columns:['Modelo','Leads'],rows:[{Modelo:'C3',Leads:'32'}],previewOnly:true});
+ if(String(url).startsWith('/api/history')){
+  if(!isEditor)return json({error:'Owner only'},false,403);
+  const revision=String(url).includes('?revision=')?decodeURIComponent(String(url).split('?revision=')[1]):'';
+  if(revision)return json({ok:true,workspace:history.find(x=>x.revision===revision)});
+  return json({ok:true,current:{revision:published.revision,publishedAt:published.publishedAt},history:history.map(x=>({revision:x.revision,archivedAt:'2026-10-27T17:00:00Z'}))});
+ }
+  if(url==='/api/data-connect')return json({ok:true,source:'Public Sheet test',columns:['Modelo','Leads'],rows:[{Modelo:'C3',Leads:'32'}],previewOnly:true});
  return json(daily);
 };
 for(const file of ['looker-filter-engine.js','studio.js','free-layout.js','builder.js'])w.eval(fs.readFileSync(file,'utf8'));
@@ -119,6 +126,19 @@ const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
  await w.CITROEN_BUILDER.publish();
  assert.equal(published.controls.length,5,'Filter configurations persist to server-published workspace');
  assert.equal(writeCount,2,'Second explicit publish stores advanced controls');
+ assert.equal(history.length,1,'Previous version is archived on replacement publication');
+ assert.equal($('builderHistory').hidden,false,'Master owner sees history button');
+ $('builderHistory').click();await tick();await tick();
+ assert.equal($('builderHistoryDialog').hidden,false,'Owner can open history panel');
+ const restore=$('builderHistoryList').querySelector('button');
+ assert.ok(restore,'History has a restore-as-draft action');
+ restore.click();await tick();await tick();
+ assert.equal($('builderHistoryDialog').hidden,true,'Restore closes history panel');
+ assert.ok(w.localStorage.getItem('citroen_workspace_draft_v1'),'Restoring previous version creates recoverable draft');
+ await w.CITROEN_BUILDER.publish();
+ assert.equal(writeCount,3,'Historically restored draft requires explicit publish');
+ assert.equal(published.revision,'rev-3','Explicit restored publication creates a new revision');
+
  assert.equal(w.localStorage.getItem('citroen_workspace_draft_v1'),null,'No phantom draft after publishing');
  w.document.querySelector('[data-target="citroen-insights"]').click();
  $('citroen-insightsActions').querySelector('button').click();
@@ -127,7 +147,7 @@ const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
  $('builderInsightSave').click();
  const saved=JSON.parse(w.localStorage.getItem('citroen_workspace_draft_v1'));
  assert.equal(saved.draftVersion,2,'New drafts include versioned recovery metadata');
- assert.equal(saved.baseRevision,'rev-2','Draft pins published revision');
+ assert.equal(saved.baseRevision,'rev-3','Draft pins published revision');
  await w.CITROEN_BUILDER.loadPublished();
  assert.equal($('builderDraftBanner').hidden,false,'Editor sees recovery banner for prior draft');
  assert.ok(!$('citroen-insightsBody').textContent.includes('Hallazgo sin publicar'),'Unpublished draft does not leak into public workspace');
@@ -135,7 +155,7 @@ const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
  assert.ok($('citroen-insightsBody').textContent.includes('Hallazgo sin publicar'),'Recover draft without losing its insights');
  published.revision='rev-from-another-editor';
  await w.CITROEN_BUILDER.publish();
- assert.equal(writeCount,2,'Stale editor cannot overwrite another published revision');
+ assert.equal(writeCount,3,'Stale editor cannot overwrite another published revision');
  assert.ok($('builderStatus').textContent.includes('Conflicto'),'Conflict presented clearly to editor');
  assert.ok(w.localStorage.getItem('citroen_workspace_draft_v1'),'Draft remains recoverable after version conflict');
 
