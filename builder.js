@@ -209,7 +209,12 @@ function deletePage(p){if(!authorized()||!confirm('¿Eliminar esta página y sus
 function pageToolbar(page){
  const actions=$('report-'+page.id+'Actions');actions.replaceChildren();
  if(!authorized())return;
- const kinds=[['metric','＋ Indicador'],['chart','＋ Gráfico'],['note','＋ Texto / insight'],['image','＋ Imagen'],['filter','＋ Filtro']];
+ const h=window.CITROEN_LAYOUT_HISTORY,scope='page:'+page.id;
+ const back=button('↶ Deshacer movimiento',()=>{h?.undo(scope);});
+ const forward=button('↷ Rehacer movimiento',()=>{h?.redo(scope);});
+ back.disabled=!h?.canUndo(scope);forward.disabled=!h?.canRedo(scope);
+ actions.append(back,forward);
+  const kinds=[['metric','＋ Indicador'],['chart','＋ Gráfico'],['note','＋ Texto / insight'],['image','＋ Imagen'],['filter','＋ Filtro']];
  for(const [type,label] of kinds)actions.appendChild(button(label,()=>newCard(type,page)));
  actions.appendChild(button('Renombrar',()=>{const n=prompt('Nuevo nombre',page.title);if(n?.trim()){page.title=n.trim().slice(0,70);stash();drawPageNav();renderPage(page);}}));
  actions.appendChild(button('Eliminar página',()=>deletePage(page),'builder-btn-danger'));
