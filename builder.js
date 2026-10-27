@@ -542,10 +542,13 @@ function render(){
  $('builderGlobalActions').hidden=!isEditor;
  draftUI();
  const privateNav=document.querySelector('[data-target="citroen-sources"]');if(privateNav)privateNav.hidden=!isEditor;
- for(const p of state.pages)renderPage(p);
- renderCreatives();renderInsights();
+ // Only mount the active report: avoid rebuilding dozens of SVG charts on every change.
+ const activePage=state.pages.find(p=>'report-'+p.id===current);
+ if(activePage)renderPage(activePage);
+ if(current==='citroen-creatives')renderCreatives();
+ if(current==='citroen-insights')renderInsights();
  if(current==='citroen-sources')renderSources();
- window.CITROEN_FILTER_ENGINE?.render('lkGlobalFilters','resumen');
+ if(current==='resumen')window.CITROEN_FILTER_ENGINE?.render('lkGlobalFilters','resumen');
  renderNativeControls();
  applyFilters();
 }
