@@ -665,3 +665,60 @@ body:has(.c3-dashboard.studio-edit-on) .concept3-shell .content{max-width:none;p
 .compare-lab-save-card button{background:#fff;border:1px solid #cfe0ec;border-radius:9px;padding:10px;color:#3f738e;cursor:pointer;font-size:11px;font-weight:800}
 .compare-lab-save-card button:last-child{background:#eb5265;border-color:#eb5265;color:#fff}
 @media(max-width:600px){.builder-ab-head{grid-template-columns:1fr}.builder-ab-fieldgrid{grid-template-columns:1fr}}
+
+
+/* Unified Citroën Summary: all presentation blocks belong to one movable canvas. */
+.c3-design-canvas{position:relative;min-width:0;max-width:100%}
+.c3-design-canvas>.c3-header{margin-bottom:0}
+.c3-filter-dock{position:relative;margin:10px 0 15px;background:linear-gradient(105deg,#f7fbff,#fff);border:1px solid #dbeaf3;border-radius:15px;padding:14px 18px;box-shadow:0 4px 21px rgba(24,62,91,.045);min-width:0}
+.c3-filter-dock-title{display:flex;align-items:baseline;gap:13px;flex-wrap:wrap;margin-bottom:10px}
+.c3-filter-dock-title strong{font:850 11px Manrope,Arial,sans-serif;color:#265773}
+.c3-filter-dock-title small{font:650 10px Manrope,Arial,sans-serif;color:#819bab}
+.c3-filter-dock-content{display:flex;gap:11px;align-items:center;flex-wrap:wrap;min-width:0}
+.c3-native-filters{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.c3-native-filters .c3-select{margin:0;min-width:145px}
+.c3-native-filters .c3-select[hidden]{display:none!important}
+#c3FilterDock #lkGlobalFilters{flex:1 1 340px;min-width:0;margin:0;padding:0;border:0;background:none;box-shadow:none}
+#c3FilterDock .lk-controls{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+#c3FilterDock .lk-control{min-width:140px}
+#c3FilterDock .lk-control-head{font-size:10px}
+.c3-filter-empty .c3-filter-dock-content:after{content:"Agrega filtros desde Diseño";font-size:11px;color:#809cac}
+#c3DesignCanvas.c3-canvas-free{position:relative!important;display:block!important;width:100%;overflow:visible;min-height:950px;background-image:radial-gradient(#d5e5f0 0.7px,transparent 0.7px);background-size:16px 16px}
+#c3DesignCanvas.c3-canvas-free>#c3Kpis,#c3DesignCanvas.c3-canvas-free>#studioCards{display:contents!important;position:static!important;padding:0!important;margin:0!important;min-height:0!important}
+#c3DesignCanvas.c3-canvas-free>.c3-header,
+#c3DesignCanvas.c3-canvas-free>.c3-hero,
+#c3DesignCanvas.c3-canvas-free>#c3Context,
+#c3DesignCanvas.c3-canvas-free>#c3FilterDock,
+#c3DesignCanvas.c3-canvas-free>#c3Kpis>.c3-kpi,
+#c3DesignCanvas.c3-canvas-free>#studioCards>.c3-panel,
+#c3DesignCanvas.c3-canvas-free>#studioCards>.studio-card{
+ position:absolute!important;
+ box-sizing:border-box!important;
+ max-width:none!important;
+ margin:0!important;
+ min-width:170px;
+}
+#c3DesignCanvas.c3-canvas-free>#c3Kpis>.c3-kpi{display:grid!important;min-height:100px}
+#c3DesignCanvas.c3-canvas-free>#studioCards>.c3-panel{overflow:auto}
+#c3DesignCanvas.c3-canvas-free>.c3-header{align-items:center;background:#f7fbfd;border:1px solid #e2ebf3;border-radius:14px;padding:12px;overflow:visible}
+#c3DesignCanvas.c3-canvas-free>.c3-hero{min-height:150px;overflow:hidden}
+#c3DesignCanvas.c3-canvas-free>#c3Context{display:flex;align-items:center;color:#6c879c;white-space:normal;overflow:hidden}
+#c3DesignCanvas.c3-canvas-free>#c3FilterDock{min-height:75px;overflow:auto}
+#c3DesignCanvas.c3-canvas-free .citroen-free-resize{position:absolute;bottom:1px;right:1px;z-index:42;width:24px;height:24px;cursor:nwse-resize;touch-action:none}
+#c3DesignCanvas.c3-canvas-free .c3-layout-grip{display:none}
+#c3Dashboard.studio-edit-on #c3DesignCanvas.c3-canvas-free .c3-layout-grip{
+ display:inline-flex;align-items:center;justify-content:center;position:absolute;top:4px;right:5px;z-index:43;
+ cursor:grab;touch-action:none;background:#184a66;color:#fff;font:800 10px Manrope,Arial,sans-serif;
+ padding:6px 9px;border:1px solid #c9e2f3;border-radius:8px;box-shadow:0 4px 12px rgba(24,65,85,.16)
+}
+#c3Dashboard.studio-edit-on #c3DesignCanvas.c3-canvas-free .le-pointer-selected{outline:2px solid #2c9fe1!important;outline-offset:2px}
+#c3DesignCanvas.c3-canvas-free .c3-layout-grip:hover{background:#ef455b}
+#c3DesignCanvas.c3-canvas-free>.c3-header .c3-header-controls{padding-right:92px}
+#c3DesignCanvas.c3-canvas-free>.c3-hero .c3-layout-grip{z-index:100}
+#c3DesignCanvas.c3-canvas-free>#c3FilterDock .c3-layout-grip{z-index:100}
+#c3DesignCanvas.c3-canvas-free .citroen-align-guide{position:absolute!important;pointer-events:none!important}
+@media(max-width:800px){
+ #c3DesignCanvas:not(.c3-canvas-free)>.c3-header{flex-direction:column;align-items:stretch}
+ #c3DesignCanvas.c3-canvas-free{min-width:1000px}
+ .c3-native-filters{width:100%}
+}
