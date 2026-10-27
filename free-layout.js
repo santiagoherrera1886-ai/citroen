@@ -188,6 +188,17 @@ function init(){
  if(booted)return;booted=true;
  const h=window.CITROEN_LAYOUT_HISTORY;
  h?.bind('summary',exported,data=>{imported(data);document.dispatchEvent(new CustomEvent('citroen:layout-committed',{detail:{scope:'summary'}}));});
+ h?.bindNudge('summary',(dx,dy)=>{
+  if(!editing()||!state.enabled)return false;
+  const key=window.CITROEN_METRIC_EDITOR?.selected?.();
+  if(!key||!state.items[key])return false;
+  const p=state.items[key],before=exported(),maxX=2600,maxY=6800;
+  p.x=clamp(p.x+dx,0,maxX);p.y=clamp(p.y+dy,0,maxY);
+  if(!h.record('summary',before,exported()))return false;
+  persist();apply();
+  document.dispatchEvent(new CustomEvent('citroen:layout-committed',{detail:{scope:'summary'}}));
+  return true;
+ });
  const updateHistory=()=>{
   for(const [id,act] of [['studioUndoPosition','canUndo'],['studioRedoPosition','canRedo']]){
    const el=$(id);if(el)el.disabled=!editing()||!h?.[act]('summary');
