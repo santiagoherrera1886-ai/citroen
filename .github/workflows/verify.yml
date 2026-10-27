@@ -32,6 +32,7 @@ jobs:
           node --check looker-editor.js
           node --check looker-properties.js
           node --check free-layout.js
+          node --check layout-assist.js
           node --check api/dashboard.js
           node --check api/data-connect.js
           node --check api/history.js
@@ -64,6 +65,8 @@ jobs:
         run: node scripts/smoke-looker-editor.cjs
       - name: Looker contextual chart editing, canvas zoom and reader isolation
         run: node scripts/smoke-looker-properties.cjs
+      - name: Magnetic guidelines, alignment and undo/redo history
+        run: node scripts/smoke-layout-assist.cjs
       - name: Direct drag and corner resize KPIs + Summary graphs
         run: node scripts/smoke-direct-layout.cjs
       - name: Shared image references and protected history UI
