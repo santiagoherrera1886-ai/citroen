@@ -168,20 +168,60 @@ function filtered(card,page){
  const selected=data.filter(r=>(!localFilter.month||r.month===localFilter.month)&&(!localFilter.model||r.model===localFilter.model));
  return window.CITROEN_FILTER_ENGINE?.filter(selected,'report-'+page.id,card?'c:'+card.id:'')||selected;
 }
+function groupName(card,r){
+ const d=r.date||r.month+'-01';
+ if(card.dimension==='date')return d;
+ if(card.dimension==='week'){
+  const dt=new Date(d+'T00:00:00Z');dt.setUTCDate(dt.getUTCDate()-(dt.getUTCDay()+6)%7);return dt.toISOString().slice(0,10);
+ }
+ if(card.dimension==='quarter')return d.slice(0,4)+' · T'+(Math.floor((Number(d.slice(5,7))-1)/3)+1);
+ return String(r[card.dimension]??r.month??'Sin dato');
+}
 function categories(card,rows){
  const groups=new Map();
- for(const r of rows){const key=card.dimension==='model'?r.model:r.month;if(!groups.has(key))groups.set(key,[]);groups.get(key).push(r);}
- return Array.from(groups,([name,v])=>({name,value:metric(card,v)||0})).sort((a,b)=>a.name.localeCompare(b.name));
+ for(const r of rows){const key=groupName(card,r);if(!groups.has(key))groups.set(key,[]);groups.get(key).push(r);}
+ return Array.from(groups,([name,v])=>({name,value:metric(card,v)||0})).sort((a,b)=>a.name.localeCompare(b.name,'es',{numeric:true}));
 }
 function renderChart(card,page){
- const rows=filtered(card,page),arr=categories(card,rows);
+ const rows=filtered(card,page),arr=categories(card,rows),shape=card.shape||'bar';
  if(!arr.length)return '<p class="builder-empty">Sin datos para los filtros seleccionados.</p>';
- if(card.shape==='table')return '<table class="builder-data-table"><thead><tr><th>'+esc(card.dimension==='month'?'Mes':'Modelo')+'</th><th>'+esc(CL[card.metric])+'</th></tr></thead><tbody>'+arr.map(a=>'<tr><td>'+esc(a.name)+'</td><td>'+fmt(a.value,card.metric)+'</td></tr>').join('')+'</tbody></table>';
- const w=540,h=190,p=26,max=Math.max(1,...arr.map(x=>x.value)),step=(w-p*2)/arr.length;
- let bars='',pts=[];
- arr.forEach((a,i)=>{const x=p+step*(i+.5),y=h-p-(a.value/max)*(h-2*p);pts.push([x,y]);if(card.shape==='bar')bars+='<rect x="'+(x-step*.27)+'" y="'+y+'" width="'+(step*.54)+'" height="'+(h-p-y)+'" rx="3" fill="#7fb9da"><title>'+esc(a.name+' '+fmt(a.value,card.metric))+'</title></rect>';bars+='<text x="'+x+'" y="'+(h-3)+'" text-anchor="middle" font-size="9" fill="#456b85">'+esc(a.name.slice(-9))+'</text>';});
- if(card.shape!=='bar'){const path=pts.map(a=>a.join(',')).join(' ');if(card.shape==='area')bars+='<polygon points="'+pts[0][0]+','+(h-p)+' '+path+' '+pts.at(-1)[0]+','+(h-p)+'" fill="#b8ddee"/>';bars+='<polyline points="'+path+'" fill="none" stroke="#ed5b6e" stroke-width="3"/>';}
- return '<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="'+esc(card.title)+'" preserveAspectRatio="none">'+bars+'</svg>';
+ if(shape==='table'||shape==='pivot')return '<table class="builder-data-table"><thead><tr><th>'+esc(card.dimension||'Dimensión')+'</th><th>'+esc(CL[card.metric])+'</th></tr></thead><tbody>'+arr.map(a=>'<tr><td>'+esc(a.name)+'</td><td>'+fmt(a.value,card.metric)+'</td></tr>').join('')+'</tbody></table>';
+ const W=540,H=200,p=30,max=Math.max(1,...arr.map(x=>x.value)),step=(W-p*2)/arr.length;
+ if(shape==='pie'||shape==='donut'){
+  const total=arr.reduce((x,r)=>x+r.value,0);if(total<=0)return '<div class="builder-empty">No hay valores positivos para mostrar la distribución.</div>';
+  let last=0;const cx=120,cy=103,rad=77,small=shape==='donut';
+  const palette=['#ea5668','#99c9e1','#245977','#f4b26b','#7cc1ad','#ae9ada','#e0accc','#75afdc'];
+  const slices=arr.map((a,i)=>{
+   const start=last,last+=a.value/total;
+   if(a.value<=0)return '';
+   const x1=cx+rad*Math.cos(start*Math.PI*2-Math.PI/2),y1=cy+rad*Math.sin(start*Math.PI*2-Math.PI/2);
+   const end=Math.min(last,.9999999999),x2=cx+rad*Math.cos(end*Math.PI*2-Math.PI/2),y2=cy+rad*Math.sin(end*Math.PI*2-Math.PI/2);
+   const big=last-start>.5?1:0;
+   const d=last-start>=.999999?'M '+cx+' '+(cy-rad)+' A '+rad+' '+rad+' 0 1 1 '+(cx-.001)+' '+(cy-rad)+' Z':'M '+cx+' '+cy+' L '+x1+' '+y1+' A '+rad+' '+rad+' 0 '+big+' 1 '+x2+' '+y2+' Z';
+   return '<path d="'+d+'" fill="'+palette[i%palette.length]+'" stroke="white" stroke-width="2"><title>'+esc(a.name)+' · '+fmt(a.value,card.metric)+'</title></path>';
+  }).join('');
+  const legend=arr.slice(0,9).map((r,i)=>'<g transform="translate(235,'+(28+i*19)+')"><circle cx="0" cy="0" r="4" fill="'+palette[i%palette.length]+'"/><text x="11" y="4" font-size="11" fill="#345d78">'+esc(r.name.slice(0,26))+'</text></g>').join('');
+  return '<svg viewBox="0 0 540 205" role="img" aria-label="'+esc(card.title)+'">'+slices+(small?'<circle cx="120" cy="103" r="45" fill="white"/><text x="120" y="108" text-anchor="middle" font-size="15" font-weight="800" fill="#254961">100%</text>':'')+legend+'</svg>';
+ }
+ if(shape==='gauge'){
+  const total=arr.reduce((a,b)=>a+b.value,0),goal=Number(card.goal)>0?Number(card.goal):Math.max(total,1),part=Math.min(1,total/goal);
+  return '<div class="builder-gauge"><div class="builder-gauge-ring" style="--gauge-percent:'+(100*part).toFixed(2)+'%"><span>'+Math.round(part*100)+'%</span></div><strong>'+fmt(total,card.metric)+'</strong><small>Objetivo configurado: '+fmt(goal,card.metric)+'</small></div>';
+ }
+ let plot='',pts=[];
+ arr.forEach((a,i)=>{
+  const x=p+step*(i+.5),y=H-p-(a.value/max)*(H-2*p);
+  pts.push([x,y]);
+  if(shape==='bar')plot+='<rect x="'+(x-step*.27)+'" y="'+y+'" width="'+step*.54+'" height="'+(H-p-y)+'" rx="3" fill="#8abbd8"><title>'+esc(a.name)+'</title></rect>';
+  if(shape==='barh')plot+='<rect x="'+p+'" y="'+(22+i*Math.min(23,120/arr.length))+'" width="'+(a.value/max*(W-p*2))+'" height="'+Math.max(5,Math.min(17,110/arr.length))+'" rx="3" fill="#8abbd8"><title>'+esc(a.name)+'</title></rect>';
+  if(shape!=='barh')plot+='<text x="'+x+'" y="'+(H-5)+'" text-anchor="middle" font-size="9" fill="#456b85">'+esc(a.name.slice(0,9))+'</text>';
+ });
+ if(['line','area'].includes(shape)){
+  const coords=pts.map(a=>a.join(',')).join(' ');
+  if(shape==='area')plot+='<polygon points="'+pts[0][0]+','+(H-p)+' '+coords+' '+pts.at(-1)[0]+','+(H-p)+'" fill="#d4e9f6"/>';
+  plot+='<polyline points="'+coords+'" fill="none" stroke="#ed5b6e" stroke-width="3"/>';
+ }
+ if(shape==='barh')plot+=arr.map((a,i)=>'<text x="'+(p+3)+'" y="'+(18+i*Math.min(23,120/arr.length))+'" fill="#355875" font-size="9">'+esc(a.name.slice(0,25))+'</text>').join('');
+ return '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+esc(card.title)+'" preserveAspectRatio="none">'+plot+'</svg>';
 }
 function cardBody(card,page){
  if(card.type==='note')return '<p class="builder-note-body">'+esc(card.text||'Escribe aquí tus hallazgos y recomendaciones desde Editar tarjeta.').replace(/\n/g,'<br>')+'</p>';
@@ -430,7 +470,7 @@ function render(){
 }
 function setupEditorModals(){
  document.body.insertAdjacentHTML('beforeend',
- '<div id="builderCardEditor" class="builder-dialog" hidden><div class="builder-dialog-panel"><button type="button" data-builder-close="builderCardEditor" class="builder-close">×</button><h3>Editar tarjeta</h3><form id="builderCardForm"><label>Título<input name="title" maxlength="100"></label><label>Contenido / insight<textarea name="text" rows="5"></textarea></label><label>Métrica<select name="metric">'+Object.entries(CL).map(([k,v])=>'<option value="'+k+'">'+v+'</option>').join('')+'</select></label><label>Visualización<select name="shape"><option value="bar">Barras</option><option value="line">Líneas</option><option value="area">Área</option><option value="table">Tabla</option></select></label><label>Dimensión<select name="dimension"><option value="month">Mes</option><option value="model">Modelo</option></select></label><label>Filtro<select name="filter"><option value="month">Mes</option><option value="model">Modelo</option></select></label><label>URL HTTPS de imagen<input name="image" type="url"></label><label>O subir imagen<input type="file" id="builderCardUpload" accept="image/png,image/jpeg,image/webp"></label></form><div class="builder-dialog-buttons"><button id="builderCardRemove" type="button">Eliminar</button><button id="builderCardSave" type="button">Guardar tarjeta</button></div></div></div>'+
+ '<div id="builderCardEditor" class="builder-dialog" hidden><div class="builder-dialog-panel"><button type="button" data-builder-close="builderCardEditor" class="builder-close">×</button><h3>Editar tarjeta</h3><form id="builderCardForm"><label>Título<input name="title" maxlength="100"></label><label>Contenido / insight<textarea name="text" rows="5"></textarea></label><label>Métrica<select name="metric">'+Object.entries(CL).map(([k,v])=>'<option value="'+k+'">'+v+'</option>').join('')+'</select></label><label>Visualización<select name="shape"><option value="bar">Barras</option><option value="line">Líneas</option><option value="area">Área</option><option value="barh">Barras horizontales</option><option value="pie">Circular</option><option value="donut">Anillo</option><option value="gauge">Medidor</option><option value="table">Tabla</option></select></label><label>Dimensión<select name="dimension"><option value="date">Día</option><option value="week">Semana</option><option value="month">Mes</option><option value="quarter">Trimestre</option><option value="model">Modelo</option><option value="territory">Territorio</option><option value="account">Cuenta Meta</option></select></label><label>Filtro<select name="filter"><option value="month">Mes</option><option value="model">Modelo</option></select></label><label>URL HTTPS de imagen<input name="image" type="url"></label><label>O subir imagen<input type="file" id="builderCardUpload" accept="image/png,image/jpeg,image/webp"></label></form><div class="builder-dialog-buttons"><button id="builderCardRemove" type="button">Eliminar</button><button id="builderCardSave" type="button">Guardar tarjeta</button></div></div></div>'+
  '<div id="builderFilterEditor" class="builder-dialog" hidden><div class="builder-dialog-panel builder-filter-editor-panel"><button type="button" class="builder-close" data-builder-close="builderFilterEditor">×</button><h3>Configurar control avanzado</h3><p>Filtros Looker: calendario, períodos relativos, listas, búsqueda, métricas y condiciones avanzadas.</p><form id="builderFilterEditorForm"><label>Nombre<input name="label" maxlength="80"></label><label>Tipo<select name="type"><option value="relative">Período relativo</option><option value="date">Calendario de fechas</option><option value="select">Desplegable</option><option value="multi">Selección múltiple</option><option value="list">Lista fija</option><option value="search">Buscar texto</option><option value="number">Rango numérico</option><option value="checkbox">Casilla / selector</option><option value="advanced">Condición avanzada</option></select></label><label>Campo<select name="field"><option value="date">Fecha diaria</option><option value="month">Mes</option><option value="model">Modelo</option><option value="territory">Territorio</option><option value="account">Cuenta Meta</option><option value="platform">Plataforma</option><option value="spend">Inversión</option><option value="forms">Formularios</option><option value="messages">Conversaciones</option><option value="impressions">Impresiones</option><option value="reach">Alcance por fila</option><option value="clicks">Clics enlace</option></select></label><label>Alcance del control<select name="scope"><option value="report">Todo el informe</option><option value="page">Solo una página</option><option value="chart">Solo un gráfico</option></select></label><label>Página<select name="pageId"></select></label><label>Gráfico (si aplica)<select name="cardId"></select></label><label>Operador para filtro avanzado<select name="operator"><option value="contains">Contiene</option><option value="equals">Es igual a</option><option value="starts">Empieza por</option><option value="ends">Termina en</option><option value="notcontains">No contiene</option><option value="gt">Mayor que</option><option value="gte">Mayor o igual</option><option value="lt">Menor que</option><option value="lte">Menor o igual</option><option value="between">Entre valores</option><option value="in">Está entre (comas)</option><option value="notin">No está entre (comas)</option><option value="empty">Vacío</option><option value="notempty">No vacío</option><option value="regex">Expresión regular</option></select></label><label>Valor inicial o condición<input name="value" placeholder="Ej. C3 o 250000"></label><label>Fechas relativas<select name="preset"><option value="all">Todo</option><option value="today">Hoy</option><option value="yesterday">Ayer</option><option value="last7">Últimos 7 días</option><option value="last14">Últimos 14 días</option><option value="last28">Últimos 28 días</option><option value="last30">Últimos 30 días</option><option value="last90">Últimos 90 días</option><option value="thisweek">Esta semana</option><option value="lastweek">Semana anterior</option><option value="thismonth">Mes actual</option><option value="lastmonth">Mes anterior</option><option value="thisquarter">Trimestre actual</option><option value="thisyear">Año actual</option><option value="lastyear">Año anterior</option></select></label><div class="builder-filter-pair"><label>Desde<input name="start" type="date"></label><label>Hasta<input name="end" type="date"></label></div><div class="builder-filter-pair"><label>Mínimo<input name="min" type="number"></label><label>Máximo<input name="max" type="number"></label></div><label class="builder-filter-check"><input type="checkbox" name="exclude"> Excluir coincidencias</label><label class="builder-filter-check"><input type="checkbox" name="enabled" checked> Control habilitado</label><label>Cómo combinar con el filtro anterior<select name="logic"><option value="AND">Y (AND)</option><option value="OR">O (OR)</option></select></label></form><div class="builder-dialog-buttons"><button type="button" data-builder-close="builderFilterEditor">Cancelar</button><button type="button" id="builderFilterEditSave">Guardar filtro</button></div></div></div>'+ 
  '<div id="builderFilterListDialog" class="builder-dialog" hidden><div class="builder-dialog-panel"><button type="button" data-builder-close="builderFilterListDialog" class="builder-close">×</button><h3>Filtros configurados</h3><div id="builderDefinedFilters"></div></div></div>'+ 
  '<div id="builderCreativeDialog" class="builder-dialog" hidden><div class="builder-dialog-panel"><button type="button" class="builder-close" data-builder-close="builderCreativeDialog">×</button><h3>Biblioteca de creativos</h3><label>Título de pieza<input id="builderCreativeTitle" maxlength="110"></label><label>Campaña<input id="builderCreativeCampaign" maxlength="150"></label><label>Formato<select id="builderCreativeFormat"><option>Imagen</option><option>Vídeo</option><option>Carrusel</option><option>Otro</option></select></label><label>Imagen por URL HTTPS<input id="builderCreativeUrl" type="url" placeholder="https://..."></label><label>O subir imagen JPG/PNG/WebP<input type="file" id="builderCreativeUpload" accept="image/png,image/jpeg,image/webp"></label><label>Notas, aprendizaje o recomendación<textarea id="builderCreativeNotes" rows="5"></textarea></label><div class="builder-dialog-buttons"><button type="button" id="builderCreativeDelete">Eliminar</button><button type="button" id="builderCreativeSave">Guardar creativo</button></div></div></div>'+ 
