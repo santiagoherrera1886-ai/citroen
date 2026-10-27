@@ -6,6 +6,7 @@
 const metric=(title,metric,x,y,w=270,h=180)=>({type:'metric',title,source:'meta',metric,dimension:'month',shape:'bar',x,y,w,h});
 const chart=(title,metric,dimension,shape,x,y,w=560,h=330)=>({type:'chart',title,source:'meta',metric,dimension,shape,x,y,w,h});
 const note=(x,y,w=1152,h=174)=>({type:'note',title:'Hallazgos y próximos pasos',source:'meta',text:'Pendiente de análisis: escribe aquí tus insights, decisiones y responsables. No publiques conclusiones sin validarlas con los datos.',metric:'spend',dimension:'month',shape:'bar',x,y,w,h});
+const comparison=(title,key,x,y,w=270,h=245)=>({type:'comparison',title,source:'meta',metric:key,dimension:'month',shape:'bar',x,y,w,h});
 const TEMPLATES=[
  {
   id:'executive',title:'Resumen ejecutivo',subtitle:'La vista para presentar resultados al cliente',
@@ -52,6 +53,19 @@ const TEMPLATES=[
   ]
  },
  {
+  id:'monthly',title:'Comparativo entre meses',subtitle:'Variaciones MTD con el mismo día de corte, sin inventar resultados',
+  label:'Mes actual · mes anterior · variaciones',icon:'↗',accent:'#db5868',
+  cards:[
+   comparison('Cambio en inversión','spend',24,24,270),
+   comparison('Cambio en formularios','forms',318,24,270),
+   comparison('Cambio en CPL','cpl',612,24,270),
+   comparison('Cambio en clics','clicks',906,24,270),
+   chart('Formularios mensuales','forms','month','bar',24,303),
+   chart('Inversión mensual','spend','month','line',616,303),
+   {type:'note',title:'Interpretación responsable',text:'Compara períodos equivalentes hasta el mismo día de corte. El cambio de CPL debe analizarse junto con inversión y formularios. La última carga de Meta puede estar incompleta; valida los registros antes de presentar cifras finales.',source:'meta',metric:'spend',dimension:'month',shape:'bar',x:24,y:671,w:1152,h:180}
+  ]
+ },
+ {
   id:'territories',title:'Análisis territorial',subtitle:'Distribución geográfica y oportunidades por zona',
   label:'Territorios · leads · inversión · CPL',icon:'◇',accent:'#9d713d',
   cards:[
@@ -63,7 +77,7 @@ const TEMPLATES=[
   ]
  }
 ];
-const ALL=new Set(['metric','chart','note','image','filter']);
+const ALL=new Set(['metric','chart','comparison','note','image','filter']);
 function get(id){return TEMPLATES.find(x=>x.id===id)||null;}
 function instantiate(id,uid){
  const template=get(id);
