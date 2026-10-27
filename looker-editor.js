@@ -25,13 +25,14 @@ function act(action){
  const simple={
  undo:()=>click('metricStyleUndo'),redo:()=>click('metricStyleRedo'),page:()=>click('builderNewPage'),
  datasource:()=>{go('citroen-sources');mark('Conexiones de datos abiertas');},
- photo:()=>click('studioPhotos'),control:()=>click('builderNewFilter'),managefilters:()=>click('builderManageFilters'),
- insight:()=>{if(go('citroen-insights'))$('citroen-insightsActions')?.querySelector('button')?.click();},
+ photo:()=>{if(window.CITROEN_BUILDER?.addOnCurrent('image'))return;click('studioPhotos');},
+ control:()=>{if(window.CITROEN_BUILDER?.addOnCurrent('filter'))return;click('builderNewFilter');},managefilters:()=>click('builderManageFilters'),
+ insight:()=>{if(window.CITROEN_BUILDER?.addOnCurrent('note'))return;if(go('citroen-insights'))$('citroen-insightsActions')?.querySelector('button')?.click();},
  free:()=>click('studioFreeLayout'),grid:()=>{if($('studioFreeLayout')?.getAttribute('aria-pressed')==='true')click('studioFreeLayout');},
  save:()=>{click('studioSave');mark('Guardado localmente · Publicar comparte páginas e insights');},
  publish:()=>{click('builderPublish');mark('Publicación solicitada · comprueba el estado en el menú');},
  export:()=>click('studioExport'),import:()=>click('studioImport'),csv:()=>click('studioCsv'),reset:()=>click('studioReset'),
- duplicate:()=>{if(selection?.startsWith('c:'))window.CITROEN_STUDIO_ACTIONS?.duplicate?.(selection);else mark('Selecciona un gráfico personalizado para duplicarlo');},
+ duplicate:()=>{if(window.CITROEN_LOOKER_PROPERTIES?.duplicateSelection?.())return;if(selection?.startsWith('c:'))window.CITROEN_STUDIO_ACTIONS?.duplicate?.(selection);else mark('Selecciona un gráfico personalizado para duplicarlo');},
  summary:()=>go('resumen'),
  select:()=>mark('Selecciona una tarjeta del lienzo para editarla'),
  focusdata:()=>{document.body.classList.toggle('le-show-data-panel');if(document.body.classList.contains('le-show-data-panel'))$('leFieldSearch')?.focus();},focusproperties:()=>{document.body.classList.remove('le-show-data-panel');document.querySelector('[data-inspector-tab="data"]')?.click();},
@@ -41,9 +42,17 @@ function act(action){
  if(action==='chartMenu'||action==='themeMenu'){show(action==='chartMenu'?'chart':'theme',anchor);return;}
  if(action.startsWith('palette:')){window.CITROEN_STYLE_EDITOR?.applyGlobalPalette(action.slice(8));mark('Paleta actualizada');return;}
  const chartTypes={bar:['meta','bar'],line:['meta','line'],area:['meta','area'],table:['meta','table'],compare:['compare','bar'],plan:['plan','line']};
- if(chartTypes[action]){const [source,chart]=chartTypes[action];document.querySelector('#studioGallery [data-gallery-source="'+source+'"][data-gallery-chart="'+chart+'"]')?.click();mark('Gráfico creado; cambia sus propiedades a la derecha');return;}
+ if(chartTypes[action]){const [source,chart]=chartTypes[action];
+ const pageShape=action==='compare'?'bar':action==='plan'?'line':chart;
+ if(window.CITROEN_BUILDER?.addOnCurrent('chart',{shape:pageShape,title:action==='compare'?'Comparativo personalizado':action==='plan'?'Proyección personalizada':'Gráfico de '+(action==='bar'?'barras':action==='line'?'líneas':action==='area'?'área':'tabla')})){
+  mark('Gráfico agregado a la página actual · edita sus campos a la derecha');return;
+ }
+ document.querySelector('#studioGallery [data-gallery-source="'+source+'"][data-gallery-chart="'+chart+'"]')?.click();mark('Gráfico creado; cambia sus propiedades a la derecha');return;}
  const controlTypes={datecontrol:'relative',selectcontrol:'select',multicontrol:'multi',numbercontrol:'number',searchcontrol:'search'};
- if(controlTypes[action]){click('builderNewFilter');const field=$('builderFilterEditorForm')?.elements?.type;if(field)field.value=controlTypes[action];mark('Configura el campo, período y alcance del filtro');}
+ if(controlTypes[action]){click('builderNewFilter');const field=$('builderFilterEditorForm')?.elements?.type;if(field){field.value=controlTypes[action];
+ const active=window.CITROEN_BUILDER?.getCurrentPage?.();
+ if(active?.startsWith('report-')){field.scope.value='page';field.pageId.value=active;field.pageId.dispatchEvent(new Event('change'));}}
+ mark('Configura el campo, período y alcance del filtro');}
 }
 function show(name,button){
  if(!editing||!menus[name])return;
@@ -91,6 +100,7 @@ function fields(){
  }).join('')||'<div class="le-empty">No hay campos</div>';
 }
 function chooseField(key){
+ if(window.CITROEN_LOOKER_PROPERTIES?.assignField?.(key)){mark('Campo actualizado en tarjeta seleccionada');return;}
  if(['month','model'].includes(key)&&selection?.startsWith('c:')&&window.CITROEN_STUDIO_ACTIONS?.updateCustom){
   window.CITROEN_STUDIO_ACTIONS.updateCustom(selection,{dimension:key});
   mark('Dimensión aplicada al gráfico: '+(key==='month'?'Mes':'Modelo'));
@@ -135,6 +145,8 @@ function start(){
  $('leFieldSearch').oninput=fields;
  $('leFieldsList').onclick=e=>{const el=e.target.closest('[data-field-key]');if(el)chooseField(el.dataset.fieldKey);};
  document.addEventListener('citroen:studio-layout',()=>{setEdit($('c3Dashboard')?.classList.contains('studio-edit-on')===true);if(editing)pages();});
+ document.addEventListener('citroen:builder-page-changed',()=>{if(editing)pages();});
+ document.addEventListener('citroen:builder-page-order',()=>{if(editing)pages();});
  document.addEventListener('citroen:selection-changed',e=>{selection=e.detail?.key||null;mark(selection?'Editando: '+($('metricCurrent')?.textContent||'gráfico'):'Selecciona un gráfico para editarlo');});
  document.addEventListener('click',e=>{if(editing&&!e.target.closest('#leDropdown,[data-menu]'))close();});
  document.addEventListener('keydown',e=>{if(e.key==='Escape')close();});
