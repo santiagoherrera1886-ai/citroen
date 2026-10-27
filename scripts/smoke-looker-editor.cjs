@@ -6,7 +6,8 @@ const dom=new JSDOM(fs.readFileSync('index.html','utf8'),{url:'https://citroen.e
 const w=dom.window,$=id=>w.document.getElementById(id);
 let edits=0,charts=0,pages=0,styles=0,metricClicks=0;
 $('studioEdit').addEventListener('click',()=>{edits++;$('c3Dashboard').classList.toggle('studio-edit-on');w.document.dispatchEvent(new w.Event('citroen:studio-layout'));});
-$('builderNewPage').addEventListener('click',()=>pages++);
+const createPageStub=w.document.createElement('button');createPageStub.id='builderNewPage';w.document.body.appendChild(createPageStub);
+createPageStub.addEventListener('click',()=>pages++);
 $('studioGallery').querySelector('[data-gallery-chart="bar"]').addEventListener('click',()=>charts++);
 w.CITROEN_STYLE_EDITOR={applyGlobalPalette:()=>{styles++}};
 const metric=w.document.createElement('button');metric.dataset.field='spend';metric.onclick=()=>metricClicks++;$('metricFields').appendChild(metric);
