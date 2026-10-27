@@ -16,7 +16,7 @@ function value(metric,rows,opts={}){
  if(metric==='reach'){
   if(typeof opts.reachEstimator!=='function')return null;
   const estimate=opts.reachEstimator(rows.map(r=>Math.max(0,Number(r.reach)||0)),opts.universe||15000000);
-  return Number.isFinite(Number(estimate))?Number(estimate):null;
+  return estimate!==null&&estimate!==undefined&&Number.isFinite(Number(estimate))?Number(estimate):null;
  }
  return total(metric);
 }
