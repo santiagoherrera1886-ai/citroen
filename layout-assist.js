@@ -10,16 +10,17 @@ function history(scope){
  return scopes.get(scope);
 }
 function same(a,b){return JSON.stringify(a)===JSON.stringify(b);}
+function notify(scope){document.dispatchEvent(new CustomEvent('citroen:layout-history',{detail:{scope,undo:canUndo(scope),redo:canRedo(scope)}}));}
 function register(scope,apply){history(scope).apply=apply;}
 function record(scope,before,after){
  if(!before||!after||same(before,after))return false;
- const h=history(scope);h.undo.push(clone(before));if(h.undo.length>LIMIT)h.undo.shift();h.redo=[];
+ const h=history(scope);h.undo.push(clone(before));if(h.undo.length>LIMIT)h.undo.shift();h.redo=[];notify(scope);
  return true;
 }
 function undo(scope,current){
  const h=history(scope);if(!h.undo.length||typeof h.apply!=='function')return false;
  const target=h.undo.pop();h.redo.push(clone(current));
- h.apply(clone(target));return true;
+ h.apply(clone(target));notify(scope);return true;
 }
 function redo(scope,current){
  const h=history(scope);if(!h.redo.length||typeof h.apply!=='function')return false;
@@ -28,7 +29,7 @@ function redo(scope,current){
 }
 function canUndo(scope){return history(scope).undo.length>0;}
 function canRedo(scope){return history(scope).redo.length>0;}
-function clear(scope){const h=history(scope);h.undo=[];h.redo=[];}
+function clear(scope){const h=history(scope);h.undo=[];h.redo=[];notify(scope);}
 const choose=(target,candidates,tolerance)=>{
  let best=null;
  for(const candidate of candidates){
