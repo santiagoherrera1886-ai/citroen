@@ -1,0 +1,200 @@
+/* CITROËN STUDIO · direct-selection editing (Looker-like).
+   Preserve the polished public design; these overrides affect edit mode only,
+   except published, desktop KPI placements. */
+body.citroen-looker-edit .concept3-shell .content{
+ position:fixed!important;
+ inset:179px 565px 0 174px!important;
+ margin:0!important;
+ padding:16px 26px 70px!important;
+ max-width:none!important;
+ min-width:0!important;
+ min-height:0!important;
+ width:auto!important;
+ height:auto!important;
+ overflow:auto!important;
+ scrollbar-color:#c1cfdb #edf2f6;
+ scrollbar-width:thin;
+ overscroll-behavior:contain;
+}
+body.citroen-looker-edit .content>.page-section.is-active{
+ width:1240px!important;
+ min-width:1240px!important;
+ max-width:none!important;
+ box-sizing:border-box;
+ margin:0 0 30px!important;
+ border:1px solid #dbe5ed!important;
+ border-radius:5px!important;
+ box-shadow:0 9px 32px rgba(32,68,94,.07)!important;
+ background-color:#fff;
+}
+body.citroen-looker-edit #c3Dashboard,
+body.citroen-looker-edit #c3Kpis,
+body.citroen-looker-edit #studioCards{
+ min-width:0;
+}
+body.citroen-looker-edit #studioCards{
+ width:100%;
+ min-height:650px;
+}
+body.citroen-looker-edit .c3-header h1{font-size:29px!important}
+body.citroen-looker-edit .c3-kpi-grid{
+ grid-template-columns:repeat(6,minmax(0,1fr))!important;
+ min-height:148px;
+ gap:12px!important;
+}
+body.citroen-looker-edit .c3-kpi{
+ min-height:130px!important;
+ padding:15px 14px!important;
+ grid-template-columns:34px minmax(0,1fr)!important;
+ gap:9px!important;
+ border:1px solid #e0eaf2!important;
+ box-shadow:0 2px 10px rgba(17,55,91,.05)!important;
+}
+body.citroen-looker-edit .c3-kpi h4{
+ font-size:10px!important;
+ white-space:normal!important;
+ overflow:visible!important;
+ line-height:1.35!important;
+}
+body.citroen-looker-edit .c3-kpi strong{
+ font-size:18px!important;
+ font-weight:900!important;
+ letter-spacing:-.6px!important;
+ white-space:nowrap!important;
+ overflow:visible!important;
+ color:#163e59!important;
+}
+body.citroen-looker-edit .c3-kpi small{
+ font-size:9px!important;
+ line-height:1.42!important;
+ max-height:3.9em;
+ overflow:hidden;
+}
+body.citroen-looker-edit .c3-kpi-ico{width:32px!important;height:32px!important}
+body.citroen-looker-edit .c3-kpi-grid.citroen-free-kpis{
+ display:block!important;
+ position:relative!important;
+ margin-bottom:22px!important;
+ min-height:150px;
+ background:transparent;
+}
+.c3-kpi-grid.citroen-free-kpis{
+ display:block;
+ position:relative;
+ min-height:148px;
+}
+.c3-kpi-grid.citroen-free-kpis>.c3-kpi{position:absolute;box-sizing:border-box;margin:0}
+body.citroen-looker-edit .c3-kpi-grid.citroen-free-kpis>.c3-kpi{
+ position:absolute!important;
+ display:grid!important;
+ cursor:grab;
+ user-select:none;
+ touch-action:none;
+ border-radius:13px!important;
+ background:#fff;
+}
+body.citroen-looker-edit .c3-kpi-grid.citroen-free-kpis>.c3-kpi:active{cursor:grabbing}
+body.citroen-looker-edit #studioCards.citroen-free-mode{
+ display:block!important;
+ position:relative!important;
+ min-height:700px;
+ width:100%;
+ background:transparent;
+}
+body.citroen-looker-edit #studioCards.citroen-free-mode>.c3-panel,
+body.citroen-looker-edit #studioCards.citroen-free-mode>.studio-card{
+ position:absolute!important;
+ grid-column:auto!important;
+ margin:0!important;
+ box-sizing:border-box!important;
+ max-width:none!important;
+ min-width:280px;
+ min-height:190px;
+ cursor:grab!important;
+ touch-action:none;
+ border:1px solid #e1eaf2!important;
+ border-radius:13px!important;
+ padding:18px!important;
+ outline:none!important;
+ background:#fff;
+}
+body.citroen-looker-edit #studioCards.citroen-free-mode>.c3-panel:active,
+body.citroen-looker-edit #studioCards.citroen-free-mode>.studio-card:active{cursor:grabbing!important}
+body.citroen-looker-edit #studioCards.citroen-free-mode>.c3-panel .c3-panel-heading,
+body.citroen-looker-edit #studioCards.citroen-free-mode>.studio-card .studio-card-head{user-select:none}
+body.citroen-looker-edit #studioCards .studio-native-tools,
+body.citroen-looker-edit #studioCards .studio-card-tools{
+ display:none!important;
+}
+body.citroen-looker-edit #studioCards .studio-native-tools,
+body.citroen-looker-edit #studioCards .studio-card-tools{
+ pointer-events:none!important;
+}
+body.citroen-looker-edit .studio-visual svg,
+body.citroen-looker-edit .c3-comparison-chart svg{pointer-events:none}
+body.citroen-looker-edit .c3-kpi-grid .metric-selected,
+body.citroen-looker-edit #studioCards>.metric-selected{
+ outline:2px solid #2c84ed!important;
+ outline-offset:2px!important;
+ box-shadow:0 0 0 5px rgba(51,132,238,.13),0 10px 26px rgba(22,64,110,.13)!important;
+ z-index:2!important;
+}
+body.citroen-looker-edit #studioCards>.le-direct-active,
+body.citroen-looker-edit #c3Kpis>.le-direct-active{
+ outline:2px solid #2579e2!important;
+ outline-offset:1px!important;
+ z-index:20!important;
+ box-shadow:0 0 0 5px rgba(42,119,221,.14),0 15px 36px rgba(27,73,117,.19)!important;
+}
+body.citroen-looker-edit #studioCards>.c3-panel:hover,
+body.citroen-looker-edit #studioCards>.studio-card:hover,
+body.citroen-looker-edit #c3Kpis>.c3-kpi:hover{
+ border-color:#8fbce9!important;
+}
+body.citroen-looker-edit .citroen-free-resize{
+ position:absolute!important;
+ right:-6px!important;
+ bottom:-6px!important;
+ display:block!important;
+ width:15px!important;
+ height:15px!important;
+ z-index:25!important;
+ cursor:nwse-resize!important;
+ touch-action:none!important;
+ border:2px solid #fff!important;
+ outline:2px solid #2b83e6!important;
+ border-radius:4px!important;
+ background:#2d86ec!important;
+ box-shadow:0 2px 9px rgba(19,81,145,.32)!important;
+}
+body.citroen-looker-edit #studioCards>.c3-panel:not(.metric-selected)>.citroen-free-resize,
+body.citroen-looker-edit #studioCards>.studio-card:not(.metric-selected)>.citroen-free-resize,
+body.citroen-looker-edit #c3Kpis>.c3-kpi:not(.metric-selected)>.citroen-free-resize{
+ opacity:0;
+ pointer-events:none!important;
+}
+body.citroen-looker-edit #studioCards>.metric-selected>.citroen-free-resize,
+body.citroen-looker-edit #c3Kpis>.metric-selected>.citroen-free-resize{opacity:1}
+body.citroen-looker-edit.le-dragging{user-select:none!important;cursor:grabbing!important}
+body.citroen-looker-edit .le-toolbar{box-shadow:0 3px 10px rgba(28,60,93,.04)}
+body.citroen-looker-edit .le-canvas-tools{background:#edf2f6}
+body.citroen-looker-edit .le-pages-panel{background:#f9fbfd}
+body.citroen-looker-edit .le-fields-panel{background:#fcfdff}
+body.citroen-looker-edit .le-page-item.active{border-left:3px solid #2e83e8}
+body.citroen-looker-edit .le-canvas-hint{display:none}
+@media(max-width:1480px){
+ body.citroen-looker-edit .concept3-shell .content{left:154px!important;right:356px!important}
+}
+@media(max-width:990px){
+ body.citroen-looker-edit .concept3-shell .content{left:59px!important;right:0!important}
+}
+@media(max-width:800px){
+ body:not(.citroen-looker-edit) .c3-kpi-grid.citroen-free-kpis{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  min-height:0!important;
+ }
+ body:not(.citroen-looker-edit) .c3-kpi-grid.citroen-free-kpis>.c3-kpi{
+  position:relative!important;left:auto!important;top:auto!important;width:auto!important;height:auto!important;
+ }
+}
