@@ -395,7 +395,8 @@ async function loadPublished(){
   else state=localDraft()||empty();
  }catch{state=localDraft()||empty();}
  if(!Array.isArray(state.pages))state=empty();
- window.CITROEN_FILTER_ENGINE?.setDefinitions(state.controls||[]);
+ state.controls=Array.isArray(state.controls)?state.controls:[];
+ window.CITROEN_FILTER_ENGINE?.setDefinitions(state.controls);
  drawPageNav();applyFilters();render();
  const location=decodeURIComponent(locationHash());
  if($(location)&&location!==current)navTo(location);
