@@ -122,11 +122,28 @@ function build(){
   '<div class="compare-lab-config"><label>Indicador<select name="metric">'+Object.entries(metrics).map(([k,v])=>'<option value="'+k+'">'+esc(v.label)+'</option>').join('')+'</select></label>'+
   '<label>Desglose<select name="group">'+Object.entries(dimensions).map(([k,v])=>'<option value="'+k+'">'+esc(v)+'</option>').join('')+'</select></label>'+
   '<label>Filtrar modelo<select name="model"></select></label><label>Filtrar territorio<select name="territory"></select></label></div>'+
-  '<div class="compare-lab-actions"><button type="submit">Actualizar comparativo</button><button type="button" id="compareLabReset">Mes actual vs. anterior</button><button type="button" id="compareLabCSV">Exportar CSV</button></div>'+
- '</form><p id="compareLabError" role="status" class="compare-lab-error"></p><div id="compareLabResults"></div>';
+  '<div class="compare-lab-actions"><button type="submit">Actualizar comparativo</button><button type="button" id="compareLabReset">Mes actual vs. anterior</button><button type="button" id="compareLabCSV">Exportar CSV</button><button type="button" id="compareLabSave" hidden>Guardar A/B en una página</button></div>'+
+ '</form><p id="compareLabError" role="status" class="compare-lab-error"></p><div id="compareLabResults"></div>'+
+ '<div id="compareLabSaveDialog" class="compare-lab-save-dialog" hidden><div class="compare-lab-save-card"><h4>Guardar comparativo</h4><p>Se creará una tarjeta con estas fechas y filtros en la página que elijas. Solo se publicará cuando pulses Publicar cambios.</p><label>Página destino<select id="compareLabTarget"></select></label><div><button id="compareLabSaveCancel" type="button">Cancelar</button><button id="compareLabSaveConfirm" type="button">Crear tarjeta</button></div><p id="compareLabSaveStatus" role="status"></p></div></div>';
  const form=host.querySelector('#compareLabForm');
  form.onsubmit=e=>{e.preventDefault();settings=Object.fromEntries(new FormData(form).entries());renderResults();};
- host.querySelector('#compareLabReset').onclick=()=>{settings={...defaults(rows),metric:settings.metric||'forms',group:settings.group||'model',model:settings.model||'',territory:settings.territory||''};fill();renderResults();};
+ host.querySelector('#compareLabSave').onclick=()=>{
+  const api=root.CITROEN_BUILDER;
+  if(!root.CITROEN_ACCESS?.canEdit?.()||!root.document.getElementById('c3Dashboard')?.classList.contains('studio-edit-on'))return;
+  const destination=host.querySelector('#compareLabTarget'),pages=api?.getPages?.()||[];
+  destination.replaceChildren(...pages.map(p=>new Option(p.title,p.id)));
+  host.querySelector('#compareLabSaveStatus').textContent=pages.length?'':'Primero crea una página desde Diseño.';
+  host.querySelector('#compareLabSaveDialog').hidden=false;
+ };
+ host.querySelector('#compareLabSaveCancel').onclick=()=>host.querySelector('#compareLabSaveDialog').hidden=true;
+ host.querySelector('#compareLabSaveConfirm').onclick=()=>{
+  if(!latest?.ok)return;
+  const pageId=host.querySelector('#compareLabTarget').value;
+  const result=root.CITROEN_BUILDER?.addABToPage?.(pageId,{...settings});
+  if(result)host.querySelector('#compareLabSaveDialog').hidden=true;
+  else host.querySelector('#compareLabSaveStatus').textContent='No fue posible guardar la tarjeta. Revisa los permisos y la página destino.';
+ };
+  host.querySelector('#compareLabReset').onclick=()=>{settings={...defaults(rows),metric:settings.metric||'forms',group:settings.group||'model',model:settings.model||'',territory:settings.territory||''};fill();renderResults();};
  host.querySelector('#compareLabCSV').onclick=()=>{
   if(!latest?.ok)return;
   const blob=new Blob([toCSV(latest)],{type:'text/csv;charset=utf-8'});
@@ -147,6 +164,8 @@ function renderResults(){
  if(form)settings=Object.fromEntries(new FormData(form).entries());
  const output=host.querySelector('#compareLabResults'),error=host.querySelector('#compareLabError');
  latest=calculate(rows,settings,root.CITROEN_REACH_MATH?.estimate);
+ const save=host.querySelector('#compareLabSave');
+ if(save)save.hidden=!root.CITROEN_ACCESS?.canEdit?.()||!root.document.getElementById('c3Dashboard')?.classList.contains('studio-edit-on');
  if(!latest.ok){error.textContent=latest.error;output.replaceChildren();return;}
  error.textContent='';
  const r=latest,barmax=Math.max(1,...r.groups.flatMap(g=>[g.current||0,g.prior||0])),listed=r.groups.slice(0,15);
