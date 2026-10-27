@@ -53,7 +53,7 @@ function clean(state){
  if(pages.length>15||creatives.length>40||insights.length>80)throw Error('El espacio supera el máximo de páginas, creativos o insights.');
  const validId=id=>typeof id==='string'&&/^[\w-]{3,80}$/.test(id);
  const fixCard=c=>{
-  if(!c||!validId(c.id)||!['metric','note','chart','image','filter'].includes(c.type))return null;
+  if(!c||!validId(c.id)||!['metric','note','chart','comparison','image','filter'].includes(c.type))return null;
   const metric=c.source==='external'&&typeof c.metric==='string'&&c.metric.length<=90?c.metric:['spend','forms','messages','impressions','reach','clicks','ctr','cpl'].includes(c.metric)?c.metric:'spend';
   const dimension=c.source==='external'&&typeof c.dimension==='string'&&c.dimension.length<=90?c.dimension:['date','week','month','quarter','model','territory','account'].includes(c.dimension)?c.dimension:'month';
   const shape=['bar','barh','line','area','table','pie','donut','gauge'].includes(c.shape)?c.shape:'bar';
