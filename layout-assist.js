@@ -12,6 +12,7 @@ function history(scope){
 function same(a,b){return JSON.stringify(a)===JSON.stringify(b);}
 function notify(scope){document.dispatchEvent(new CustomEvent('citroen:layout-history',{detail:{scope,undo:canUndo(scope),redo:canRedo(scope)}}));}
 function register(scope,apply){history(scope).apply=apply;}
+function bindNudge(scope,handler){history(scope).nudge=handler;}
 function record(scope,before,after){
  if(!before||!after||same(before,after))return false;
  const h=history(scope);h.undo.push(clone(before));if(h.undo.length>LIMIT)h.undo.shift();h.redo=[];notify(scope);
@@ -91,8 +92,18 @@ function scopeNow(){
  return id.startsWith('report-')?'page:'+id.slice(7):'summary';
 }
 function onKey(e){
+ const arrows={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0]};
+ if(arrows[e.key]&&!e.altKey&&!e.ctrlKey&&!e.metaKey){
+  if(e.target?.closest?.('input,textarea,select,button,a,[contenteditable="true"],[role="textbox"]'))return;
+  if(!window.CITROEN_ACCESS?.canEdit?.()||!document.getElementById('c3Dashboard')?.classList.contains('studio-edit-on'))return;
+  const scope=scopeNow(),nudge=history(scope).nudge;
+  if(typeof nudge==='function'&&nudge(arrows[e.key][0]*(e.shiftKey?1:8),arrows[e.key][1]*(e.shiftKey?1:8))){
+   e.preventDefault();e.stopPropagation();
+  }
+  return;
+ }
  if(!((e.ctrlKey||e.metaKey)&&!e.altKey))return;
- if(e.target?.closest?.('input,textarea,select,[contenteditable="true"],[role="textbox"]'))return;
+ if(e.target?.closest?.('input,textarea,select,button,a,[contenteditable="true"],[role="textbox"]'))return;
  if(!window.CITROEN_ACCESS?.canEdit?.()||!document.getElementById('c3Dashboard')?.classList.contains('studio-edit-on'))return;
  if(e.key.toLowerCase()!=='z'&&e.key.toLowerCase()!=='y')return;
  const scope=scopeNow(),api=window.CITROEN_LAYOUT_HISTORY;
@@ -102,7 +113,7 @@ function onKey(e){
  if(ok){e.preventDefault();e.stopPropagation();}
 }
 window.CITROEN_LAYOUT_HISTORY={
- register,record,canUndo,canRedo,clear,snap,guides,current:scopeNow,
+ register,bindNudge,record,canUndo,canRedo,clear,snap,guides,current:scopeNow,
  undo(scope){const h=history(scope);const current=h.current?.();return current?undo(scope,current):false;},
  redo(scope){const h=history(scope);const current=h.current?.();return current?redo(scope,current):false;},
  bind(scope,get,apply){const h=history(scope);h.current=get;h.apply=apply;},
