@@ -16,10 +16,10 @@ const metrics={
  reach:{label:'Alcance estimado',unit:'number',good:'neutral'}
 };
 const dimensions={model:'Modelo',territory:'Territorio',account:'Cuenta Meta'};
-const day=s=>typeof s==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s)&&!Number.isNaN(Date.parse(s+'T00:00:00Z'))?s:null;
+const day=s=>{if(typeof s!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(s))return null;const t=Date.parse(s+'T00:00:00Z');return Number.isFinite(t)&&new Date(t).toISOString().slice(0,10)===s?s:null;};
 const key=s=>String(s??'').trim()||'Sin clasificar';
 function aggregate(rows,metric,estimator){
- if(!metrics[metric])return null;
+ if(!metrics[metric]||!Array.isArray(rows)||rows.length===0)return null;
  const sum=f=>rows.reduce((a,r)=>a+(Number.isFinite(Number(r[f]))?Math.max(0,Number(r[f])):0),0);
  const spend=sum('spend'),forms=sum('forms'),impressions=sum('impressions');
  if(metric==='cpl')return forms>0?spend/forms:null;
@@ -107,7 +107,7 @@ function options(choices,selected,empty){return '<option value="">'+empty+'</opt
 let rows=[],host=null,initialized=false,settings={},latest=null;
 function setRows(next){
  rows=Array.isArray(next)?next:[];
- if(!initialized)settings={...defaults(rows),metric:'forms',group:'model',model:'',territory:''};
+ if(!settings.aStart&&rows.length){settings={...settings,...defaults(rows),metric:settings.metric||'forms',group:settings.group||'model',model:settings.model||'',territory:settings.territory||''};}
  if(host)refresh(true);
 }
 function choose(name){
