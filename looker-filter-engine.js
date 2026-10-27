@@ -70,7 +70,7 @@ const options=field=>[...new Set(dataset.map(r=>value(r,field)).filter(x=>x!=nul
 function controls(page,card=''){return definitions.filter(d=>d.enabled&&(d.scope==='report'||(d.pageId===page&&(d.scope==='page'||(d.scope==='chart'&&d.cardId===card)))));}
 function render(host,page='resumen',card=''){
  const el=typeof host==='string'?document.getElementById(host):host;if(!el)return;
- const arr=controls(page,card);
+ const arr=controls(page,card).filter(d=>card?d.scope==='chart':d.scope!=='chart');
  el.innerHTML=arr.length?'<div class="lk-controls">'+arr.map(d=>{
   const chosen=settings[d.id]||{},s=esc(d.label),id=esc(d.id),p=' data-lk-id="'+id+'" ';
   const values=options(d.field);
