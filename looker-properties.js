@@ -41,8 +41,8 @@ function render(){
   html='<div class="lep-heading">Fuente de datos</div><div class="lep-dataset">▣ &nbsp; Meta Ads · 2026 <small>Datos diarios reales</small></div>'+
   '<label>Nombre del elemento<input data-le-property="title" maxlength="100" value="'+safe(c.title)+'"></label>';
   if(c.type==='chart'||c.type==='metric'){
-   html+='<div class="lep-heading">Dimensión</div><label><select data-le-property="dimension">'+options(dims,c.dimension)+'</select></label>'+
-   '<div class="lep-heading">Métrica</div><label><select data-le-property="metric">'+options(mets,c.metric)+'</select></label>';
+   html+='<div class="lep-heading">Dimensión</div><label class="lep-dropzone" data-le-dropzone="dimension"><small>Arrastra aquí un campo de dimensión</small><select data-le-property="dimension">'+options(dims,c.dimension)+'</select></label>'+
+   '<div class="lep-heading">Métrica</div><label class="lep-dropzone" data-le-dropzone="metric"><small>Arrastra aquí un campo de métrica</small><select data-le-property="metric">'+options(mets,c.metric)+'</select></label>';
    if(c.type==='chart')html+='<div class="lep-heading">Visualización</div><label><select data-le-property="shape">'+options(types,c.shape)+'</select></label>';
    if(c.shape==='gauge')html+='<label>Objetivo numérico<input data-le-property="goal" type="number" min="1" value="'+safe(c.goal||'')+'"></label>';
   }
@@ -98,6 +98,20 @@ function wire(){
   if(action==='move-up'||action==='move-down')builder()?.reorderPage(pageId(),action==='move-up'?-1:1);
  };
  root.onchange=e=>{const t=e.target.closest('[data-le-property]');if(t)update(t.dataset.leProperty,t.value);};
+ root.addEventListener('dragover',e=>{
+  const zone=e.target.closest('[data-le-dropzone]');if(!zone||!mode()||!card())return;
+  e.preventDefault();zone.classList.add('lep-dragover');
+  if(e.dataTransfer)e.dataTransfer.dropEffect='copy';
+ });
+ root.addEventListener('dragleave',e=>{const zone=e.target.closest('[data-le-dropzone]');if(zone&&!zone.contains(e.relatedTarget))zone.classList.remove('lep-dragover');});
+ root.addEventListener('drop',e=>{
+  const zone=e.target.closest('[data-le-dropzone]');if(!zone||!mode()||!card())return;
+  e.preventDefault();zone.classList.remove('lep-dragover');
+  const key=e.dataTransfer?.getData('text/plain'),prop=zone.dataset.leDropzone;
+  if(prop==='metric'&&mets.some(x=>x[0]===key))update('metric',key);
+  else if(prop==='dimension'&&dims.some(x=>x[0]===key))update('dimension',key);
+ });
+
  document.addEventListener('citroen:builder-card-selected',e=>{if(!mode())return;selected=e.detail?.card?.id||null;tab='data';refresh();});
  document.addEventListener('citroen:builder-page-changed',e=>{page=e.detail?.id||'resumen';selected=null;tab='data';refresh();});
  document.addEventListener('citroen:studio-layout',()=>{if(!mode())selected=null;refresh();showGrid(grid);});
