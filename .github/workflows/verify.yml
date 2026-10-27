@@ -28,6 +28,7 @@ jobs:
           node --check api/users.js
           node --check lib/editor-auth.mjs
           node --check builder.js
+          node --check looker-filter-engine.js
           node --check free-layout.js
           node --check api/dashboard.js
           node --check api/data-connect.js
@@ -52,3 +53,5 @@ jobs:
         run: node scripts/smoke-access.cjs
       - name: Public page builder, creatives, insights, filter and free-canvas regression
         run: node scripts/smoke-builder.cjs
+      - name: Advanced Looker filter dates, scopes and operator math
+        run: node scripts/smoke-lookers.cjs
