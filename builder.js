@@ -9,7 +9,7 @@ const authorized=()=>window.CITROEN_ACCESS?.canEdit()===true&&$('c3Dashboard')?.
 const CL={spend:'Inversión',forms:'Formularios',messages:'Conversaciones',impressions:'Impresiones',reach:'Alcance estimado',clicks:'Clics enlace',ctr:'CTR enlace',cpl:'Costo por formulario'};
 const mk=(tag,attrs={},content='')=>{const el=document.createElement(tag);for(const [k,v] of Object.entries(attrs))el.setAttribute(k,v);el.innerHTML=content;return el;};
 const button=(text,fn,cls='builder-btn')=>{const b=mk('button',{type:'button',class:cls});b.textContent=text;b.onclick=fn;return b;};
-let state=empty(),current='resumen',data=[],external=null,localFilter={month:'',model:''},busy=false;
+let state=empty(),current='resumen',data=[],external=null,localFilter={month:'',model:''},busy=false,selectedCardId=null;
 let lastPublishedRevision='initial',baseRevision='initial',pendingDraft=null,dirty=false,summaryBaseline=null;
 function localDraft(){
  try{
@@ -60,6 +60,7 @@ function navTo(id){
  history.replaceState(null,'','#'+id);
  $('sidebar').classList.remove('open');$('sidebarOverlay').classList.remove('show');
  window.scrollTo({top:0,behavior:'instant'});
+ document.dispatchEvent(new CustomEvent('citroen:builder-page-changed',{detail:{id,title:id==='resumen'?'Resumen':$(id)?.querySelector('h2')?.textContent||id}}));
  render();
 }
 function pageNav(id,label){const btn=mk('button',{type:'button',class:'nav-link builder-nav', 'data-target':id},'<span class="builder-nav-icon">◇</span> '+esc(label));btn.onclick=()=>navTo(id);return btn;}
@@ -195,11 +196,13 @@ function createPage(){
  const p={id:uid(),title:name.trim().slice(0,70),cards:[]};
  state.pages.push(p);stash();drawPageNav();navTo('report-'+p.id);status('Página creada. Agrega tarjetas y publica cuando esté lista.');
 }
-function newCard(type,page){
+function newCard(type,page,changes={}){
  if(!authorized())return;
  if(page.cards.length>=45){status('Máximo 45 tarjetas por página.');return;}
  const card={id:uid(),type,title:{metric:'Indicador',chart:'Gráfico Meta Ads',note:'Insight',image:'Imagen',filter:'Filtro de mes'}[type],text:'',source:'meta',metric:'spend',dimension:'month',shape:'bar',x:24+(page.cards.length%3)*34,y:24+(page.cards.length%5)*36,w:type==='chart'?480:330,h:type==='note'?230:285};
- page.cards.push(card);stash();renderPage(page);
+ for(const field of ['title','metric','dimension','shape','text','source','image'])if(Object.hasOwn(changes,field))card[field]=changes[field];
+ page.cards.push(card);selectedCardId=card.id;stash();renderPage(page);
+ document.dispatchEvent(new CustomEvent('citroen:builder-card-selected',{detail:{pageId:page.id,card:{...card}}}));
 }
 function deletePage(p){if(!authorized()||!confirm('¿Eliminar esta página y sus tarjetas?'))return;state.pages=state.pages.filter(x=>x.id!==p.id);stash();drawPageNav();navTo('resumen');}
 function pageToolbar(page){
@@ -385,9 +388,15 @@ function renderPage(page){
  for(const card of page.cards){
   const tools=authorized()?'<button type="button" class="builder-card-edit">Editar</button><span class="builder-card-grip" title="Arrastrar libremente">⠿</span>':'';
   const html='<div class="builder-card-top"><strong>'+esc(card.title)+'</strong><span>'+tools+'</span></div><div class="builder-card-inner">'+cardBody(card,page)+'</div>'+(authorized()?'<div class="builder-card-resize" title="Redimensionar"></div>':'');
-  const el=mk('article',{class:'builder-board-card', 'data-card-id':card.id},html);
+  const el=mk('article',{class:'builder-board-card'+(selectedCardId===card.id?' le-builder-selected':''), 'data-card-id':card.id},html);
   Object.assign(el.style,{left:card.x+'px',top:card.y+'px',width:card.w+'px',height:card.h+'px'});
-  el.querySelector('.builder-card-edit')?.addEventListener('click',()=>editCard(page,card));
+  el.querySelector('.builder-card-edit')?.addEventListener('click',e=>{e.stopPropagation();editCard(page,card);});
+  el.addEventListener('click',e=>{
+   if(!authorized()||e.target.closest('button,input,select,textarea,a,.builder-card-grip,.builder-card-resize'))return;
+   selectedCardId=card.id;
+   canvas.querySelectorAll('.builder-board-card').forEach(x=>x.classList.toggle('le-builder-selected',x.dataset.cardId===card.id));
+   document.dispatchEvent(new CustomEvent('citroen:builder-card-selected',{detail:{pageId:page.id,card:{...card}}}));
+  });
   el.querySelectorAll('[data-board-filter]').forEach(select=>select.onchange=()=>{localFilter[select.dataset.boardFilter]=select.value;renderPage(page);});
   canvas.appendChild(el);installMove(el,page,card);
   if(window.CITROEN_FILTER_ENGINE?.getDefinitions().some(x=>x.scope==='chart'&&x.pageId==='report-'+page.id&&x.cardId==='c:'+card.id)){
@@ -586,5 +595,26 @@ function wire(){
  loadPublished();loadMeta();
 }
 document.addEventListener('DOMContentLoaded',wire);
-window.CITROEN_BUILDER={render,loadPublished,publish};
+window.CITROEN_BUILDER={render,loadPublished,publish,
+ getCurrentPage:()=>current,getPages:()=>state.pages.map(p=>({id:p.id,title:p.title,count:p.cards.length})),
+ getCard(pageId,cardId){const p=state.pages.find(p=>p.id===pageId);const c=p?.cards.find(c=>c.id===cardId);return c?{...c}:null;},
+ addOnCurrent(type,changes={}){if(!authorized())return false;const p=state.pages.find(p=>'report-'+p.id===current);if(!p)return false;newCard(type,p,changes);return true;},
+ updateCard(pageId,cardId,patch){if(!authorized()||!patch||typeof patch!=='object')return false;
+  const p=state.pages.find(p=>p.id===pageId),c=p?.cards.find(c=>c.id===cardId);if(!c)return false;
+  const valid={shape:['bar','barh','line','area','table','pie','donut','gauge'],metric:['spend','forms','messages','impressions','reach','clicks','ctr','cpl'],dimension:['date','week','month','quarter','model','territory','account']};
+  for(const [k,v] of Object.entries(patch)){
+   if(k==='title'&&typeof v==='string')c.title=v.slice(0,100);
+   else if(k==='text'&&typeof v==='string')c.text=v.slice(0,7000);
+   else if(k==='goal'&&Number.isFinite(Number(v)))c.goal=v===''?null:Math.max(0,Math.min(1e12,Number(v)));
+   else if(k==='source'&&['meta','external'].includes(v))c.source=v;
+   else if(valid[k]?.includes(v))c[k]=v;
+  }
+  stash();renderPage(p);return {...c};
+ },
+ duplicateCard(pageId,cardId){if(!authorized())return false;const p=state.pages.find(x=>x.id===pageId),c=p?.cards.find(x=>x.id===cardId);if(!c||p.cards.length>=45)return false;
+  const dup={...c,id:uid(),title:(c.title+' · copia').slice(0,100),x:Math.min(2200,c.x+26),y:Math.min(5700,c.y+28)};p.cards.push(dup);selectedCardId=dup.id;stash();renderPage(p);document.dispatchEvent(new CustomEvent('citroen:builder-card-selected',{detail:{pageId:p.id,card:{...dup}}}));return true;},
+ removeCard(pageId,cardId){if(!authorized())return false;const p=state.pages.find(x=>x.id===pageId);if(!p)return false;p.cards=p.cards.filter(x=>x.id!==cardId);selectedCardId=null;stash();renderPage(p);document.dispatchEvent(new CustomEvent('citroen:builder-card-selected',{detail:{pageId:p.id,card:null}}));return true;},
+ renamePage(pageId,title){if(!authorized()||!String(title).trim())return false;const p=state.pages.find(x=>x.id===pageId);if(!p)return false;p.title=String(title).trim().slice(0,70);stash();drawPageNav();renderPage(p);document.dispatchEvent(new CustomEvent('citroen:builder-page-changed',{detail:{id:'report-'+p.id,title:p.title}}));return true;},
+ reorderPage(pageId,direction){if(!authorized())return false;const i=state.pages.findIndex(p=>p.id===pageId),j=i+direction;if(i<0||j<0||j>=state.pages.length)return false;[state.pages[i],state.pages[j]]=[state.pages[j],state.pages[i]];stash();drawPageNav();document.dispatchEvent(new Event('citroen:builder-page-order'));return true;}
+};
 })();
