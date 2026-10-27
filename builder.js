@@ -363,21 +363,47 @@ async function downsize(file){
 }
 function installMove(el,page,card){
  if(!authorized())return;
- const handle=el.querySelector('.builder-card-grip'),resize=el.querySelector('.builder-card-resize');
- const begin=(e,mode)=>{
-  if(e.button!==0&&e.pointerType!=='touch')return;
-  e.preventDefault();el.setPointerCapture?.(e.pointerId);
-  const sx=e.clientX,sy=e.clientY,original={x:card.x,y:card.y,w:card.w,h:card.h};
+ // The whole selected surface is the drag handle. Only true inputs remain interactive.
+ const ignored='button,input,textarea,select,a,[contenteditable="true"],[data-board-filter],.lk-card-filters,.lk-control';
+ const begin=e=>{
+  if(!authorized()||(e.pointerType!=='touch'&&e.button!==0))return;
+  const target=e.target;
+  const sizing=!!target.closest('.builder-card-resize');
+  if(!sizing&&target.closest(ignored))return;
+  // Selection comes first; normal single clicks still work without moving the card.
+  if(selectedCardId!==card.id)el.click();
+  const sx=e.clientX,sy=e.clientY,old={x:card.x,y:card.y,w:card.w,h:card.h};
+  let moved=false;
   const move=p=>{
+   if(p.pointerId!==e.pointerId)return;
    const scale=window.CITROEN_EDITOR_ZOOM||1,dx=(p.clientX-sx)/scale,dy=(p.clientY-sy)/scale;
-   if(mode==='move'){card.x=Math.max(0,Math.round((original.x+dx)/8)*8);card.y=Math.max(0,Math.round((original.y+dy)/8)*8);}
-   else{card.w=Math.max(220,Math.min(1100,Math.round((original.w+dx)/8)*8));card.h=Math.max(170,Math.min(850,Math.round((original.h+dy)/8)*8));}
+   if(!moved&&Math.hypot(dx,dy)<5)return;
+   if(!moved){moved=true;document.body.classList.add('le-dragging');el.classList.add('le-direct-active');}
+   const step=p.altKey?1:8,round=n=>Math.round(n/step)*step;
+   if(!sizing){card.x=Math.max(0,round(old.x+dx));card.y=Math.max(0,round(old.y+dy));}
+   else{card.w=Math.max(220,Math.min(1100,round(old.w+dx)));card.h=Math.max(170,Math.min(850,round(old.h+dy)));}
    el.style.left=card.x+'px';el.style.top=card.y+'px';el.style.width=card.w+'px';el.style.height=card.h+'px';
+   const canvas=$('builderCanvas-'+page.id);if(canvas)canvas.style.minHeight=Math.max(650,...page.cards.map(c=>c.y+c.h+35))+'px';
+   if(p.cancelable)p.preventDefault();
   };
-  const up=()=>{el.removeEventListener('pointermove',move);el.removeEventListener('pointerup',up);el.removeEventListener('pointercancel',up);stash();const canvas=$('builderCanvas-'+page.id);canvas.style.minHeight=Math.max(650,...page.cards.map(c=>c.y+c.h+35))+'px';};
-  el.addEventListener('pointermove',move);el.addEventListener('pointerup',up,{once:true});el.addEventListener('pointercancel',up,{once:true});
+  const end=p=>{
+   if(p.pointerId!==e.pointerId)return;
+   window.removeEventListener('pointermove',move);
+   window.removeEventListener('pointerup',end);
+   window.removeEventListener('pointercancel',end);
+   document.body.classList.remove('le-dragging');el.classList.remove('le-direct-active');
+   if(moved){
+    stash();
+    document.dispatchEvent(new CustomEvent('citroen:builder-card-selected',{detail:{pageId:page.id,card:{...card}}}));
+    document.addEventListener('click',click=>{if(click.target===el||el.contains(click.target)){click.preventDefault();click.stopImmediatePropagation();}},{capture:true,once:true});
+   }
+  };
+  window.addEventListener('pointermove',move,{passive:false});
+  window.addEventListener('pointerup',end);
+  window.addEventListener('pointercancel',end);
+  if(sizing){e.preventDefault();e.stopPropagation();}
  };
- handle.onpointerdown=e=>begin(e,'move');resize.onpointerdown=e=>begin(e,'size');
+ el.addEventListener('pointerdown',begin);
 }
 function renderPage(page){
  const root=$('report-'+page.id);if(!root)return;pageToolbar(page);
