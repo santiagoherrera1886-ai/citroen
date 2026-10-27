@@ -34,6 +34,8 @@ jobs:
           node --check free-layout.js
           node --check api/dashboard.js
           node --check api/data-connect.js
+          node --check api/history.js
+          node --check api/media.js
           node --check data/revision_2026.js
       - name: Verify structure and no simulated data
         run: node scripts/verify.cjs
@@ -64,3 +66,5 @@ jobs:
         run: node scripts/smoke-looker-properties.cjs
       - name: Direct drag and corner resize KPIs + Summary graphs
         run: node scripts/smoke-direct-layout.cjs
+      - name: Shared image references and protected history UI
+        run: node scripts/smoke-media-version.cjs
