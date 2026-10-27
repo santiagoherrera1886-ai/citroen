@@ -54,7 +54,7 @@ function candidates(peers,rect,mode,axis,gap){
  return candidates;
 }
 function snap(rect,peers=[],opts={}){
- const step=Math.max(1,Number(opts.grid)||8),gap=Math.max(0,Number(opts.gap)??12),
+ const step=Math.max(1,Number(opts.grid)||8),gap=Number.isFinite(Number(opts.gap))?Math.max(0,Number(opts.gap)):12,
   tolerance=Number.isFinite(Number(opts.tolerance))?Number(opts.tolerance):7;
  const mode=opts.mode==='resize'?'resize':'move';
  const result={x:Number(rect.x)||0,y:Number(rect.y)||0,w:Number(rect.w)||0,h:Number(rect.h)||0,guides:[]};
