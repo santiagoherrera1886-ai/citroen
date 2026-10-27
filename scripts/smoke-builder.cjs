@@ -32,7 +32,7 @@ w.fetch=async(url,opt={})=>{
   if(url==='/api/data-connect')return json({ok:true,source:'Public Sheet test',columns:['Modelo','Leads'],rows:[{Modelo:'C3',Leads:'32'}],previewOnly:true});
  return json(daily);
 };
-for(const file of ['looker-filter-engine.js','studio.js','layout-assist.js','free-layout.js','builder.js'])w.eval(fs.readFileSync(file,'utf8'));
+for(const file of ['looker-filter-engine.js','quick-delete.js','studio.js','layout-assist.js','free-layout.js','builder.js'])w.eval(fs.readFileSync(file,'utf8'));
 w.document.dispatchEvent(new w.Event('DOMContentLoaded',{bubbles:true}));
 const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
 (async()=>{
@@ -79,6 +79,24 @@ const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
  btn=[...p.querySelectorAll('.builder-head-actions button')].find(b=>b.textContent.includes('Rehacer'));
  btn.click();
  assert.equal(Number.parseFloat(p.querySelector('.builder-board-card').style.left),movedLeft+8,'Redo reapplies page keyboard movement');
+ let quick=p.querySelector('.builder-card-quick-remove');
+ assert.ok(quick,'Custom report graph exposes a prominent delete shortcut');
+ quick.click();
+ assert.equal(p.querySelectorAll('.builder-board-card').length,0,'One click removes custom page graph');
+ assert.ok(w.document.querySelector('.citroen-delete-undo'),'Undo offered on page deletion');
+ w.document.querySelector('.citroen-delete-undo').click();
+ assert.equal(p.querySelectorAll('.builder-board-card').length,1,'Undo returns page graph');
+ assert.ok(p.querySelector('.builder-board-card').querySelector('svg'),'Restored chart still displays its data');
+ const input=w.document.createElement('input');
+ w.document.body.append(input);input.focus();
+ input.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Delete',bubbles:true,cancelable:true}));
+ assert.equal(p.querySelectorAll('.builder-board-card').length,1,'Delete while typing never removes chart');
+ input.blur();input.remove();
+ w.document.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Delete',bubbles:true,cancelable:true}));
+ assert.equal(p.querySelectorAll('.builder-board-card').length,0,'Delete key removes selected page graph');
+ w.document.querySelector('.citroen-delete-undo').click();
+ assert.equal(p.querySelectorAll('.builder-board-card').length,1,'Keyboard deletion remains undoable');
+
 
 
  $('builderFilterSetup').click();assert.equal($('builderFilterModal').hidden,false,'Filter configuration visible; auth='+isEditor+'; edit='+$('c3Dashboard').className+'; onclick='+typeof $('builderFilterSetup').onclick+'; id='+$('builderFilterModal').id);
