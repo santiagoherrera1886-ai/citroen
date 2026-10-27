@@ -205,6 +205,27 @@ function newCard(type,page,changes={}){
  page.cards.push(card);selectedCardId=card.id;stash();renderPage(page);
  document.dispatchEvent(new CustomEvent('citroen:builder-card-selected',{detail:{pageId:page.id,card:{...card}}}));
 }
+function removeCreatedCard(pageId,cardId){
+ if(!authorized())return false;
+ const page=state.pages.find(p=>p.id===pageId);
+ if(!page)return false;
+ const index=page.cards.findIndex(c=>c.id===cardId);
+ if(index<0)return false;
+ const deleted={...page.cards[index]};
+ page.cards.splice(index,1);
+ if(selectedCardId===cardId)selectedCardId=null;
+ stash();renderPage(page);
+ document.dispatchEvent(new CustomEvent('citroen:builder-card-selected',{detail:{pageId,card:null}}));
+ window.CITROEN_QUICK_DELETE?.offer?.(deleted.title,()=>{
+  if(!authorized()||!state.pages.includes(page)||page.cards.some(c=>c.id===deleted.id))return false;
+  page.cards.splice(Math.min(index,page.cards.length),0,deleted);
+  selectedCardId=deleted.id;
+  stash();renderPage(page);
+  document.dispatchEvent(new CustomEvent('citroen:builder-card-selected',{detail:{pageId,card:{...deleted}}}));
+  return true;
+ });
+ return true;
+}
 function deletePage(p){if(!authorized()||!confirm('¿Eliminar esta página y sus tarjetas?'))return;state.pages=state.pages.filter(x=>x.id!==p.id);stash();drawPageNav();navTo('resumen');}
 function pageToolbar(page){
  const actions=$('report-'+page.id+'Actions');actions.replaceChildren();
@@ -453,13 +474,14 @@ function renderPage(page){
  window.CITROEN_FILTER_ENGINE?.render('lkFilters-'+page.id,'report-'+page.id);
  canvas.style.minHeight=Math.max(650,...page.cards.map(c=>c.y+c.h+35))+'px';
  for(const card of page.cards){
-  const tools=authorized()?'<button type="button" class="builder-card-edit">Editar</button><span class="builder-card-grip" title="Arrastrar libremente">⠿</span>':'';
+  const tools=authorized()?'<button type="button" class="builder-card-edit">Editar</button><button type="button" class="builder-card-quick-remove" title="Eliminar esta tarjeta" aria-label="Eliminar '+esc(card.title)+'">×</button><span class="builder-card-grip" title="Arrastrar libremente">⠿</span>':'';
   const html='<div class="builder-card-top"><strong>'+esc(card.title)+'</strong><span>'+tools+'</span></div><div class="builder-card-inner">'+cardBody(card,page)+'</div>'+(authorized()?'<div class="builder-card-resize" title="Redimensionar"></div>':'');
   const el=mk('article',{class:'builder-board-card'+(selectedCardId===card.id?' le-builder-selected':''), 'data-card-id':card.id},html);
   if(card.background&&/^#[0-9a-f]{6}$/i.test(card.background))el.style.background=card.background;
   if(card.textColor&&/^#[0-9a-f]{6}$/i.test(card.textColor))el.style.color=card.textColor;
   Object.assign(el.style,{left:card.x+'px',top:card.y+'px',width:card.w+'px',height:card.h+'px'});
   el.querySelector('.builder-card-edit')?.addEventListener('click',e=>{e.stopPropagation();editCard(page,card);});
+  el.querySelector('.builder-card-quick-remove')?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();removeCreatedCard(page.id,card.id);});
   el.addEventListener('click',e=>{
    if(!authorized()||e.target.closest('button,input,select,textarea,a,.builder-card-grip,.builder-card-resize'))return;
    selectedCardId=card.id;
@@ -746,7 +768,8 @@ window.CITROEN_BUILDER={render,loadPublished,publish,
  },
  duplicateCard(pageId,cardId){if(!authorized())return false;const p=state.pages.find(x=>x.id===pageId),c=p?.cards.find(x=>x.id===cardId);if(!c||p.cards.length>=45)return false;
   const dup={...c,id:uid(),title:(c.title+' · copia').slice(0,100),x:Math.min(2200,c.x+26),y:Math.min(5700,c.y+28)};p.cards.push(dup);selectedCardId=dup.id;stash();renderPage(p);document.dispatchEvent(new CustomEvent('citroen:builder-card-selected',{detail:{pageId:p.id,card:{...dup}}}));return true;},
- removeCard(pageId,cardId){if(!authorized())return false;const p=state.pages.find(x=>x.id===pageId);if(!p)return false;p.cards=p.cards.filter(x=>x.id!==cardId);selectedCardId=null;stash();renderPage(p);document.dispatchEvent(new CustomEvent('citroen:builder-card-selected',{detail:{pageId:p.id,card:null}}));return true;},
+ removeCard:removeCreatedCard,
+ getSelectedCardId:()=>selectedCardId,
  renamePage(pageId,title){if(!authorized()||!String(title).trim())return false;const p=state.pages.find(x=>x.id===pageId);if(!p)return false;p.title=String(title).trim().slice(0,70);stash();drawPageNav();renderPage(p);document.dispatchEvent(new CustomEvent('citroen:builder-page-changed',{detail:{id:'report-'+p.id,title:p.title}}));return true;},
  reorderPage(pageId,direction){if(!authorized())return false;const i=state.pages.findIndex(p=>p.id===pageId),j=i+direction;if(i<0||j<0||j>=state.pages.length)return false;[state.pages[i],state.pages[j]]=[state.pages[j],state.pages[i]];stash();drawPageNav();document.dispatchEvent(new Event('citroen:builder-page-order'));return true;}
 };
