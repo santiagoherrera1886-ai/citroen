@@ -272,8 +272,13 @@ function createPage(){
 function newCard(type,page,changes={}){
  if(!authorized())return;
  if(page.cards.length>=45){status('Máximo 45 tarjetas por página.');return;}
- const card={id:uid(),type,title:{metric:'Indicador',chart:'Gráfico Meta Ads',comparison:'Comparativo entre meses',note:'Insight',image:'Imagen',filter:'Filtro de mes'}[type],text:'',source:'meta',metric:'spend',dimension:'month',shape:'bar',x:24+(page.cards.length%3)*34,y:24+(page.cards.length%5)*36,w:type==='chart'?480:330,h:type==='note'?230:285};
- for(const field of ['title','metric','dimension','shape','text','source','image'])if(Object.hasOwn(changes,field))card[field]=changes[field];
+ const abDefaults=type==='ab'?(window.CITROEN_COMPARISON_LAB?.defaults(data)||{}):{};
+ const card={id:uid(),type,title:{metric:'Indicador',chart:'Gráfico Meta Ads',comparison:'Comparativo entre meses',ab:'Comparativo A/B personalizable',note:'Insight',image:'Imagen',filter:'Filtro de mes'}[type],
+  text:'',source:'meta',metric:type==='ab'?'forms':'spend',dimension:'month',shape:'bar',
+  ...abDefaults,abGroup:'model',abModel:'',abTerritory:'',
+  x:24+(page.cards.length%3)*34,y:24+(page.cards.length%5)*36,
+  w:['chart','ab'].includes(type)?520:330,h:type==='ab'?355:type==='note'?230:285};
+ for(const field of ['title','metric','dimension','shape','text','source','image','aStart','aEnd','bStart','bEnd','abGroup','abModel','abTerritory'])if(Object.hasOwn(changes,field))card[field]=changes[field];
  page.cards.push(card);selectedCardId=card.id;stash();renderPage(page);
  document.dispatchEvent(new CustomEvent('citroen:builder-card-selected',{detail:{pageId:page.id,card:{...card}}}));
 }
@@ -317,7 +322,7 @@ function pageToolbar(page){
  const forward=button('↷ Rehacer movimiento',()=>{h?.redo(scope);});
  back.disabled=!h?.canUndo(scope);forward.disabled=!h?.canRedo(scope);
  actions.append(back,forward);
-  const kinds=[['metric','＋ Indicador'],['chart','＋ Gráfico'],['comparison','＋ Comparativo'],['note','＋ Texto / insight'],['image','＋ Imagen'],['filter','＋ Filtro']];
+  const kinds=[['metric','＋ Indicador'],['chart','＋ Gráfico'],['comparison','＋ Comparativo'],['ab','＋ A/B guardable'],['note','＋ Texto / insight'],['image','＋ Imagen'],['filter','＋ Filtro']];
  for(const [type,label] of kinds)actions.appendChild(button(label,()=>newCard(type,page)));
  actions.appendChild(button('Duplicar página',()=>clonePage(page.id)));
  actions.appendChild(button('Renombrar',()=>{const n=prompt('Nuevo nombre',page.title);if(n?.trim()){page.title=n.trim().slice(0,70);stash();drawPageNav();renderPage(page);}}));
@@ -417,6 +422,39 @@ function renderComparison(card,page){
    '<p class="builder-compare-caveat">* '+esc(output.description)+(card.metric==='reach'?' Alcance modelado sobre universo de 15 millones; no equivale a usuarios únicos observados.':'')+'</p>'+
   '</div>';
 }
+function abResult(card){
+ const engine=window.CITROEN_COMPARISON_LAB;
+ if(!engine)return {ok:false,error:'Comparador avanzado no disponible.'};
+ const defaults=engine.defaults(data);
+ const settings={
+  aStart:card.aStart||defaults.aStart,aEnd:card.aEnd||defaults.aEnd,
+  bStart:card.bStart||defaults.bStart,bEnd:card.bEnd||defaults.bEnd,
+  metric:card.metric,group:card.abGroup||'model',
+  model:card.abModel||'',territory:card.abTerritory||''
+ };
+ // A/B dates are explicitly fixed on each card: global time controls do not change them.
+ return engine.calculate(data,settings,window.CITROEN_REACH_MATH?.estimate);
+}
+function renderAB(card){
+ const r=abResult(card);
+ if(!r.ok)return '<div class="builder-compare-no-data">'+esc(r.error||'Selecciona dos períodos de comparación en Editar tarjeta.')+'</div>';
+ const variation=r.totalChange==null?'Sin base comparable':(r.totalChange>0?'+':'')+new Intl.NumberFormat('es-CO',{maximumFractionDigits:1}).format(r.totalChange)+' %';
+ const barMax=Math.max(1,...r.groups.slice(0,5).flatMap(x=>[x.current||0,x.prior||0]));
+ const rows=r.groups.slice(0,5).map(g=>{
+  const width1=Math.max(0,(g.current||0)/barMax*100).toFixed(1),width2=Math.max(0,(g.prior||0)/barMax*100).toFixed(1);
+  return '<div class="builder-ab-segment"><span title="'+esc(g.label)+'">'+esc(g.label)+'</span><div class="builder-ab-bars"><i style="width:'+width1+'%"></i><em style="width:'+width2+'%"></em></div></div>';
+ }).join('');
+ const warning=[r.hasDifferentLength?'Los períodos duran distinto.',r.hasIncompleteCoverage?'Hay días sin registros.',r.reachCaveat].filter(Boolean).join(' ');
+ return '<div class="builder-ab-view">'+
+  '<div class="builder-ab-head"><div><small>A · '+esc(r.aStart)+' al '+esc(r.aEnd)+'</small><strong>'+fmt(r.totalA,card.metric)+'</strong></div>'+
+  '<div><small>B · '+esc(r.bStart)+' al '+esc(r.bEnd)+'</small><strong>'+fmt(r.totalB,card.metric)+'</strong></div></div>'+
+  '<div class="builder-ab-change '+esc(r.totalQuality)+'"><b>'+variation+'</b><span>'+esc(CL[card.metric]||card.metric)+' · A vs. B</span></div>'+
+  '<div class="builder-ab-legend"><span>A</span><span>B</span><small>Desglose por '+esc({model:'modelo',territory:'territorio',account:'cuenta'}[r.group])+'</small></div>'+
+  '<div class="builder-ab-segments">'+(rows||'<small>Sin segmentos en estos períodos</small>')+'</div>'+
+  (warning?'<p class="builder-ab-warning">'+esc(warning)+'</p>':'')+
+  '<button class="builder-ab-download" type="button" data-ab-download aria-label="Exportar datos comparativos de '+esc(card.title)+'">Descargar CSV</button>'+
+  '</div>';
+}
 function cardBody(card,page){
  if(card.type==='note')return '<p class="builder-note-body">'+esc(card.text||'Escribe aquí tus hallazgos y recomendaciones desde Editar tarjeta.').replace(/\n/g,'<br>')+'</p>';
  if(card.type==='image')return card.image?'<img class="builder-card-img" loading="lazy" alt="'+esc(card.title)+'" src="'+esc(card.image)+'">':'<div class="builder-empty">Sube o enlaza una imagen desde Editar tarjeta.</div>';
@@ -426,6 +464,7 @@ function cardBody(card,page){
   return renderExternal(card);
  }
  if(card.type==='comparison')return renderComparison(card,page);
+ if(card.type==='ab')return renderAB(card);
  if(card.type==='metric')return '<div class="builder-big-number">'+fmt(metric(card,filtered(card,page)),card.metric)+'</div><small>'+esc(CL[card.metric]||'Indicador')+' · Meta Ads</small>';
  return renderChart(card,page);
 }
@@ -587,6 +626,17 @@ function renderPage(page){
   if(card.background&&/^#[0-9a-f]{6}$/i.test(card.background))el.style.background=card.background;
   if(card.textColor&&/^#[0-9a-f]{6}$/i.test(card.textColor))el.style.color=card.textColor;
   Object.assign(el.style,{left:card.x+'px',top:card.y+'px',width:card.w+'px',height:card.h+'px'});
+  el.querySelector('[data-ab-download]')?.addEventListener('click',e=>{
+   e.preventDefault();e.stopPropagation();
+   const r=abResult(card);
+   if(!r.ok)return;
+   const content=window.CITROEN_COMPARISON_LAB?.toCSV(r);
+   if(!content)return;
+   const file=new Blob([content],{type:'text/csv;charset=utf-8;'});
+   const link=URL.createObjectURL(file),a=document.createElement('a');
+   a.href=link;a.download='citroen-ab-'+String(card.id).replace(/[^a-z0-9_-]/gi,'')+'.csv';
+   document.body.append(a);a.click();a.remove();URL.revokeObjectURL(link);
+  });
   el.querySelector('.builder-card-edit')?.addEventListener('click',e=>{e.stopPropagation();editCard(page,card);});
   el.querySelector('.builder-card-quick-duplicate')?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();window.CITROEN_BUILDER?.duplicateCard(page.id,card.id);});
   el.querySelector('.builder-card-quick-remove')?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();removeCreatedCard(page.id,card.id);});
