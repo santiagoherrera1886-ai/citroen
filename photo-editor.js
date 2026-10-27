@@ -12,7 +12,15 @@ const items=[
 const $=id=>document.getElementById(id);
 const dataURI=x=>typeof x==="string"&&/^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(x)&&x.length<430000;
 const secureURL=x=>{try{const u=new URL(x);return u.protocol==="https:"&&u.username===""&&u.password===""&&u.href.length<2048;}catch{return false;}};
-const valid=x=>secureURL(x)||dataURI(x);
+const mediaURL=x=>typeof x==="string"&&/^\/api\/media\?id=m-[a-f0-9]{32}$/.test(x);
+const valid=x=>secureURL(x)||mediaURL(x)||dataURI(x);
+async function uploadShared(image){
+ const res=await fetch('/api/media',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({image})});
+ const body=await res.json();
+ if(!res.ok||!mediaURL(body.url))throw Error(body.error||'No se pudo compartir la imagen');
+ return body.url;
+}
+window.CITROEN_SHARED_MEDIA={upload:uploadShared,isManaged:mediaURL};
 const safeAttr=x=>String(x||"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
 const canonical=x=>secureURL(x)?new URL(x).href:x;
 let images={};
@@ -79,12 +87,12 @@ function render(){
  el.innerHTML=items.map(item=>
  '<article class="studio-photo-card" data-photo-model="'+item.id+'">'+
  '<img alt="Vista previa de '+item.name+'" data-photo-preview="'+item.id+'" src="'+safeAttr(images[item.id]||item.original)+'">'+
- '<div class="studio-photo-detail"><strong>'+item.name+'</strong><small>'+ (images[item.id]?"Imagen personalizada · guardada en este navegador":"Imagen original Citroën")+'</small>'+
+ '<div class="studio-photo-detail"><strong>'+item.name+'</strong><small>'+ (images[item.id]?(mediaURL(images[item.id])?"Imagen guardada en servidor · publica el informe":"Imagen personalizada · en este navegador"):"Imagen original Citroën")+'</small>'+
  '<label class="studio-photo-upload">↑ Subir imagen<input type="file" data-photo-file="'+item.id+'" accept="image/jpeg,image/png,image/webp" aria-label="Subir foto '+item.name+'"></label>'+
  '<div class="studio-photo-url"><input type="url" placeholder="https://.../mi-foto.webp" data-photo-url="'+item.id+'" aria-label="URL de foto de '+item.name+'"><button type="button" data-photo-apply="'+item.id+'">Aplicar URL</button></div>'+
  '<button type="button" class="studio-photo-restore" data-photo-reset="'+item.id+'">Restaurar original</button></div></article>').join("");
 }
-function open(){render();$("studioPhotoDialog").hidden=false;notify("Selecciona fotos de los modelos y la portada. Se guardan localmente, sin alterar los indicadores.");}
+function open(){render();$("studioPhotoDialog").hidden=false;notify("Sube fotos para guardarlas en la biblioteca privada. Después, pulsa Publicar cambios en Diseño.");}
 function close(){$("studioPhotoDialog").hidden=true;}
 function upload(id,file){
  if(!file)return;
@@ -107,7 +115,14 @@ function upload(id,file){
    let encoded="";
    try{for(const q of [.86,.74,.58,.44]){encoded=canvas.toDataURL("image/jpeg",q);if(dataURI(encoded))break;}}catch{notify("No fue posible comprimir la imagen.");return;}
    if(!dataURI(encoded)){notify("La foto sigue siendo demasiado grande. Utiliza una versión de menor resolución.");return;}
-   if(setImage(id,encoded))notify("Foto de "+items.find(x=>x.id===id).name+" actualizada y guardada en este navegador.");
+   (async()=>{
+    try{
+     const url=await uploadShared(encoded);
+     if(setImage(id,url))notify("Foto guardada en la biblioteca privada. Pulsa Publicar cambios para compartirla.");
+    }catch(err){
+     if(setImage(id,encoded))notify("La imagen quedó solo en este navegador: "+err.message+". Para compartirla, vuelve a intentarlo con tu sesión iniciada.");
+    }
+   })();
   };
   picture.src=String(reader.result||"");
  };
