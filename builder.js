@@ -73,7 +73,7 @@ function initSections(){
  const a=mk('div',{class:'builder-menu'},'<div class="builder-menu-title">MIS PÁGINAS</div><div id="builderPageLinks"></div>');
  nav.appendChild(a);
  const dock=mk('div',{class:'builder-global-actions',id:'builderGlobalActions',hidden:''});
- dock.innerHTML='<button id="builderNewPage" type="button">＋ Nueva página</button><button id="builderFilterSetup" type="button">⚙ Filtros</button><button id="builderNewFilter" type="button">＋ Control / filtro avanzado</button><button id="builderManageFilters" type="button">Administrar filtros</button><button id="builderPublish" type="button">Publicar cambios</button><div id="builderDraftBanner" class="builder-draft-banner" hidden><strong>Guardado de borradores</strong><p id="builderDraftMessage"></p><button type="button" id="builderDraftRestore" hidden>Recuperar borrador</button><button type="button" id="builderDraftDiscard" hidden>Descartar borrador</button></div><small id="builderStatus">Modo lectura</small>';
+ dock.innerHTML='<button id="builderNewPage" type="button">＋ Nueva página</button><button id="builderFilterSetup" type="button">⚙ Filtros</button><button id="builderNewFilter" type="button">＋ Control / filtro avanzado</button><button id="builderManageFilters" type="button">Administrar filtros</button><button id="builderPublish" type="button">Publicar cambios</button><button id="builderHistory" type="button" hidden>↶ Historial de versiones</button><div id="builderDraftBanner" class="builder-draft-banner" hidden><strong>Guardado de borradores</strong><p id="builderDraftMessage"></p><button type="button" id="builderDraftRestore" hidden>Recuperar borrador</button><button type="button" id="builderDraftDiscard" hidden>Descartar borrador</button></div><small id="builderStatus">Modo lectura</small>';
  $('sidebar').querySelector('.sidebar-bottom').prepend(dock);
  const filt=mk('div',{id:'builderFilterModal',class:'builder-filter-modal',hidden:''});
  filt.innerHTML='<div class="builder-filter-content"><button id="builderFilterClose" type="button">×</button><h3>Filtros del dashboard</h3><p>Elige los controles que mostrarán todos los usuarios en Resumen.</p><label><input type="checkbox" data-filter-toggle="month"> Período</label><label><input type="checkbox" data-filter-toggle="territory"> Territorio</label><label><input type="checkbox" data-filter-toggle="model"> Modelo</label></div>';
@@ -85,6 +85,7 @@ function initSections(){
  $('builderNewFilter').onclick=()=>editFilter();
  $('builderManageFilters').onclick=()=>manageFilters();
  $('builderPublish').onclick=()=>publish();
+ $('builderHistory').onclick=()=>openHistory();
  $('builderDraftRestore').onclick=()=>{
   if(!authorized()||!pendingDraft)return;
   state=pendingDraft.workspace;
@@ -586,6 +587,56 @@ async function publish(){
  }catch(e){status('No se pudo publicar: '+e.message+'. Tu borrador permanece guardado en este navegador.');}
  busy=false;
 }
+async function openHistory(){
+ if(!authorized()||!window.CITROEN_ACCESS?.isOwner?.())return;
+ let modal=$('builderHistoryDialog');
+ if(!modal){
+  modal=document.createElement('div');modal.id='builderHistoryDialog';modal.className='builder-dialog';
+  modal.innerHTML='<div class="builder-dialog-panel builder-history-panel"><button type="button" class="builder-close" id="builderHistoryClose">×</button><h3>Historial de versiones</h3><p class="builder-history-help">Recupera una publicación anterior como borrador. No reemplaza el informe público hasta que pulses Publicar cambios.</p><div id="builderHistoryList" class="builder-history-list"></div><p id="builderHistoryStatus" role="status"></p></div>';
+  document.body.appendChild(modal);
+  $('builderHistoryClose').onclick=()=>modal.hidden=true;
+ }
+ modal.hidden=false;
+ const list=$('builderHistoryList');list.replaceChildren();
+ const tip=$('builderHistoryStatus');tip.textContent='Consultando copias anteriores…';
+ try{
+  const response=await fetch('/api/history',{credentials:'same-origin',cache:'no-store'});
+  const data=await response.json();
+  if(!response.ok)throw Error(data.error||'No se pudo consultar el historial');
+  tip.textContent=data.history.length?'Elige la versión que quieres recuperar.':'Todavía no hay versiones anteriores archivadas.';
+  const row=(title,subtitle,action)=>{
+   const el=document.createElement('div');el.className='builder-history-row';
+   const about=document.createElement('div'),a=document.createElement('strong'),b=document.createElement('small');
+   a.textContent=title;b.textContent=subtitle;about.append(a,b);el.append(about);
+   if(action)el.append(button('Recuperar borrador',action));
+   list.append(el);
+  };
+  if(data.current)row('Versión actual · '+data.current.revision.slice(0,8),'Publicada '+(data.current.publishedAt?new Date(data.current.publishedAt).toLocaleString('es-CO'):'—'));
+  for(const version of data.history){
+   row('Versión '+version.revision.slice(0,8),'Archivada '+new Date(version.archivedAt).toLocaleString('es-CO'),async()=>{
+    if(!confirm('¿Cargar esta versión anterior como borrador editable? La versión pública no se modificará todavía.'))return;
+    const url='/api/history?revision='+encodeURIComponent(version.revision);
+    try{
+     const detailRes=await fetch(url,{credentials:'same-origin',cache:'no-store'});
+     const detail=await detailRes.json();
+     if(!detailRes.ok)throw Error(detail.error||'Revisión no disponible');
+     const snapshot=detail.workspace;
+     if(!snapshot||!Array.isArray(snapshot.pages))throw Error('Formato histórico no válido');
+     state=snapshot;
+     state.controls=Array.isArray(state.controls)?state.controls:[];
+     window.CITROEN_FILTER_ENGINE?.setDefinitions(state.controls);
+     if(state.summary)window.CITROEN_STUDIO_ACTIONS?.importPublished?.(state.summary);
+     if(state.summaryLayout)window.CITROEN_FREE_LAYOUT?.import(state.summaryLayout);
+     // Retain the current live revision as the base for the explicit next publication.
+     pendingDraft=null;dirty=true;drawPageNav();applyFilters();render();stash();
+     modal.hidden=true;navTo('resumen');
+     status('Versión histórica '+version.revision.slice(0,8)+' recuperada en borrador. Revisa y pulsa Publicar cambios.');
+    }catch(e){tip.textContent=e.message;}
+   });
+  }
+  if(data.hasMore)tip.textContent+=' Se muestran las últimas 30 copias.';
+ }catch(e){tip.textContent=e.message;}
+}
 function renderNativeControls(){
  const e=window.CITROEN_FILTER_ENGINE;if(!e)return;
  for(const id of ['c3ComparePanel','c3FunnelPanel','c3ModelsPanel','c3CampaignPanel','c3InsightsPanel']){
@@ -601,6 +652,7 @@ function render(){
  if(!$('builderPageLinks'))return;
  const isEditor=authorized();
  $('builderGlobalActions').hidden=!isEditor;
+ if($('builderHistory'))$('builderHistory').hidden=!window.CITROEN_ACCESS?.isOwner?.()||!isEditor;
  draftUI();
  const privateNav=document.querySelector('[data-target="citroen-sources"]');if(privateNav)privateNav.hidden=!isEditor;
  // Only mount the active report: avoid rebuilding dozens of SVG charts on every change.
