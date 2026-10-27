@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const {JSDOM}=require('jsdom');
-const dom=new JSDOM('<!doctype html><body><main id="c3Dashboard"><div id="c3Kpis">'+
+const dom=new JSDOM('<!doctype html><body><main id="c3Dashboard"><div class="c3-header"><div><h1>Citroën</h1></div><div class="c3-header-controls"><label><select id="c3Month"><option value="">Mes</option></select></label><label><select id="c3Territory"><option value="">Territorio</option></select></label><label><select id="c3Model"><option value="">Modelo</option></select></label></div></div><div class="c3-hero">Banner</div><p id="c3Context">Reporte</p><div id="lkGlobalFilters"></div><div id="studioTools" hidden></div><div id="c3Kpis">'+
  Array.from({length:6},(_,i)=>'<article class="c3-kpi" data-metric-slot="'+i+'">KPI '+i+'</article>').join('')+
  '</div><section id="studioCards"><article id="c3ComparePanel" class="c3-panel" data-panel-key="n:c3ComparePanel">Chart</article><article class="studio-card" data-panel-key="c:mychart">Custom chart</article></section><button id="studioFreeLayout" type="button">Position</button></main></body>',{runScripts:'outside-only',url:'https://citroen-rho.vercel.app'});
 const w=dom.window,$=id=>w.document.getElementById(id);
