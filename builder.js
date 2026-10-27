@@ -461,6 +461,17 @@ async function publish(){
  }catch(e){status('No se pudo publicar: '+e.message+'. Tu borrador permanece guardado en este navegador.');}
  busy=false;
 }
+function renderNativeControls(){
+ const e=window.CITROEN_FILTER_ENGINE;if(!e)return;
+ for(const id of ['c3ComparePanel','c3FunnelPanel','c3ModelsPanel','c3CampaignPanel','c3InsightsPanel']){
+  const parent=$(id);if(!parent)continue;
+  const configured=e.getDefinitions().some(d=>d.scope==='chart'&&d.pageId==='resumen'&&d.cardId==='n:'+id);
+  let host=parent.querySelector('.lk-native-filters');
+  if(!configured){host?.remove();continue;}
+  if(!host){host=document.createElement('div');host.className='lk-native-filters';parent.querySelector('.c3-panel-heading')?.after(host);}
+  e.render(host,'resumen','n:'+id);
+ }
+}
 function render(){
  if(!$('builderPageLinks'))return;
  const isEditor=authorized();
@@ -470,6 +481,7 @@ function render(){
  renderCreatives();renderInsights();
  if(current==='citroen-sources')renderSources();
  window.CITROEN_FILTER_ENGINE?.render('lkGlobalFilters','resumen');
+ renderNativeControls();
  applyFilters();
 }
 function setupEditorModals(){
