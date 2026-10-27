@@ -1,5 +1,27 @@
 # Citroën · Performance Intelligence
 
+## LOOKER-STYLE FILTER STUDIO — 27/10/2026
+
+**Verificación funcional**: `looker-filter-engine.js` y el constructor de páginas incorporan un motor de controles reutilizables. El usuario con acceso de edición utiliza **＋ Control / filtro avanzado** en el menú lateral, configura el control, puede seleccionar ámbito (todo el informe, una página o un gráfico), y luego pulsa **Publicar cambios** para compartir las definiciones en Vercel Blob. Los lectores pueden cambiar los valores de cada control sin iniciar sesión. Los valores de lectura son temporales y no modifican ni la fuente ni las definiciones publicadas.
+
+**Tipos de control compatibles:**
+- **Calendario:** fechas inicial/final inclusivas, basadas en el día real del registro de Meta Ads (`2026-10-20` y no solo `2026-10`).
+- **Fechas relativas:** todo el período, hoy, ayer, últimos 7/14/28/30/90 días, semana actual/anterior, mes actual/anterior, trimestre actual, año actual/anterior; cálculo relativo a fecha actual de Bogotá.
+- **Dimensiones categóricas:** desplegable, lista fija con selección múltiple, botones de radio, casilla de registros con valor, búsqueda por texto y selector múltiple para modelo, territorio, cuenta, plataforma Meta y mes.
+- **Métricas:** límites mínimo/máximo numéricos, controles de rango con deslizadores, sin calcular sumatorias falsas de alcance único.
+- **Condiciones avanzadas:** contiene, es igual, empieza, termina, no contiene, mayor/menor (inclusivo o exclusivo), entre, pertenece/no pertenece, vacío/no vacío, expresión regular limitada a un subconjunto seguro, excluir coincidencias y combinación Y/O (`AND/OR`).
+- **Ámbito:** informe global; una sola página; un panel específico. Se incluyen controles visibles en las tarjetas originales de Resumen y en los paneles nuevos del canvas.
+- **Filtros iniciales en informes heredados:** período relativo «Todo», modelo (selección múltiple) y territorio (desplegable). Ninguno restringe cifras antes de que el visitante seleccione valores.
+- **Gráficos del lienzo libre**: barras, líneas, área, barras horizontales, circular, anillo, tabla y medidor; agrupar por día, semana, mes, trimestre, modelo, territorio o cuenta. El medidor exige que el editor establezca un objetivo; no se simula un cumplimiento de 100 %.
+
+**Notas metodológicas:** Meta se filtra por días de los registros reales. La planeación anual/mensual no contiene un presupuesto diario y no se prorratea por fecha; al usar un rango de días, el comparativo muestra el plan completo de los meses incluidos y una advertencia. El desglose agregado de campañas no ofrece una granularidad diaria comparable y puede no mostrar datos para controles de fecha a nivel día. Los datos de Sheets/BigQuery conectados de manera privada no se almacenan públicamente: su vista previa requiere sesión y credenciales válidas.
+
+**Lo que no es Looker Studio completo:** quedan fuera de este motor la mezcla arbitraria de fuentes con joins, las dimensiones calculadas con SQL/LookML, filtros avanzados a través de múltiples conectores dispares, permisos de fila por usuario sobre consultas, colaboración simultánea y envíos programados. El sistema no promete paridad total con un producto de BI propietario. Documentación técnica de referencia: https://docs.cloud.google.com/data-studio/about-controls, https://docs.cloud.google.com/data-studio/create-edit-and-manage-filter-properties, https://docs.cloud.google.com/looker/docs/studio/bar-chart-and-column-chart-reference.
+
+**Pruebas:** `scripts/smoke-lookers.cjs` valida fechas y calendarios, AND/OR, ámbitos por informe/página/tarjeta, exclusiones, listas, radio, deslizadores y métricas reales; `scripts/smoke-builder.cjs` valida creación de controles y su persistencia en un informe publicado.
+
+---
+
 ## BUILDER 2.0 — PÁGINAS, CREATIVOS, INSIGHTS Y CONEXIONES (26/10/2026)
 
 **Modo lectura y entrada:** el botón de edición de la cabecera se oculta sin sesión. Visitantes encuentran el acceso discreto **🔒 Ingresar a Diseño** al final del menú lateral. Tras iniciar sesión y entrar en Diseño aparecen la barra de gráficos, panel de estilo, botón de movimiento libre y control maestro. La primera activación acepta pegar el código completo o su parte posterior al prefijo `CITROEN-`, ignorando espacios y caracteres invisibles comunes; la contraseña inicial debe sustituirse por una fuerte.
