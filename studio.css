@@ -462,3 +462,14 @@ body:has(.c3-dashboard.studio-edit-on) .concept3-shell .content{max-width:none;p
 .builder-draft-banner p{font-size:10px;line-height:1.6;margin:0;color:#446e85}
 .builder-draft-banner button{border-radius:8px;border:1px solid #bad8eb;background:#fff;color:#255a78;font-size:10px;font-weight:800;padding:8px;cursor:pointer}
 .builder-draft-banner button:hover{background:#e2f3fc}
+
+/* Version timeline: owner-only restore operations, separate from current public report. */
+.builder-history-panel{width:min(610px,95vw)!important}
+.builder-history-help{font-size:12px;line-height:1.6;color:#658397;margin-bottom:15px}
+.builder-history-list{max-height:55vh;overflow-y:auto;display:flex;flex-direction:column;gap:7px}
+.builder-history-row{display:flex;gap:12px;justify-content:space-between;align-items:center;padding:13px;border:1px solid #dfebf3;border-radius:11px;background:#f9fcff;flex-wrap:wrap}
+.builder-history-row strong{display:block;color:#19455e;font-size:12px}
+.builder-history-row small{color:#8297a6;font-size:10px;display:block;margin-top:5px}
+.builder-history-row button{border:1px solid #d4e8f3;border-radius:8px;color:#25617f;background:white;cursor:pointer;font-size:10px;font-weight:800;padding:9px}
+.builder-history-row button:hover{border-color:#ee5263;color:#d94359}
+#builderHistoryStatus{font-size:11px;color:#587991;line-height:1.6}
