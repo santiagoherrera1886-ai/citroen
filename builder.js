@@ -66,7 +66,7 @@ function navTo(id){
 function pageNav(id,label){const btn=mk('button',{type:'button',class:'nav-link builder-nav', 'data-target':id},'<span class="builder-nav-icon">◇</span> '+esc(label));btn.onclick=()=>navTo(id);return btn;}
 function initSections(){
  const nav=$('sidebar').querySelector('.nav'),main=document.querySelector('.content');
- for(const [id,label] of [['citroen-creatives','Creativos'],['citroen-insights','Insights'],['citroen-sources','Conexiones de datos']]){
+ for(const [id,label] of [['citroen-compare','Comparador avanzado'],['citroen-creatives','Creativos'],['citroen-insights','Insights'],['citroen-sources','Conexiones de datos']]){
   if(!$(id))main.appendChild(make(id,label));
   if(!nav.querySelector('[data-target="'+id+'"]'))nav.appendChild(pageNav(id,label));
  }
@@ -696,6 +696,7 @@ async function loadMeta(){
   const a=await r.json(),d=a.dictionaries;
   data=(a.daily||[]).map(row=>({date:String(d.dates[row[0]]),month:String(d.dates[row[0]]).slice(0,7),territory:String(d.territories[row[2]]),account:String(d.accounts[row[3]]),platform:'Meta Ads',model:String(d.models[row[1]]),spend:Number(row[4])||0,forms:Number(row[5])||0,messages:Number(row[6])||0,impressions:Number(row[7])||0,clicks:Number(row[8])||0,reach:Number(row[10])||0}));
   window.CITROEN_FILTER_ENGINE?.setRows(data);
+  window.CITROEN_COMPARISON_LAB?.setRows(data);
   render();
  }catch{status('No se pudo cargar la fuente Meta Ads para páginas nuevas.');}
 }
@@ -824,6 +825,7 @@ function render(){
  if(activePage)renderPage(activePage);
  if(current==='citroen-creatives')renderCreatives();
  if(current==='citroen-insights')renderInsights();
+ if(current==='citroen-compare')window.CITROEN_COMPARISON_LAB?.mount($('citroen-compareBody'),data);
  if(current==='citroen-sources')renderSources();
  if(current==='resumen')window.CITROEN_FILTER_ENGINE?.render('lkGlobalFilters','resumen');
  renderNativeControls();
