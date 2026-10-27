@@ -91,6 +91,11 @@ function fields(){
  }).join('')||'<div class="le-empty">No hay campos</div>';
 }
 function chooseField(key){
+ if(['month','model'].includes(key)&&selection?.startsWith('c:')&&window.CITROEN_STUDIO_ACTIONS?.updateCustom){
+  window.CITROEN_STUDIO_ACTIONS.updateCustom(selection,{dimension:key});
+  mark('Dimensión aplicada al gráfico: '+(key==='month'?'Mes':'Modelo'));
+  return;
+ }
  const keys={spend:['spend','investment'],forms:['forms','leads'],clicks:['clicks'],reach:['reach'],cpm:['cpm'],ctr:['ctr'],cpl:['cpl']};
  const target=(keys[key]||[key]).map(k=>document.querySelector('#metricFields [data-field="'+k+'"]')).find(Boolean);
  if(target){target.click();mark('Campo aplicado a la selección');}
