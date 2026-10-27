@@ -29,6 +29,13 @@ const metric=$('leBuilderProperties').querySelector('[data-le-property="metric"]
 assert.equal(c.metric,'impressions','Source metric changed from contextual panel');
 const dim=$('leBuilderProperties').querySelector('[data-le-property="dimension"]');dim.value='model';dim.dispatchEvent(new w.Event('change',{bubbles:true}));
 assert.equal(c.dimension,'model','Dimension changed');
+const dropzone=$('leBuilderProperties').querySelector('[data-le-dropzone="metric"]');
+assert.ok(dropzone,'Field drop target present on chart setup');
+const drop=new w.Event('drop',{bubbles:true,cancelable:true});
+Object.defineProperty(drop,'dataTransfer',{value:{getData:()=> 'clicks'}});
+dropzone.dispatchEvent(drop);
+assert.equal(c.metric,'clicks','Dragging metric from data catalog changes selected chart data');
+
 const style=$('leBuilderProperties').querySelector('[data-le-tab="style"]');style.click();
 const color=$('leBuilderProperties').querySelector('[data-le-property="color"]');color.value='#ee6677';color.dispatchEvent(new w.Event('change',{bubbles:true}));
 assert.equal(c.color,'#ee6677','Series color stored through builder API');
