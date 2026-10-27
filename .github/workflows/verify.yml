@@ -30,6 +30,7 @@ jobs:
           node --check builder.js
           node --check looker-filter-engine.js
           node --check looker-editor.js
+          node --check looker-properties.js
           node --check free-layout.js
           node --check api/dashboard.js
           node --check api/data-connect.js
@@ -59,3 +60,5 @@ jobs:
 
       - name: Looker-style editor workspace, insertion and view-mode regression
         run: node scripts/smoke-looker-editor.cjs
+      - name: Looker contextual chart editing, canvas zoom and reader isolation
+        run: node scripts/smoke-looker-properties.cjs
