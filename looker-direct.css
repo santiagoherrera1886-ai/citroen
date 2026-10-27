@@ -223,3 +223,32 @@ body.citroen-looker-edit .le-canvas-hint{display:none}
  body:not(.citroen-looker-edit) #studioCards.citroen-free-mode>.c3-panel,
  body:not(.citroen-looker-edit) #studioCards.citroen-free-mode>.studio-card{grid-column:span 6!important}
 }
+
+/* Selected custom report cards behave like true canvas objects too. */
+body.citroen-looker-edit .builder-board-card{
+ cursor:grab!important;
+ touch-action:none;
+}
+body.citroen-looker-edit .builder-board-card:active{cursor:grabbing!important}
+body.citroen-looker-edit .builder-card-grip,
+body.citroen-looker-edit .builder-card-edit{display:none!important}
+body.citroen-looker-edit .builder-board-card .builder-card-resize{
+ width:15px!important;height:15px!important;
+ bottom:-6px!important;right:-6px!important;
+ border:2px solid #fff!important;outline:2px solid #2b83e6!important;
+ border-radius:4px!important;background:#2d86ec!important;
+ opacity:0;pointer-events:none;
+ box-shadow:0 3px 9px #195b9b50!important;
+}
+body.citroen-looker-edit .builder-board-card.le-builder-selected .builder-card-resize{opacity:1;pointer-events:auto}
+body.citroen-looker-edit .builder-board-card.le-builder-selected{z-index:3!important}
+body.citroen-looker-edit .builder-board-card.le-direct-active{
+ z-index:20!important;outline:2px solid #2b83e6!important;
+ box-shadow:0 0 0 5px #2b83e61b,0 14px 30px #1e547b2f!important
+}
+body.citroen-looker-edit .builder-board-card input,
+body.citroen-looker-edit .builder-board-card textarea,
+body.citroen-looker-edit .builder-board-card select,
+body.citroen-looker-edit .builder-board-card button{
+ cursor:auto;touch-action:auto;
+}
