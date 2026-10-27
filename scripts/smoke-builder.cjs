@@ -32,7 +32,7 @@ w.fetch=async(url,opt={})=>{
   if(url==='/api/data-connect')return json({ok:true,source:'Public Sheet test',columns:['Modelo','Leads'],rows:[{Modelo:'C3',Leads:'32'}],previewOnly:true});
  return json(daily);
 };
-for(const file of ['looker-filter-engine.js','studio.js','free-layout.js','builder.js'])w.eval(fs.readFileSync(file,'utf8'));
+for(const file of ['looker-filter-engine.js','studio.js','layout-assist.js','free-layout.js','builder.js'])w.eval(fs.readFileSync(file,'utf8'));
 w.document.dispatchEvent(new w.Event('DOMContentLoaded',{bubbles:true}));
 const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
 (async()=>{
@@ -69,6 +69,17 @@ const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
  pointer(w,'pointermove',140,110);
  pointer(w,'pointerup',140,110);
  assert.ok(Number.parseInt(card.style.left,10)>startLeft,'Custom page cards drag directly from their surface');
+ const movedLeft=Number.parseFloat(card.style.left);
+ w.document.dispatchEvent(new w.KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true,cancelable:true}));
+ assert.equal(Number.parseFloat(p.querySelector('.builder-board-card').style.left),movedLeft+8,'Arrow moves the selected report card by eight pixels');
+ let btn=[...p.querySelectorAll('.builder-head-actions button')].find(b=>b.textContent.includes('Deshacer'));
+ assert.ok(btn&&!btn.disabled,'Page history offers an enabled undo control');
+ btn.click();
+ assert.equal(Number.parseFloat(p.querySelector('.builder-board-card').style.left),movedLeft,'Undo restores last page move');
+ btn=[...p.querySelectorAll('.builder-head-actions button')].find(b=>b.textContent.includes('Rehacer'));
+ btn.click();
+ assert.equal(Number.parseFloat(p.querySelector('.builder-board-card').style.left),movedLeft+8,'Redo reapplies page keyboard movement');
+
 
  $('builderFilterSetup').click();assert.equal($('builderFilterModal').hidden,false,'Filter configuration visible; auth='+isEditor+'; edit='+$('c3Dashboard').className+'; onclick='+typeof $('builderFilterSetup').onclick+'; id='+$('builderFilterModal').id);
  const checkbox=$('builderFilterModal').querySelector('[data-filter-toggle="territory"]');checkbox.checked=false;checkbox.dispatchEvent(new w.Event('change',{bubbles:true}));
