@@ -5,7 +5,7 @@
  */
 (function(){
 'use strict';
-const KEY='citroen_free_summary_layout_v1',$=id=>document.getElementById(id);
+const KEY='citroen_free_summary_layout_v1',$=id=>document?.getElementById?.(id);
 const editing=()=>window.CITROEN_ACCESS?.canEdit()===true&&$('c3Dashboard')?.classList.contains('studio-edit-on')===true;
 const clamp=(v,min,max)=>Math.max(min,Math.min(max,Math.round(Number(v)||0)));
 const DEFAULT_KEYS=['b:header','b:hero','b:context','b:filters'];
@@ -297,7 +297,7 @@ function init(){
   let queued=false;
   const redraw=()=>{
    if(queued)return;queued=true;
-   Promise.resolve().then(()=>{queued=false;if(state.enabled)apply();});
+   Promise.resolve().then(()=>{queued=false;if(document?.documentElement&&state.enabled)apply();});
   };
   if($('c3Kpis'))new MutationObserver(redraw).observe($('c3Kpis'),{childList:true});
   if($('studioCards'))new MutationObserver(redraw).observe($('studioCards'),{childList:true});
