@@ -21,7 +21,7 @@ const nativeDefaultSizes={c3ComparePanel:4,c3FunnelPanel:2,c3ModelsPanel:3,c3Cam
 const defaultOrder=nativeIds.map(id=>"n:"+id);
 const state={cards:[],month:"",model:"",edit:false,order:[],sizes:{},hidden:[],titles:{}};
 const KEY="citroen_workspace_summary_v2";
-let plan=null,meta=[],dragged=null,ready=false;
+let plan=null,meta=[],dragged=null,ready=false,pendingPublishedSummary=null;
 function saved(key=KEY){try{return JSON.parse(localStorage.getItem(key)||"null");}catch{return null;}}
 function persist(){try{localStorage.setItem(KEY,JSON.stringify({cards:state.cards,month:state.month,model:state.model,edit:state.edit,order:state.order,sizes:state.sizes,hidden:state.hidden,titles:state.titles}));}catch{}}
 function download(text,name,type){const u=URL.createObjectURL(new Blob([text],{type:type||"application/json;charset=utf-8"}));const a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1500);}
@@ -230,7 +230,43 @@ function add(source,chart="bar"){
  document.dispatchEvent(new CustomEvent("citroen:studio-created",{detail:{key:"c:"+id}}));
  if(card)card.scrollIntoView({behavior:"smooth",block:"center"});
 }
+function exportedSummary(){
+ return {
+  cards:JSON.parse(JSON.stringify(state.cards)),
+  order:[...state.order],hidden:[...state.hidden],
+  sizes:{...state.sizes},titles:{...state.titles},
+  metrics:window.CITROEN_METRIC_EDITOR?.export()||null,
+  styles:window.CITROEN_STYLE_EDITOR?.export()||null,
+  photos:Object.fromEntries(Object.entries(window.CITROEN_PHOTO_EDITOR?.export()||{}).filter(([,url])=>typeof url==='string'&&url.startsWith('https://')))
+ };
+}
+function appliedSummary(summary){
+ if(!summary||typeof summary!=='object')return false;
+ if(!ready){pendingPublishedSummary=summary;return true;}
+ const permitted=new Set(['plan','meta','compare']),types=new Set(['bar','line','area','table']),dims=new Set(['month','model']);
+ state.cards=(Array.isArray(summary.cards)?summary.cards:[]).slice(0,40).filter(c=>c&&typeof c.id==='string'&&/^[a-z0-9_-]{3,85}$/i.test(c.id)&&permitted.has(c.source)&&types.has(c.chart)&&dims.has(c.dimension)).map(c=>({
+  id:c.id,title:String(c.title||'Gráfico').slice(0,90),source:c.source,
+  metric:typeof c.metric==='string'&&Object.keys(metricLabels).includes(c.metric)?c.metric:'investment',
+  dimension:c.dimension,chart:c.chart,model:typeof c.model==='string'?c.model.slice(0,80):'',
+  sort:['original','asc','desc'].includes(c.sort)?c.sort:'original',
+  limit:['0','3','5','10'].includes(String(c.limit))?String(c.limit):'0'
+ }));
+ const allowed=new Set(defaultOrder.concat(state.cards.map(c=>'c:'+c.id)));
+ state.order=Array.isArray(summary.order)?summary.order.filter(x=>allowed.has(x)):defaultOrder;
+ state.hidden=Array.isArray(summary.hidden)?summary.hidden.filter(x=>allowed.has(x)):[];
+ state.sizes={};
+ for(const [k,v] of Object.entries(summary.sizes||{}))if(allowed.has(k)&&[2,3,4,6].includes(Number(v)))state.sizes[k]=Number(v);
+ state.titles={};
+ for(const [k,v] of Object.entries(summary.titles||{}))if(allowed.has(k)&&typeof v==='string')state.titles[k]=v.slice(0,90);
+ if(summary.metrics)window.CITROEN_METRIC_EDITOR?.replace(summary.metrics);
+ if(summary.styles)window.CITROEN_STYLE_EDITOR?.replace(summary.styles);
+ if(summary.photos)window.CITROEN_PHOTO_EDITOR?.replace(summary.photos);
+ state.edit=state.edit&&window.CITROEN_ACCESS?.canEdit()===true;
+ persist();draw();return true;
+}
 window.CITROEN_STUDIO_ACTIONS={
+ exportPublished:exportedSummary,
+ importPublished:appliedSummary,
  getCustom(k){const c=state.cards.find(x=>"c:"+x.id===k);return c?{...c}:null;},
  updateCustom(k,changes){
   const c=state.cards.find(x=>"c:"+x.id===k);if(!c||!changes||typeof changes!=="object")return;
@@ -363,6 +399,7 @@ async function start(){
   $("studioMonth").innerHTML=opt([["","Enero – Octubre"],...plan.months.map((m,i)=>[m[0],monthNames[i]+" 2026"])],state.month);
   $("studioModel").innerHTML=opt([["","Todos los modelos"],...Array.from(new Set(plan.models.map(x=>x[1]))).sort().map(m=>[m,m])],state.model);
   ready=true;wire();draw();
+  if(pendingPublishedSummary){const summary=pendingPublishedSummary;pendingPublishedSummary=null;appliedSummary(summary);}
   alertStatus("Datos: 10 planes 2026 con correcciones de abril/mayo · Meta Ads hasta el 20/10 · mayo pendiente de conciliación.");
  }catch(err){console.error("Studio",err);alertStatus("No fue posible iniciar el constructor: "+err.message);}
 }
