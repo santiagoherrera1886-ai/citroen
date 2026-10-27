@@ -48,7 +48,7 @@ function createSurface(){
  canvas.append(header,hero,context);
  const filter=document.createElement('section');filter.id='c3FilterDock';filter.className='c3-filter-dock';
  filter.setAttribute('aria-label','Filtros del informe');
- filter.innerHTML='<div class="c3-filter-dock-title"><strong>Filtros del informe</strong><small>Una sola barra · período, territorio y modelo</small></div><div class="c3-filter-dock-content"><div id="c3NativeFilters" class="c3-native-filters"></div></div>';
+ filter.innerHTML='<div class="c3-filter-dock-title"><strong>Filtros del informe</strong><small>Al cambiar un filtro, se actualizan los KPIs y gráficos del Resumen.</small></div><div class="c3-filter-dock-content"><div id="c3NativeFilters" class="c3-native-filters"></div></div>';
  const native=filter.querySelector('#c3NativeFilters');
  const holder=filter.querySelector('.c3-filter-dock-content');
  for(const id of ['c3Month','c3Territory','c3Model']){
