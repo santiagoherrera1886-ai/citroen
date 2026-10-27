@@ -1,0 +1,60 @@
+/* Advanced A/B comparison: real-date selection, aggregation, model/territory breakdown and reader mode. */
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const {JSDOM}=require('jsdom');
+const dom=new JSDOM('<!doctype html><html><body><main id="lab"></main></body></html>',{url:'https://citroen-rho.vercel.app',runScripts:'outside-only'});
+const w=dom.window;
+w.eval(fs.readFileSync('compare-lab.js','utf8'));
+w.CITROEN_REACH_MATH={estimate:(numbers,U)=>{assert.equal(U,15000000);return Math.min(U,numbers.reduce((a,v)=>a+v,0))}};
+const lab=w.CITROEN_COMPARISON_LAB;
+const rows=[];
+for(let i=1;i<=30;i++){
+ const date='2026-09-'+String(i).padStart(2,'0');
+ rows.push({date,month:'2026-09',model:'C3',territory:'Bogotá',account:'A',spend:100,forms:1,clicks:10,impressions:1000,messages:1,reach:100});
+ rows.push({date,month:'2026-09',model:'Basalt',territory:'Medellín',account:'A',spend:50,forms:1,clicks:5,impressions:500,messages:0,reach:50});
+}
+for(let i=1;i<=20;i++){
+ const date='2026-10-'+String(i).padStart(2,'0');
+ rows.push({date,month:'2026-10',model:'C3',territory:'Bogotá',account:'A',spend:200,forms:2,clicks:30,impressions:1500,messages:3,reach:200});
+ rows.push({date,month:'2026-10',model:'Basalt',territory:'Medellín',account:'A',spend:100,forms:1,clicks:10,impressions:500,messages:2,reach:100});
+}
+const def=lab.defaults(rows);
+assert.deepEqual(JSON.parse(JSON.stringify(def)),{aStart:'2026-10-01',aEnd:'2026-10-20',bStart:'2026-09-01',bEnd:'2026-09-20'});
+let conf={...def,metric:'forms',group:'model'};
+const baseline=lab.calculate(rows,conf,w.CITROEN_REACH_MATH.estimate);
+assert.equal(baseline.ok,true);assert.equal(baseline.groups.length,2);
+assert.equal(baseline.aRecords,40);assert.equal(baseline.bRecords,40);
+assert.equal(baseline.totalA,60);assert.equal(baseline.totalB,40);assert.equal(baseline.totalChange,50);
+assert.equal(baseline.groups.find(x=>x.label==='C3').change,100);
+assert.equal(baseline.groups.find(x=>x.label==='Basalt').change,0);
+assert.equal(baseline.hasIncompleteCoverage,false);
+conf={...conf,group:'territory',metric:'spend'};
+let g=lab.calculate(rows,conf);
+assert.ok(g.groups.some(x=>x.label==='Bogotá'));
+assert.ok(g.groups.some(x=>x.label==='Medellín'));
+assert.equal(g.totalA,6000);assert.equal(g.totalB,3000);assert.equal(g.totalChange,100);
+let ctr=lab.calculate(rows,{...conf,metric:'ctr'});
+assert.equal(ctr.totalA,2);assert.equal(ctr.totalB,1);
+const cpl=lab.calculate(rows,{...conf,metric:'cpl',model:'C3'});
+assert.equal(cpl.totalA,100);assert.equal(cpl.totalB,100);
+assert.equal(lab.calculate(rows,{...conf,metric:'fake'}).ok,false);
+assert.equal(lab.calculate(rows,{...conf,aEnd:'2026-02-31'}).ok,false,'Invalid leap dates cannot be selected');
+assert.equal(lab.calculate(rows,{...conf,aEnd:'2026-01-01'}).ok,false,'Start after end rejected');
+const lacking=lab.calculate(rows,{...conf,aStart:'2026-06-01',aEnd:'2026-06-30'});
+assert.equal(lacking.totalA,null,'Unavailable period must not be labeled zero');
+assert.equal(lacking.totalChange,null);
+assert.equal(lacking.hasIncompleteCoverage,true);
+assert.ok(lab.toCSV({...baseline,groups:[{label:'=IMPORTXML("https://evil")',current:3,prior:4,change:5}]}).includes("'=IMPORTXML"),'CSV spreadsheet formulas are escaped');
+lab.mount(w.document.getElementById('lab'),rows);
+assert.ok(w.document.getElementById('compareLabForm'),'Public read-only filters mount without editor session');
+assert.equal(w.document.querySelector('[name="aEnd"]').value,'2026-10-20');
+assert.ok(w.document.getElementById('compareLabResults').textContent.includes('Basalt'));
+assert.ok(w.document.getElementById('compareLabResults').textContent.includes('Bogotá')===false,'By-model results must not unexpectedly show territory');
+const form=w.document.getElementById('compareLabForm');
+form.elements.group.value='territory';form.dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
+assert.ok(w.document.getElementById('compareLabResults').textContent.includes('Bogotá'));
+form.elements.metric.value='reach';form.dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
+assert.ok(w.document.getElementById('compareLabResults').textContent.includes('Sainsbury'));
+assert.ok(w.document.getElementById('compareLabResults').textContent.includes('15 millones'));
+console.log('PASS: public A/B period selection, strict dates, actual CPL and CTR, model/territory comparison, coverage warnings, zero baseline, Sainsbury reach and CSV formula defense.');
+w.close();
