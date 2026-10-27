@@ -277,6 +277,8 @@ window.CITROEN_STUDIO_ACTIONS={
    if(prop==="sort"&&["original","asc","desc"].includes(val))c.sort=val;
    if(prop==="limit"&&["0","3","5","10"].includes(String(val)))c.limit=String(val);
    if(prop==="model"&&typeof val==="string")c.model=val;
+   if(prop==="metric"&&Object.hasOwn(metricLabels,val))c.metric=val;
+   if(prop==="title"&&typeof val==="string"&&val.trim())c.title=val.trim().slice(0,90);
   }
   if(c.source!=="meta"&&!["investment","leads","cpl"].includes(c.metric))c.metric="investment";
   persist();draw();
