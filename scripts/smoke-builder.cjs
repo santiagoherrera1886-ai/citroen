@@ -32,13 +32,20 @@ w.fetch=async(url,opt={})=>{
   if(url==='/api/data-connect')return json({ok:true,source:'Public Sheet test',columns:['Modelo','Leads'],rows:[{Modelo:'C3',Leads:'32'}],previewOnly:true});
  return json(daily);
 };
-for(const file of ['looker-filter-engine.js','quick-delete.js','studio.js','layout-assist.js','free-layout.js','report-templates.js','builder.js'])w.eval(fs.readFileSync(file,'utf8'));
+for(const file of ['looker-filter-engine.js','quick-delete.js','studio.js','layout-assist.js','free-layout.js','report-templates.js','compare-lab.js','builder.js'])w.eval(fs.readFileSync(file,'utf8'));
 w.document.dispatchEvent(new w.Event('DOMContentLoaded',{bubbles:true}));
 const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
 (async()=>{
  for(let i=0;i<80&&!$('studioCards').querySelector('.studio-native-tools');i++)await tick();
  await tick();await tick();
- assert.ok($('citroen-creatives'),'Creativos section exists');
+ assert.ok($('citroen-compare'),'Public comparador section exists');
+ const compareLink=w.document.querySelector('[data-target="citroen-compare"]');
+ assert.ok(compareLink,'Comparador visible in main navigation');
+ compareLink.click();await tick();
+ assert.ok($('compareLabForm'),'Date-range comparison available in read-only mode');
+ assert.ok($('compareLabResults').querySelector('.compare-lab-kpis'),'Real Meta comparison renders for public readers');
+ w.document.querySelector('[data-target="resumen"]').click();await tick();
+  assert.ok($('citroen-creatives'),'Creativos section exists');
  assert.ok($('citroen-insights'),'Insights section exists');
  assert.ok($('citroen-sources'),'Data connection section exists');
  assert.equal($('builderGlobalActions').hidden,true,'Publisher tools hidden from public');
