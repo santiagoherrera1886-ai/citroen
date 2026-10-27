@@ -946,6 +946,18 @@ window.CITROEN_BUILDER={render,loadPublished,publish,
  duplicatePage:clonePage,
  getCard(pageId,cardId){const p=state.pages.find(p=>p.id===pageId);const c=p?.cards.find(c=>c.id===cardId);return c?{...c}:null;},
  addOnCurrent(type,changes={}){if(!authorized())return false;const p=state.pages.find(p=>'report-'+p.id===current);if(!p)return false;newCard(type,p,changes);return true;},
+ addABToPage(pageId,settings){
+  if(!authorized()||!settings||typeof settings!=='object')return false;
+  const p=state.pages.find(p=>p.id===pageId);if(!p||p.cards.length>=45)return false;
+  const r=window.CITROEN_COMPARISON_LAB?.calculate(data,settings,window.CITROEN_REACH_MATH?.estimate);
+  if(!r?.ok)return false;
+  newCard('ab',p,{
+   title:'A/B · '+(CL[settings.metric]||settings.metric),metric:settings.metric,
+   aStart:settings.aStart,aEnd:settings.aEnd,bStart:settings.bStart,bEnd:settings.bEnd,
+   abGroup:settings.group,abModel:settings.model||'',abTerritory:settings.territory||''
+  });
+  navTo('report-'+p.id);return true;
+ },
  updateCard(pageId,cardId,patch){if(!authorized()||!patch||typeof patch!=='object')return false;
   const p=state.pages.find(p=>p.id===pageId),c=p?.cards.find(c=>c.id===cardId);if(!c)return false;
   const valid={shape:['bar','barh','line','area','table','pie','donut','gauge'],metric:['spend','forms','messages','impressions','reach','clicks','ctr','cpl'],dimension:['date','week','month','quarter','model','territory','account']};
