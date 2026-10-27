@@ -68,7 +68,7 @@ const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
  $('studioFreeLayout').click();
  assert.equal(w.CITROEN_FREE_LAYOUT.export().enabled,true,'Original Resumen supports free positioning');
  await w.CITROEN_BUILDER.publish();
- assert.equal(writeCount,2,'Authorized changes persisted through server endpoint');
+ assert.equal(writeCount,1,'Authorized changes persisted through server endpoint');
  assert.equal(published.pages.length,1,'New page is published');
  assert.equal(published.insights.length,1,'Insights are published');
  assert.equal(published.creatives.length,1,'Creative metadata published');
@@ -96,6 +96,7 @@ const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
  $('builderFilterListDialog').hidden=true;
  await w.CITROEN_BUILDER.publish();
  assert.equal(published.controls.length,5,'Filter configurations persist to server-published workspace');
+ assert.equal(writeCount,2,'Second explicit publish stores advanced controls');
 
  w.CITROEN_STUDIO_LOCK();isEditor=false;await tick();
  assert.equal($('builderGlobalActions').hidden,true,'Editor controls hidden when session ends');
