@@ -13,11 +13,12 @@ function clean(state){
  const fixCard=c=>{
   if(!c||!validId(c.id)||!['metric','note','chart','image','filter'].includes(c.type))return null;
   const metric=c.source==='external'&&typeof c.metric==='string'&&c.metric.length<=90?c.metric:['spend','forms','messages','impressions','reach','clicks','ctr','cpl'].includes(c.metric)?c.metric:'spend';
-  const dimension=c.source==='external'&&typeof c.dimension==='string'&&c.dimension.length<=90?c.dimension:['month','model'].includes(c.dimension)?c.dimension:'month';
-  const shape=['bar','line','area','table'].includes(c.shape)?c.shape:'bar';
+  const dimension=c.source==='external'&&typeof c.dimension==='string'&&c.dimension.length<=90?c.dimension:['date','week','month','quarter','model','territory','account'].includes(c.dimension)?c.dimension:'month';
+  const shape=['bar','barh','line','area','table','pie','donut','gauge'].includes(c.shape)?c.shape:'bar';
   const number=(v,min,max,def)=>Number.isFinite(Number(v))?Math.max(min,Math.min(max,Math.round(Number(v)))):def;
   return {id:c.id,type:c.type,title:safeText(c.title,100),text:safeText(c.text,7000),source:c.source==='external'?'external':'meta',metric,dimension,shape,
    x:number(c.x,0,2400,24),y:number(c.y,0,6000,24),w:number(c.w,220,1200,410),h:number(c.h,170,850,270),
+   goal:Number.isFinite(Number(c.goal))&&Number(c.goal)>0?Math.min(1e12,Number(c.goal)):null,
    image:typeof c.image==='string'&&(c.image.startsWith('https://')||/^data:image\/(?:png|jpeg|webp);base64,/.test(c.image))&&c.image.length<120000?c.image:'',
    filter:['month','model'].includes(c.filter)?c.filter:'month'};
  };
