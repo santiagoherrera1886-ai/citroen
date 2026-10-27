@@ -66,6 +66,72 @@ function drawPageNav(){
  }
  document.querySelectorAll('.builder-page[id^="report-"]').forEach(el=>{if(!state.pages.some(p=>'report-'+p.id===el.id))el.remove();});
 }
+function manageFilters(){
+ if(!authorized())return;
+ const m=$('builderFilterListDialog');m.hidden=false;
+ const list=$('builderDefinedFilters');list.replaceChildren();
+ for(const d of state.controls||[]){
+  const line=document.createElement('div');line.className='builder-filter-line';
+  const tag=document.createElement('div');tag.textContent=d.label+' · '+(window.CITROEN_FILTER_ENGINE?.TYPES[d.type]||d.type)+' · '+(d.scope==='report'?'Todas las páginas':d.scope==='page'?'Página '+d.pageId:'Solo gráfico '+d.cardId);
+  line.appendChild(tag);
+  line.appendChild(button('Editar',()=>{m.hidden=true;editFilter(d);}));
+  line.appendChild(button('Eliminar',()=>{if(!confirm('¿Quitar este control?'))return;state.controls=state.controls.filter(x=>x.id!==d.id);stash();refreshControls();manageFilters();},'builder-btn-danger'));
+  list.appendChild(line);
+ }
+ if(!state.controls?.length)list.textContent='Todavía no hay filtros personalizados. Agrégalos desde Diseño.';
+}
+function refreshControls(){
+ window.CITROEN_FILTER_ENGINE?.setDefinitions(state.controls||[]);
+ status('Filtros actualizados en este navegador. Publica cambios para compartirlos.');
+}
+function editFilter(existing){
+ if(!authorized())return;
+ const dialog=$('builderFilterEditor');dialog.hidden=false;
+ const form=$('builderFilterEditorForm'),filters=window.CITROEN_FILTER_ENGINE;
+ if(!filters)return status('Motor de filtros no disponible.');
+ const d=existing||{id:uid(),type:'relative',field:'date',scope:'report',pageId:'resumen',cardId:'',label:'Período de análisis',preset:'all',operator:'contains',logic:'AND',values:[],enabled:true,exclude:false};
+ const field=form.elements;
+ field.label.value=d.label||'';
+ field.type.value=d.type;
+ field.field.value=d.field;
+ field.scope.value=d.scope;
+ field.pageId.innerHTML='<option value="resumen">Resumen original</option>'+state.pages.map(p=>'<option value="report-'+esc(p.id)+'">'+esc(p.title)+'</option>').join('');
+ field.pageId.value=d.pageId||'resumen';
+ const fillCards=()=>{
+  const id=field.pageId.value;
+  const options=id==='resumen'
+   ?[['n:c3ComparePanel','Planeado vs ejecutado'],['n:c3FunnelPanel','Funnel'],['n:c3ModelsPanel','Modelos']]
+   :(state.pages.find(p=>'report-'+p.id===id)?.cards||[]).map(c=>['c:'+c.id,c.title]);
+  field.cardId.innerHTML=options.map(([k,v])=>'<option value="'+esc(k)+'">'+esc(v)+'</option>').join('');
+  if(options.some(([k])=>k===d.cardId))field.cardId.value=d.cardId;
+ };
+ fillCards();
+ field.pageId.onchange=fillCards;
+ field.operator.value=d.operator||'contains';
+ field.logic.value=d.logic||'AND';
+ field.preset.value=d.preset||'all';
+ field.value.value=d.value||'';
+ field.start.value=d.start||'';
+ field.end.value=d.end||'';
+ field.min.value=d.min??'';
+ field.max.value=d.max??'';
+ field.exclude.checked=!!d.exclude;field.enabled.checked=d.enabled!==false;
+ $('builderFilterEditSave').onclick=()=>{
+  let type=field.type.value,campo=field.field.value;
+  if(['date','relative'].includes(type))campo='date';
+  if(type==='number'&&!['spend','forms','messages','impressions','reach','clicks'].includes(campo))return status('El rango numérico requiere una métrica cuantitativa.');
+  const proposal={id:d.id,label:field.label.value.trim()||filters.FIELDS[campo],type,field:campo,scope:field.scope.value,pageId:field.pageId.value,cardId:field.cardId.value,
+   operator:field.operator.value,logic:field.logic.value,preset:field.preset.value,value:field.value.value,start:field.start.value,end:field.end.value,
+   min:field.min.value===''?null:Number(field.min.value),max:field.max.value===''?null:Number(field.max.value),exclude:field.exclude.checked,enabled:field.enabled.checked};
+  if(proposal.type==='date'&&proposal.start&&proposal.end&&proposal.start>proposal.end)return status('La fecha inicial no puede ser posterior a la final.');
+  if(proposal.scope==='chart'&&!proposal.cardId)return status('Selecciona el gráfico que recibirá el filtro.');
+  const clean=filters.normalize(proposal);if(!clean)return status('La configuración del filtro no es válida.');
+  if(!existing&&state.controls.length>=40)return status('Máximo de 40 controles publicados por informe.');
+  if(existing){const i=state.controls.findIndex(x=>x.id===existing.id);if(i>=0)state.controls[i]=clean;}
+  else state.controls.push(clean);
+  stash();dialog.hidden=true;refreshControls();
+ };
+}
 function createPage(){
  if(!authorized())return;
  if(state.pages.length>=15){status('Máximo 15 páginas.');return;}
@@ -360,6 +426,8 @@ function render(){
 function setupEditorModals(){
  document.body.insertAdjacentHTML('beforeend',
  '<div id="builderCardEditor" class="builder-dialog" hidden><div class="builder-dialog-panel"><button type="button" data-builder-close="builderCardEditor" class="builder-close">×</button><h3>Editar tarjeta</h3><form id="builderCardForm"><label>Título<input name="title" maxlength="100"></label><label>Contenido / insight<textarea name="text" rows="5"></textarea></label><label>Métrica<select name="metric">'+Object.entries(CL).map(([k,v])=>'<option value="'+k+'">'+v+'</option>').join('')+'</select></label><label>Visualización<select name="shape"><option value="bar">Barras</option><option value="line">Líneas</option><option value="area">Área</option><option value="table">Tabla</option></select></label><label>Dimensión<select name="dimension"><option value="month">Mes</option><option value="model">Modelo</option></select></label><label>Filtro<select name="filter"><option value="month">Mes</option><option value="model">Modelo</option></select></label><label>URL HTTPS de imagen<input name="image" type="url"></label><label>O subir imagen<input type="file" id="builderCardUpload" accept="image/png,image/jpeg,image/webp"></label></form><div class="builder-dialog-buttons"><button id="builderCardRemove" type="button">Eliminar</button><button id="builderCardSave" type="button">Guardar tarjeta</button></div></div></div>'+
+ '<div id="builderFilterEditor" class="builder-dialog" hidden><div class="builder-dialog-panel builder-filter-editor-panel"><button type="button" class="builder-close" data-builder-close="builderFilterEditor">×</button><h3>Configurar control avanzado</h3><p>Filtros Looker: calendario, períodos relativos, listas, búsqueda, métricas y condiciones avanzadas.</p><form id="builderFilterEditorForm"><label>Nombre<input name="label" maxlength="80"></label><label>Tipo<select name="type"><option value="relative">Período relativo</option><option value="date">Calendario de fechas</option><option value="select">Desplegable</option><option value="multi">Selección múltiple</option><option value="list">Lista fija</option><option value="search">Buscar texto</option><option value="number">Rango numérico</option><option value="checkbox">Casilla / selector</option><option value="advanced">Condición avanzada</option></select></label><label>Campo<select name="field"><option value="date">Fecha diaria</option><option value="month">Mes</option><option value="model">Modelo</option><option value="territory">Territorio</option><option value="account">Cuenta Meta</option><option value="platform">Plataforma</option><option value="spend">Inversión</option><option value="forms">Formularios</option><option value="messages">Conversaciones</option><option value="impressions">Impresiones</option><option value="reach">Alcance por fila</option><option value="clicks">Clics enlace</option></select></label><label>Alcance del control<select name="scope"><option value="report">Todo el informe</option><option value="page">Solo una página</option><option value="chart">Solo un gráfico</option></select></label><label>Página<select name="pageId"></select></label><label>Gráfico (si aplica)<select name="cardId"></select></label><label>Operador para filtro avanzado<select name="operator"><option value="contains">Contiene</option><option value="equals">Es igual a</option><option value="starts">Empieza por</option><option value="ends">Termina en</option><option value="notcontains">No contiene</option><option value="gt">Mayor que</option><option value="gte">Mayor o igual</option><option value="lt">Menor que</option><option value="lte">Menor o igual</option><option value="between">Entre valores</option><option value="in">Está entre (comas)</option><option value="notin">No está entre (comas)</option><option value="empty">Vacío</option><option value="notempty">No vacío</option><option value="regex">Expresión regular</option></select></label><label>Valor inicial o condición<input name="value" placeholder="Ej. C3 o 250000"></label><label>Fechas relativas<select name="preset"><option value="all">Todo</option><option value="today">Hoy</option><option value="yesterday">Ayer</option><option value="last7">Últimos 7 días</option><option value="last14">Últimos 14 días</option><option value="last28">Últimos 28 días</option><option value="last30">Últimos 30 días</option><option value="last90">Últimos 90 días</option><option value="thisweek">Esta semana</option><option value="lastweek">Semana anterior</option><option value="thismonth">Mes actual</option><option value="lastmonth">Mes anterior</option><option value="thisquarter">Trimestre actual</option><option value="thisyear">Año actual</option><option value="lastyear">Año anterior</option></select></label><div class="builder-filter-pair"><label>Desde<input name="start" type="date"></label><label>Hasta<input name="end" type="date"></label></div><div class="builder-filter-pair"><label>Mínimo<input name="min" type="number"></label><label>Máximo<input name="max" type="number"></label></div><label class="builder-filter-check"><input type="checkbox" name="exclude"> Excluir coincidencias</label><label class="builder-filter-check"><input type="checkbox" name="enabled" checked> Control habilitado</label><label>Cómo combinar con el filtro anterior<select name="logic"><option value="AND">Y (AND)</option><option value="OR">O (OR)</option></select></label></form><div class="builder-dialog-buttons"><button type="button" data-builder-close="builderFilterEditor">Cancelar</button><button type="button" id="builderFilterEditSave">Guardar filtro</button></div></div></div>'+ 
+ '<div id="builderFilterListDialog" class="builder-dialog" hidden><div class="builder-dialog-panel"><button type="button" data-builder-close="builderFilterListDialog" class="builder-close">×</button><h3>Filtros configurados</h3><div id="builderDefinedFilters"></div></div></div>'+ 
  '<div id="builderCreativeDialog" class="builder-dialog" hidden><div class="builder-dialog-panel"><button type="button" class="builder-close" data-builder-close="builderCreativeDialog">×</button><h3>Biblioteca de creativos</h3><label>Título de pieza<input id="builderCreativeTitle" maxlength="110"></label><label>Campaña<input id="builderCreativeCampaign" maxlength="150"></label><label>Formato<select id="builderCreativeFormat"><option>Imagen</option><option>Vídeo</option><option>Carrusel</option><option>Otro</option></select></label><label>Imagen por URL HTTPS<input id="builderCreativeUrl" type="url" placeholder="https://..."></label><label>O subir imagen JPG/PNG/WebP<input type="file" id="builderCreativeUpload" accept="image/png,image/jpeg,image/webp"></label><label>Notas, aprendizaje o recomendación<textarea id="builderCreativeNotes" rows="5"></textarea></label><div class="builder-dialog-buttons"><button type="button" id="builderCreativeDelete">Eliminar</button><button type="button" id="builderCreativeSave">Guardar creativo</button></div></div></div>'+ 
   '<div id="builderInsightDialog" class="builder-dialog" hidden><div class="builder-dialog-panel"><button type="button" class="builder-close" data-builder-close="builderInsightDialog">×</button><h3>Escribir insight</h3><label>Título<input id="builderInsightTitle"></label><label>Hallazgo y recomendación<textarea rows="12" id="builderInsightBody"></textarea></label><div class="builder-dialog-buttons"><button type="button" id="builderInsightDelete">Eliminar</button><button type="button" id="builderInsightSave">Guardar insight</button></div></div></div>');
  document.querySelectorAll('[data-builder-close]').forEach(b=>b.onclick=()=>$(b.dataset.builderClose).hidden=true);
