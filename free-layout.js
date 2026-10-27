@@ -118,7 +118,9 @@ function pointerStart(ev,container){
  if(!p)return;
  // Match Looker: pointer-down selects immediately; dragging keeps that selection.
  if(!el.classList.contains('metric-selected'))el.click();
- const resize=!!handle,initial={...p},start={x:ev.clientX,y:ev.clientY},scale=window.CITROEN_EDITOR_ZOOM||1;
+ const resize=!!handle,initial={...p},before=exported(),start={x:ev.clientX,y:ev.clientY},scale=window.CITROEN_EDITOR_ZOOM||1;
+ const peers=(container.id==='c3Kpis'?kpis():panels()).filter(n=>n!==el).map(n=>state.items[lookup(n)]).filter(Boolean);
+ const assist=window.CITROEN_LAYOUT_HISTORY;
  let moved=false;
  // Normal clicks are intentionally left alone: metric-editor.js selects that card.
  function movement(e){
@@ -130,15 +132,17 @@ function pointerStart(ev,container){
    el.classList.add('le-direct-active');
    if(e.cancelable)e.preventDefault();
   }
-  const snap=e.altKey?1:8;
-  const round=n=>Math.round(n/snap)*snap;
+  const raw=resize
+   ?{...initial,w:initial.w+dx,h:initial.h+dy}
+   :{...initial,x:initial.x+dx,y:initial.y+dy};
+  const aligned=assist?.snap(raw,peers,{mode:resize?'resize':'move',bypass:e.altKey,grid:8,tolerance:7,gap:12})||raw;
   if(resize){
-   p.w=clamp(round(initial.w+dx),container.id==='c3Kpis'?174:280,1400);
-   p.h=clamp(round(initial.h+dy),container.id==='c3Kpis'?115:190,1100);
+   p.w=clamp(aligned.w,container.id==='c3Kpis'?174:280,1400);
+   p.h=clamp(aligned.h,container.id==='c3Kpis'?115:190,1100);
   }else{
-   p.x=clamp(round(initial.x+dx),0,2600);
-   p.y=clamp(round(initial.y+dy),0,6800);
+   p.x=clamp(aligned.x,0,2600);p.y=clamp(aligned.y,0,6800);
   }
+  assist?.guides(container,aligned.guides||[]);
   Object.assign(el.style,{left:p.x+'px',top:p.y+'px',width:p.w+'px',height:p.h+'px'});
   container.style.minHeight=Math.max(container.id==='c3Kpis'?150:650,...(container.id==='c3Kpis'?kpis():panels()).map(n=>{
    const v=state.items[lookup(n)];return v?v.y+v.h+27:0;
@@ -149,12 +153,16 @@ function pointerStart(ev,container){
   window.removeEventListener('pointermove',movement);
   window.removeEventListener('pointerup',finish);
   window.removeEventListener('pointercancel',finish);
-  if(moved){persist();document.body.classList.remove('le-dragging');el.classList.remove('le-direct-active');
+  assist?.guides(container,[]);
+  if(moved){
+   if(e.type==='pointercancel')state.items[key]={...initial};
+   else{persist();assist?.record('summary',before,exported());document.dispatchEvent(new CustomEvent('citroen:layout-committed',{detail:{scope:'summary'}}));}
+   document.body.classList.remove('le-dragging');el.classList.remove('le-direct-active');
    // Keep native card selected and suppress the click emitted after a drag.
    const cancelClick=click=>{if(click.target===el||el.contains(click.target)){click.preventDefault();click.stopImmediatePropagation();}};
    document.addEventListener('click',cancelClick,{capture:true,once:true});
   }
-  busy=null;
+  busy=null;if(e.type==='pointercancel')apply();
  }
  busy={element:el,key};
  window.addEventListener('pointermove',movement,{passive:false});
@@ -178,6 +186,18 @@ function imported(data){
 }
 function init(){
  if(booted)return;booted=true;
+ const h=window.CITROEN_LAYOUT_HISTORY;
+ h?.bind('summary',exported,data=>{imported(data);document.dispatchEvent(new CustomEvent('citroen:layout-committed',{detail:{scope:'summary'}}));});
+ const updateHistory=()=>{
+  for(const [id,act] of [['studioUndoPosition','canUndo'],['studioRedoPosition','canRedo']]){
+   const el=$(id);if(el)el.disabled=!editing()||!h?.[act]('summary');
+  }
+ };
+ $('studioUndoPosition')?.addEventListener('click',()=>h?.undo('summary'));
+ $('studioRedoPosition')?.addEventListener('click',()=>h?.redo('summary'));
+ document.addEventListener('citroen:layout-history',updateHistory);
+ document.addEventListener('citroen:studio-layout',updateHistory);
+ updateHistory();
  $('studioFreeLayout')?.addEventListener('click',toggle);
  for(const id of ['studioCards','c3Kpis'])$(id)?.addEventListener('pointerdown',e=>pointerStart(e,$(id)));
  document.addEventListener('citroen:studio-layout',()=>{
