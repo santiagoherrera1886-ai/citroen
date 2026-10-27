@@ -33,6 +33,7 @@ jobs:
           node --check looker-properties.js
           node --check free-layout.js
           node --check layout-assist.js
+          node --check report-templates.js
           node --check api/dashboard.js
           node --check api/data-connect.js
           node --check api/history.js
@@ -42,6 +43,8 @@ jobs:
         run: node scripts/verify.cjs
       - name: Install lightweight DOM test runner
         run: npm install --no-save --no-package-lock jsdom@25
+      - name: Validate report-template fields and overlap-free layouts
+        run: node scripts/smoke-report-templates.cjs
       - name: Browser-like smoke test of Planning 2026
         run: node scripts/smoke-planning.cjs
       - name: Browser-like audit detail test
