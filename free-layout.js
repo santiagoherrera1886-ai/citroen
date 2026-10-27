@@ -259,7 +259,7 @@ function pointerStart(ev){
  if(resizing||fromHandle){ev.preventDefault();ev.stopPropagation();}
 }
 function exported(){return {enabled:state.enabled,version:2,items:JSON.parse(JSON.stringify(state.items))};}
-function imported(value){
+function imported(value,{keepEnabled=false}={}){
  if(!value||typeof value!=='object')return;
  const items={};
  for(const [key,pos] of Object.entries(value.items||{})){
@@ -269,7 +269,7 @@ function imported(value){
  }
  // Import coordinates for later manual editing; never apply an old free layout
  // just because it was published or saved by an earlier version.
- state={enabled:false,version:value.version===2?2:1,items};
+ state={enabled:keepEnabled&&editing()&&value.enabled===true,version:value.version===2?2:1,items};
  selected=null;persist();apply();
 }
 function init(){
@@ -277,7 +277,7 @@ function init(){
  const canvas=createSurface();if(!canvas)return;
  const assist=window.CITROEN_LAYOUT_HISTORY;
  assist?.bind('summary',exported,x=>{
-  imported(x);document.dispatchEvent(new CustomEvent('citroen:layout-committed',{detail:{scope:'summary'}}));
+  imported(x,{keepEnabled:true});document.dispatchEvent(new CustomEvent('citroen:layout-committed',{detail:{scope:'summary'}}));
  });
  assist?.bindNudge('summary',(dx,dy)=>{
   if(!editing()||!state.enabled)return false;
