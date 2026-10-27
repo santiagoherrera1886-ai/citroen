@@ -2,7 +2,7 @@
 (function(){
 'use strict';
 const $=id=>document.getElementById(id),KEY='citroen_workspace_draft_v1';
-const empty=()=>({version:1,summaryLayout:{enabled:false,items:{}},pages:[],insights:[],creatives:[],filters:{month:true,model:true,territory:true}});
+const empty=()=>({version:1,summaryLayout:{enabled:false,items:{}},controls:[],pages:[],insights:[],creatives:[],filters:{month:true,model:true,territory:true}});
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const uid=()=>('item-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7));
 const authorized=()=>window.CITROEN_ACCESS?.canEdit()===true&&$('c3Dashboard')?.classList.contains('studio-edit-on');
@@ -36,7 +36,7 @@ function initSections(){
  const a=mk('div',{class:'builder-menu'},'<div class="builder-menu-title">MIS PÁGINAS</div><div id="builderPageLinks"></div>');
  nav.appendChild(a);
  const dock=mk('div',{class:'builder-global-actions',id:'builderGlobalActions',hidden:''});
- dock.innerHTML='<button id="builderNewPage" type="button">＋ Nueva página</button><button id="builderFilterSetup" type="button">⚙ Filtros</button><button id="builderPublish" type="button">Publicar cambios</button><small id="builderStatus">Modo lectura</small>';
+ dock.innerHTML='<button id="builderNewPage" type="button">＋ Nueva página</button><button id="builderFilterSetup" type="button">⚙ Filtros</button><button id="builderNewFilter" type="button">＋ Control / filtro avanzado</button><button id="builderManageFilters" type="button">Administrar filtros</button><button id="builderPublish" type="button">Publicar cambios</button><small id="builderStatus">Modo lectura</small>';
  $('sidebar').querySelector('.sidebar-bottom').prepend(dock);
  const filt=mk('div',{id:'builderFilterModal',class:'builder-filter-modal',hidden:''});
  filt.innerHTML='<div class="builder-filter-content"><button id="builderFilterClose" type="button">×</button><h3>Filtros del dashboard</h3><p>Elige los controles que mostrarán todos los usuarios en Resumen.</p><label><input type="checkbox" data-filter-toggle="month"> Período</label><label><input type="checkbox" data-filter-toggle="territory"> Territorio</label><label><input type="checkbox" data-filter-toggle="model"> Modelo</label></div>';
@@ -45,6 +45,8 @@ function initSections(){
  $('builderFilterSetup').onclick=()=>{if(!authorized())return;filt.hidden=false;filt.querySelectorAll('input').forEach(i=>i.checked=state.filters[i.dataset.filterToggle]!==false);};
  filt.querySelectorAll('input').forEach(x=>x.onchange=()=>{if(!authorized())return;state.filters[x.dataset.filterToggle]=x.checked;applyFilters();stash();status('Filtros editados; publica para compartirlos.');});
  $('builderNewPage').onclick=()=>createPage();
+ $('builderNewFilter').onclick=()=>editFilter();
+ $('builderManageFilters').onclick=()=>manageFilters();
  $('builderPublish').onclick=()=>publish();
 }
 function applyFilters(){
@@ -96,14 +98,17 @@ function metric(card,rows){
  }
 }
 function fmt(value,key){if(value==null)return '—';if(['spend','cpl'].includes(key))return '$ '+new Intl.NumberFormat('es-CO',{maximumFractionDigits:0}).format(value);if(key==='ctr')return new Intl.NumberFormat('es-CO',{maximumFractionDigits:2}).format(value)+' %';return new Intl.NumberFormat('es-CO',{maximumFractionDigits:0}).format(value);}
-function filtered(){return data.filter(r=>(!localFilter.month||r.month===localFilter.month)&&(!localFilter.model||r.model===localFilter.model));}
+function filtered(card,page){
+ const selected=data.filter(r=>(!localFilter.month||r.month===localFilter.month)&&(!localFilter.model||r.model===localFilter.model));
+ return window.CITROEN_FILTER_ENGINE?.filter(selected,'report-'+page.id,card?'c:'+card.id:'')||selected;
+}
 function categories(card,rows){
  const groups=new Map();
  for(const r of rows){const key=card.dimension==='model'?r.model:r.month;if(!groups.has(key))groups.set(key,[]);groups.get(key).push(r);}
  return Array.from(groups,([name,v])=>({name,value:metric(card,v)||0})).sort((a,b)=>a.name.localeCompare(b.name));
 }
-function renderChart(card){
- const rows=filtered(),arr=categories(card,rows);
+function renderChart(card,page){
+ const rows=filtered(card,page),arr=categories(card,rows);
  if(!arr.length)return '<p class="builder-empty">Sin datos para los filtros seleccionados.</p>';
  if(card.shape==='table')return '<table class="builder-data-table"><thead><tr><th>'+esc(card.dimension==='month'?'Mes':'Modelo')+'</th><th>'+esc(CL[card.metric])+'</th></tr></thead><tbody>'+arr.map(a=>'<tr><td>'+esc(a.name)+'</td><td>'+fmt(a.value,card.metric)+'</td></tr>').join('')+'</tbody></table>';
  const w=540,h=190,p=26,max=Math.max(1,...arr.map(x=>x.value)),step=(w-p*2)/arr.length;
@@ -112,7 +117,7 @@ function renderChart(card){
  if(card.shape!=='bar'){const path=pts.map(a=>a.join(',')).join(' ');if(card.shape==='area')bars+='<polygon points="'+pts[0][0]+','+(h-p)+' '+path+' '+pts.at(-1)[0]+','+(h-p)+'" fill="#b8ddee"/>';bars+='<polyline points="'+path+'" fill="none" stroke="#ed5b6e" stroke-width="3"/>';}
  return '<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="'+esc(card.title)+'" preserveAspectRatio="none">'+bars+'</svg>';
 }
-function cardBody(card){
+function cardBody(card,page){
  if(card.type==='note')return '<p class="builder-note-body">'+esc(card.text||'Escribe aquí tus hallazgos y recomendaciones desde Editar tarjeta.').replace(/\n/g,'<br>')+'</p>';
  if(card.type==='image')return card.image?'<img class="builder-card-img" loading="lazy" alt="'+esc(card.title)+'" src="'+esc(card.image)+'">':'<div class="builder-empty">Sube o enlaza una imagen desde Editar tarjeta.</div>';
  if(card.type==='filter')return '<label class="builder-card-filter">Filtrar '+(card.filter==='model'?'modelo':'mes')+' <select data-board-filter="'+esc(card.filter||'month')+'">'+(card.filter==='model'?modelOptions():monthOptions())+'</select></label>';
@@ -120,8 +125,8 @@ function cardBody(card){
   if(!external)return '<p class="builder-empty">Fuente externa privada: conecta Sheets o BigQuery desde Diseño para actualizar el gráfico.</p>';
   return renderExternal(card);
  }
- if(card.type==='metric')return '<div class="builder-big-number">'+fmt(metric(card,filtered()),card.metric)+'</div><small>'+esc(CL[card.metric]||'Indicador')+' · Meta Ads</small>';
- return renderChart(card);
+ if(card.type==='metric')return '<div class="builder-big-number">'+fmt(metric(card,filtered(card,page)),card.metric)+'</div><small>'+esc(CL[card.metric]||'Indicador')+' · Meta Ads</small>';
+ return renderChart(card,page);
 }
 function monthOptions(){return '<option value="">Todos los meses</option>'+Array.from(new Set(data.map(r=>r.month))).sort().map(m=>'<option value="'+esc(m)+'" '+(localFilter.month===m?'selected':'')+'>'+esc(m)+'</option>').join('');}
 function modelOptions(){return '<option value="">Todos los modelos</option>'+Array.from(new Set(data.map(r=>r.model))).sort().map(m=>'<option value="'+esc(m)+'" '+(localFilter.model===m?'selected':'')+'>'+esc(m)+'</option>').join('');}
@@ -208,17 +213,22 @@ function installMove(el,page,card){
 function renderPage(page){
  const root=$('report-'+page.id);if(!root)return;pageToolbar(page);
  const target=$('report-'+page.id+'Body');
- target.innerHTML='<div class="builder-canvas-note">'+(authorized()?'Arrastra las tarjetas libremente usando el icono de puntos, y redimensiona desde la esquina inferior derecha.':'Vista publicada del informe.')+'</div><div class="builder-board-scroller"><div class="builder-board" id="builderCanvas-'+page.id+'"></div></div>';
+ target.innerHTML='<div class="lk-page-filters" id="lkFilters-'+page.id+'"></div><div class="builder-canvas-note">'+(authorized()?'Arrastra las tarjetas libremente usando el icono de puntos, y redimensiona desde la esquina inferior derecha.':'Vista publicada del informe.')+'</div><div class="builder-board-scroller"><div class="builder-board" id="builderCanvas-'+page.id+'"></div></div>';
  const canvas=$('builderCanvas-'+page.id);
+ window.CITROEN_FILTER_ENGINE?.render('lkFilters-'+page.id,'report-'+page.id);
  canvas.style.minHeight=Math.max(650,...page.cards.map(c=>c.y+c.h+35))+'px';
  for(const card of page.cards){
   const tools=authorized()?'<button type="button" class="builder-card-edit">Editar</button><span class="builder-card-grip" title="Arrastrar libremente">⠿</span>':'';
-  const html='<div class="builder-card-top"><strong>'+esc(card.title)+'</strong><span>'+tools+'</span></div><div class="builder-card-inner">'+cardBody(card)+'</div>'+(authorized()?'<div class="builder-card-resize" title="Redimensionar"></div>':'');
+  const html='<div class="builder-card-top"><strong>'+esc(card.title)+'</strong><span>'+tools+'</span></div><div class="builder-card-inner">'+cardBody(card,page)+'</div>'+(authorized()?'<div class="builder-card-resize" title="Redimensionar"></div>':'');
   const el=mk('article',{class:'builder-board-card', 'data-card-id':card.id},html);
   Object.assign(el.style,{left:card.x+'px',top:card.y+'px',width:card.w+'px',height:card.h+'px'});
   el.querySelector('.builder-card-edit')?.addEventListener('click',()=>editCard(page,card));
   el.querySelectorAll('[data-board-filter]').forEach(select=>select.onchange=()=>{localFilter[select.dataset.boardFilter]=select.value;renderPage(page);});
   canvas.appendChild(el);installMove(el,page,card);
+  if(window.CITROEN_FILTER_ENGINE?.getDefinitions().some(x=>x.scope==='chart'&&x.pageId==='report-'+page.id&&x.cardId==='c:'+card.id)){
+    const target=el.querySelector('.builder-card-inner'),holder=document.createElement('div');holder.className='lk-card-filters';target.prepend(holder);
+    window.CITROEN_FILTER_ENGINE.render(holder,'report-'+page.id,'c:'+card.id);
+  }
  }
 }
 function renderCreatives(){
@@ -307,7 +317,8 @@ async function loadMeta(){
  try{
   const r=await fetch('./data/meta_2026_daily.json');if(!r.ok)throw Error('Sin fuente');
   const a=await r.json(),d=a.dictionaries;
-  data=(a.daily||[]).map(row=>({month:String(d.dates[row[0]]).slice(0,7),model:String(d.models[row[1]]),spend:Number(row[4])||0,forms:Number(row[5])||0,messages:Number(row[6])||0,impressions:Number(row[7])||0,clicks:Number(row[8])||0,reach:Number(row[10])||0}));
+  data=(a.daily||[]).map(row=>({date:String(d.dates[row[0]]),month:String(d.dates[row[0]]).slice(0,7),territory:String(d.territories[row[2]]),account:String(d.accounts[row[3]]),platform:'Meta Ads',model:String(d.models[row[1]]),spend:Number(row[4])||0,forms:Number(row[5])||0,messages:Number(row[6])||0,impressions:Number(row[7])||0,clicks:Number(row[8])||0,reach:Number(row[10])||0}));
+  window.CITROEN_FILTER_ENGINE?.setRows(data);
   render();
  }catch{status('No se pudo cargar la fuente Meta Ads para páginas nuevas.');}
 }
@@ -318,6 +329,7 @@ async function loadPublished(){
   else state=localDraft()||empty();
  }catch{state=localDraft()||empty();}
  if(!Array.isArray(state.pages))state=empty();
+ window.CITROEN_FILTER_ENGINE?.setDefinitions(state.controls||[]);
  drawPageNav();applyFilters();render();
  const location=decodeURIComponent(locationHash());
  if($(location)&&location!==current)navTo(location);
@@ -342,6 +354,7 @@ function render(){
  for(const p of state.pages)renderPage(p);
  renderCreatives();renderInsights();
  if(current==='citroen-sources')renderSources();
+ window.CITROEN_FILTER_ENGINE?.render('lkGlobalFilters','resumen');
  applyFilters();
 }
 function setupEditorModals(){
@@ -356,6 +369,7 @@ function wire(){
  if(booted)return;booted=true;
  initSections();setupEditorModals();
  document.addEventListener('citroen:studio-layout',render);
+ document.addEventListener('citroen:advanced-filter-changed',()=>{window.CITROEN_FILTER_ENGINE?.render('lkGlobalFilters','resumen');render();});
  document.addEventListener('hashchange',()=>{const id=locationHash();if($(id)&&id!==current)navTo(id);});
  loadPublished();loadMeta();
 }
