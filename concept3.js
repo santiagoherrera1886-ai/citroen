@@ -69,7 +69,7 @@ function actualData(d,detail){
  return {rows,campaigns};
 }
 function setKpis(rows){
- const planned=state.territory?null:months.filter(m=>!state.month||state.month===m).reduce((a,m)=>a+(planValue(m,'investment')||0),0);
+ const planned=state.territory?null:months.filter(m=>(!state.month||state.month===m)&&(!hasDailyRange()||rows.some(r=>r.month===m))).reduce((a,m)=>a+(planValue(m,'investment')||0),0);
  const defaults=['planned','spend','forms','messages','cpl','impressions'];
  const icons=['▥','◫','♙','▤','◎','▥'];
  $('c3Kpis').innerHTML=defaults.map((fallback,i)=>{
@@ -89,7 +89,7 @@ const hasDailyRange=()=>{
 function comparison(rows){
  const selected=configured('compareMetric','metric',state.metric);state.metric=selected;
  const theme=window.CITROEN_STYLE_EDITOR?.get("n:c3ComparePanel")||{},chartMode=theme.chartType||"bar",showLabels=theme.showLabels===true;
-  const periods=months.filter(m=>!state.month||state.month===m);
+  const periods=months.filter(m=>(!state.month||state.month===m)&&(!hasDailyRange()||rows.some(r=>r.month===m)));
  const series=periods.map(m=>{const d=rows.filter(r=>r.month===m),k=state.metric,which=k==='investment'?'spend':k==='leads'?'forms':k;return {month:m,label:labels[months.indexOf(m)],planned:['investment','leads','cpl'].includes(k)?planValue(m,k):null,actual:metricTotal(d,which,null)};});
  const max=Math.max(1,...series.flatMap(s=>[s.planned||0,s.actual||0]));
  const w=840,h=219,l=51,r=16,t=22,b=32,pw=w-l-r,ph=h-t-b,step=pw/series.length,bw=Math.min(20,step*.28);
@@ -145,7 +145,7 @@ function comparison(rows){
  };
  $('c3CompareNote').textContent=state.metric==='reach'&&!window.CITROEN_REACH_MATH?.currentUniverse()
   ?'Sin universo de audiencia configurado: no se muestra estimación Sainsbury. Configúralo en Propiedades del gráfico.'
-  :((notes[state.metric]||'Datos de Meta Ads, no ejecución global del plan.')+(hasDailyRange()?' ⚠️ Meta se filtra por días; la planeación sigue siendo mensual y no se prorratea.':''));
+  :((notes[state.metric]||'Datos de Meta Ads, no ejecución global del plan.')+(hasDailyRange()?' ⚠️ Meta se filtra por días; el plan corresponde a los meses incluidos completos y NO se prorratea.':''));
 }
 function funnel(rows){
  const first=configured('funnelMetric','metric','impressions'),isReach=first==='reach';
