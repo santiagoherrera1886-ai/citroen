@@ -6,7 +6,7 @@ const ctx={window:{}};
 vm.runInNewContext(fs.readFileSync('report-templates.js','utf8'),ctx,{filename:'report-templates.js'});
 const api=ctx.window.CITROEN_REPORT_TEMPLATES;
 const presets=api.list();
-assert.equal(presets.length,5,'Five curated page templates');
+assert.ok(presets.length>=6,'Includes six curated, data-grounded page templates');
 const metrics=new Set(['spend','forms','messages','impressions','reach','clicks','ctr','cpl']);
 const dims=new Set(['month','date','week','quarter','model','territory','account']);
 const shapes=new Set(['bar','barh','line','area','table','pie','donut','gauge']);
@@ -26,10 +26,10 @@ for(const preset of presets){
   const collide=Math.min(a.x+a.w,b.x+b.w)>Math.max(a.x,b.x)&&Math.min(a.y+a.h,b.y+b.h)>Math.max(a.y,b.y);
   assert.ok(!collide,'Cards '+i+' and '+j+' must not overlap in '+preset.title);
  }
- if(p.cards.some(c=>c.type==='note'))assert.ok(p.cards.filter(c=>c.type==='note').every(c=>/Pendiente|No deben sumarse|no deben sumarse/i.test(c.text)),'Notes are editorial placeholders or valid methodology, not made-up analysis');
+ if(p.cards.some(c=>c.type==='note'))assert.ok(p.cards.filter(c=>c.type==='note').every(c=>/Pendiente|No deben sumarse|no deben sumarse|Compara períodos equivalentes/i.test(c.text)),'Notes are editorial placeholders or valid methodology, not made-up analysis');
  const another=api.instantiate(preset.id,create);
  assert.notEqual(p.id,another.id,'Each instance receives unique page ID');
  assert.ok(p.cards.every(c=>!another.cards.some(d=>d.id===c.id)),'Recreating a preset creates unique chart IDs');
 }
 assert.equal(api.instantiate('not-real',()=> 'id'),null,'Unknown template cannot generate a page');
-console.log('PASS: Five non-overlapping templates using supported fields and current Meta data only; stable page limits and unique IDs.');
+console.log('PASS: Six non-overlapping templates, including grounded period comparison, use Meta data only; stable limits and unique IDs.');
