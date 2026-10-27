@@ -116,6 +116,8 @@ function pointerStart(ev,container){
  if(!handle&&isInteractive(ev.target))return;
  const key=lookup(el),p=state.items[key];
  if(!p)return;
+ // Match Looker: pointer-down selects immediately; dragging keeps that selection.
+ if(!el.classList.contains('metric-selected'))el.click();
  const resize=!!handle,initial={...p},start={x:ev.clientX,y:ev.clientY},scale=window.CITROEN_EDITOR_ZOOM||1;
  let moved=false;
  // Normal clicks are intentionally left alone: metric-editor.js selects that card.
