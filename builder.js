@@ -932,6 +932,7 @@ function wire(){
 }
 document.addEventListener('DOMContentLoaded',wire);
 window.CITROEN_BUILDER={render,loadPublished,publish,
+ getFilterVisibility:(field)=>state.filters?.[field]!==false,
  getCurrentPage:()=>current,getPages:()=>state.pages.map(p=>({id:p.id,title:p.title,count:p.cards.length})),
  openTemplates:openTemplateGallery,
  duplicatePage:clonePage,
