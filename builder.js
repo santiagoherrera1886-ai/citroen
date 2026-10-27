@@ -591,7 +591,15 @@ let booted=false;
 function wire(){
  if(booted)return;booted=true;
  initSections();setupEditorModals();
- document.addEventListener('citroen:studio-layout',()=>{watchSummary();render();});
+ document.addEventListener('click',e=>{
+  const item=e.target.closest('.sidebar .nav-link[data-target]:not(.builder-nav)');
+  if(!item)return;const id=item.dataset.target;
+  if(!id||id===current)return;
+  current=id;selectedCardId=null;
+  document.dispatchEvent(new CustomEvent('citroen:builder-page-changed',{detail:{id,title:item.textContent.trim()}}));
+  render();
+ });
+  document.addEventListener('citroen:studio-layout',()=>{watchSummary();render();});
  document.addEventListener('citroen:summary-rendered',watchSummary);
  document.addEventListener('citroen:advanced-filter-changed',()=>{window.CITROEN_FILTER_ENGINE?.render('lkGlobalFilters','resumen');render();});
  document.addEventListener('hashchange',()=>{const id=locationHash();if($(id)&&id!==current)navTo(id);});
