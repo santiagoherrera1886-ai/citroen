@@ -483,6 +483,7 @@ async function loadPublished(){
   if(!response.ok)throw Error('Versión pública no disponible.');
   const d=await response.json();
   state=d.workspace||empty();
+  if(state.summary)window.CITROEN_STUDIO_ACTIONS?.importPublished?.(state.summary);
   lastPublishedRevision=d.revision||state.revision||'initial';
   baseRevision=lastPublishedRevision;
   window.CITROEN_FREE_LAYOUT?.import(state.summaryLayout||{enabled:false,items:{}});
@@ -508,6 +509,7 @@ async function publish(){
  busy=true;status('Publicando el diseño para todos los visitantes…');
  try{
   state.summaryLayout=window.CITROEN_FREE_LAYOUT?.export()||{enabled:false,items:{}};
+  state.summary=window.CITROEN_STUDIO_ACTIONS?.exportPublished?.()||state.summary||null;
   const r=await fetch('/api/dashboard',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({workspace:state,expectedRevision:baseRevision})});
   const d=await r.json();
   if(!r.ok){
