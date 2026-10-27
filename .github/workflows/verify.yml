@@ -62,3 +62,5 @@ jobs:
         run: node scripts/smoke-looker-editor.cjs
       - name: Looker contextual chart editing, canvas zoom and reader isolation
         run: node scripts/smoke-looker-properties.cjs
+      - name: Direct drag and corner resize KPIs + Summary graphs
+        run: node scripts/smoke-direct-layout.cjs
