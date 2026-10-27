@@ -1,0 +1,140 @@
+/* CITROËN STUDIO 2026 · dedicated Looker-like authoring workspace.
+   Entire chrome exists ONLY when the server-authenticated editor mode is active. */
+.le-shell[hidden]{display:none!important}
+body.citroen-looker-edit{background:#eef2f6!important}
+body.citroen-looker-edit .shell{display:block!important;grid-template-columns:none!important}
+body.citroen-looker-edit .shell>.sidebar,body.citroen-looker-edit .shell>.sidebar-overlay,
+body.citroen-looker-edit .topbar{display:none!important}
+body.citroen-looker-edit .workspace{margin:0!important;min-width:0;background:#edf2f6!important}
+body.citroen-looker-edit .concept3-shell .content{max-width:none!important;margin:0 565px 0 174px!important;padding:169px 22px 65px!important;min-width:0;box-sizing:border-box}
+body.citroen-looker-edit .content .page-section.is-active{background:#fff;min-height:800px;border:1px solid #dbe3ec;box-shadow:0 8px 30px #1839510b;padding:16px 18px 36px!important;margin-bottom:40px!important;scroll-margin-top:158px}
+body.citroen-looker-edit .c3-dashboard .c3-header{padding:0 2px 15px}
+body.citroen-looker-edit #c3Dashboard .c3-header-controls #studioEdit,
+body.citroen-looker-edit #c3Dashboard .c3-header-controls #citroenMasterOpen,
+body.citroen-looker-edit #c3Dashboard .c3-header-controls #citroenAuthLogout{display:none!important}
+body.citroen-looker-edit #studioTools{display:none!important}
+body.citroen-looker-edit .c3-summary-grid>.c3-panel.metric-selected,
+body.citroen-looker-edit .c3-summary-grid>.studio-card.metric-selected,
+body.citroen-looker-edit .c3-kpi.metric-selected{
+ outline:2px solid #3781de!important;outline-offset:2px!important;
+ box-shadow:0 0 0 5px #3781de17,0 9px 22px #22486d19!important
+}
+body.citroen-looker-edit .studio-card-tools{display:none!important}
+body.citroen-looker-edit .c3-summary-grid>.studio-card{padding-top:16px!important}
+body.citroen-looker-edit #metricInspector{
+ display:flex!important;position:fixed!important;right:49px!important;top:143px!important;bottom:0!important;
+ width:305px!important;height:auto!important;z-index:86!important;box-shadow:none!important;border-left:1px solid #dce4ed!important;
+ background:#fff!important;overflow:hidden!important
+}
+body.citroen-looker-edit #metricInspector[hidden]{display:none!important}
+body.citroen-looker-edit .metric-inspector-head{padding:16px 13px 12px;background:#fff}
+body.citroen-looker-edit .metric-inspector-head h2{font-size:16px!important}
+body.citroen-looker-edit .metric-inspector-tabs{padding:0 7px}
+body.citroen-looker-edit .metric-inspector-tabs button{padding:13px 6px}
+body.citroen-looker-edit .metric-inspector-tabs .is-active{color:#2177cf!important;border-bottom-color:#267acf!important}
+body.citroen-looker-edit .metric-selection{background:#f6f9fc;margin:10px 12px 13px}
+body.citroen-looker-edit #metricInspector .metric-style-pane,
+body.citroen-looker-edit #metricInspector .metric-data-pane,
+body.citroen-looker-edit #metricInspector .metric-layout-pane{scrollbar-color:#b7cbdc transparent}
+.le-shell{font-family:Manrope,"DM Sans",Arial,sans-serif;color:#213f57;z-index:85}
+.le-head,.le-toolbar,.le-toolbar-info,.le-pages-panel,.le-fields-panel,.le-rail,.le-canvas-caption,.le-dropdown{position:fixed;box-sizing:border-box}
+.le-head{inset:0 0 auto 0;height:64px;background:#fff;border-bottom:1px solid #e0e6ee;z-index:108;display:flex;align-items:center;gap:21px;padding:0 20px}
+.le-brand{min-width:155px;display:flex;align-items:center;gap:9px;flex-shrink:0}
+.le-logo{display:grid;place-items:center;border-radius:10px;background:#ef495b;color:white;width:32px;height:32px;line-height:30px;font-weight:900;font-size:24px}
+.le-brand strong{font-size:13px;display:block;letter-spacing:.01em;color:#123b56}
+.le-brand strong em{font-style:normal;color:#e34b5d}
+.le-brand small{display:block;font-size:7px;letter-spacing:.16em;margin-top:3px;color:#8b9da9}
+.le-title-area{display:flex;flex-direction:column;justify-content:center;gap:4px;flex:1;min-width:0}
+.le-name{font-size:13px;font-weight:800;color:#2c4b62;white-space:nowrap}
+.le-name span{font-size:10px;font-weight:600;color:#9aabba}
+.le-menus{display:flex;align-items:center;gap:1px}
+.le-menus button{background:transparent;border:0;padding:5px 9px;color:#5b6f82;border-radius:5px;font:600 11px Manrope,Arial,sans-serif;cursor:pointer}
+.le-menus button:hover,.le-menus button[aria-expanded=true]{background:#eef5fb;color:#1d658f}
+.le-head-actions{display:flex;align-items:center;gap:14px;justify-content:end}
+.le-session{display:flex;align-items:center;gap:6px;color:#7c90a1;font-size:10px;font-weight:650;white-space:nowrap}
+.le-session i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#15b47b}
+.le-view{background:#216fe4;color:#fff;border:1px solid #216fe4;border-radius:20px;padding:10px 16px;font:850 11px Manrope,Arial,sans-serif;cursor:pointer;white-space:nowrap}
+.le-view:hover{background:#155dc7}
+.le-toolbar{top:64px;left:0;right:0;height:62px;background:#f7f9fc;z-index:106;display:flex;align-items:center;padding:0 13px;gap:8px;border-bottom:1px solid #dce6ef;overflow-x:auto;scrollbar-width:thin;white-space:nowrap}
+.le-tool-set{display:flex;align-items:center;gap:1px;padding-right:10px;border-right:1px solid #d7e2eb}
+.le-tool-set.compact{gap:2px}
+.le-tool-set>button{height:47px;display:flex;align-items:center;justify-content:center;gap:4px;flex-direction:column;padding:4px 8px;min-width:63px;background:transparent;border:1px solid transparent;border-radius:7px;cursor:pointer;color:#516d84;font:700 10px Manrope,Arial,sans-serif;flex:none}
+.le-tool-set.compact>button{min-width:31px;font-size:23px}
+.le-tool-set>button b{font-size:17px;line-height:18px;font-weight:650;color:#395a71}
+.le-tool-set>button span{font-size:9px;line-height:12px}
+.le-tool-set>button:hover,.le-tool-set>button[aria-expanded=true]{background:#e9f2fc;border-color:#cbdce9}
+.le-tool-set>button.chosen{background:#e6f1ff;color:#246bba}
+.le-tool-set.le-tools-end{margin-left:auto;border-right:0;padding-right:0}
+.le-tool-set button.publish{background:#fce9ec;color:#d53f51}
+.le-tool-set button.publish:hover{background:#f8d8dd}
+.le-toolbar-info{top:126px;left:174px;right:565px;height:27px;z-index:83;display:flex;align-items:center;padding:0 20px;font-size:10px;color:#758ea1;background:#edf2f6;pointer-events:none}
+.le-pages-panel{top:126px;bottom:0;left:0;width:174px;background:#f9fbfd;border-right:1px solid #d6e0e9;z-index:84;display:flex;flex-direction:column}
+.le-pages-heading{padding:17px 14px 13px;display:flex;justify-content:space-between;align-items:center;color:#8799aa;font-size:10px;font-weight:900;letter-spacing:.1em}
+.le-pages-heading button{width:26px;height:26px;border:1px solid #d8e3ec;background:#fff;border-radius:7px;cursor:pointer;color:#4e7086;font-size:18px}
+.le-pages{flex:1;overflow-y:auto;padding:0 7px 15px;scrollbar-width:thin}
+.le-page-item{width:100%;display:flex;align-items:center;gap:11px;padding:10px 9px;background:transparent;border:1px solid transparent;border-radius:8px;color:#58778c;text-align:left;cursor:pointer;font:700 11px Manrope,Arial,sans-serif;margin-bottom:3px}
+.le-page-item>span:first-child{font-size:17px;color:#7a9cb2;flex-shrink:0}
+.le-page-item>span:nth-child(2){overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.le-page-item.active{background:#e9f2ff;border-color:#cfe0f7;color:#2167b0}
+.le-page-item:hover{background:#eef4f9}
+.le-pages-foot{border-top:1px solid #e1eaf1;padding:14px 11px;color:#537188;font-size:10px;font-weight:750}
+.le-pages-foot small{float:right;font-weight:500;color:#92a8b7}
+.le-fields-panel{top:143px;bottom:0;right:354px;width:211px;background:#fff;border-left:1px solid #dce4ed;z-index:85;display:flex;flex-direction:column}
+.le-fields-header{height:53px;display:flex;align-items:center;justify-content:space-between;padding:0 15px;border-bottom:1px solid #e5ebf1;font-size:13px}
+.le-fields-header span{color:#7799af}
+.le-source{display:flex;gap:10px;align-items:center;padding:14px 12px 11px;border-bottom:1px solid #eff3f7}
+.le-source>span{font-size:19px;color:#20a77a}
+.le-source strong{display:block;font-size:10px;color:#2d5870}
+.le-source small{display:block;margin-top:3px;font-size:9px;color:#8197aa}
+.le-search{display:flex;align-items:center;margin:11px;border:1px solid #e1e8ef;border-radius:9px;background:#f5f8fb;padding:0 9px}
+.le-search span{font-size:20px;color:#8aa5b7}
+.le-search input{min-width:0;width:100%;background:transparent;border:0;outline:none;font:600 11px Manrope,Arial,sans-serif;padding:10px 6px;color:#365b72}
+.le-fields-list{flex:1;min-height:0;overflow:auto;scrollbar-width:thin;padding-bottom:10px}
+.le-field-group{font-size:9px;color:#95a6b7;letter-spacing:.1em;font-weight:900;padding:18px 14px 8px}
+.le-fields-list button{width:100%;display:flex;align-items:center;gap:7px;padding:8px 11px;font:650 10px Manrope,Arial,sans-serif;text-align:left;background:transparent;border:0;color:#3d6076;cursor:pointer}
+.le-fields-list button:hover{background:#eff7ff}
+.le-fields-list button b{margin-left:auto;color:#90a8b9;font-size:16px}
+.le-kind{display:inline-flex;align-items:center;justify-content:center;border-radius:4px;font-size:8px;font-weight:900;min-width:22px;height:18px}
+.le-kind.date{background:#e5f3ed;color:#1c9763}
+.le-kind.text{background:#e8f2fc;color:#5682a1}
+.le-kind.metric{background:#e7edf9;color:#557bad}
+.le-fields-bottom{padding:9px 10px;border-top:1px solid #e6ecf2;display:flex;flex-direction:column}
+.le-fields-bottom button{background:transparent;border:0;padding:7px;text-align:left;color:#2876c9;font:750 10px Manrope,Arial,sans-serif;cursor:pointer}
+.le-rail{top:143px;bottom:0;right:0;width:49px;border-left:1px solid #d6e0e9;background:#f4f7fa;z-index:87;display:flex;flex-direction:column;gap:5px;padding:8px 3px}
+.le-rail button{padding:8px 2px;width:100%;border:1px solid transparent;border-radius:7px;background:transparent;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;color:#7b98ab;font:650 8px Manrope,Arial,sans-serif}
+.le-rail button b{font-size:20px;font-weight:650}
+.le-rail button.active,.le-rail button:hover{background:#e6f0fb;color:#276ec6;border-color:#d7e5f6}
+.le-canvas-caption{top:147px;left:197px;z-index:82;display:none;gap:8px;align-items:center;color:#7f97aa;font-size:10px}
+.le-canvas-caption strong{font-size:11px;color:#355a73}
+.le-dropdown{z-index:115;width:256px;background:#fff;border:1px solid #d6e0ea;border-radius:9px;box-shadow:0 12px 35px #173d6033;padding:8px;max-height:calc(100vh - 155px);overflow-y:auto}
+.le-dropdown[hidden]{display:none!important}
+.le-dropdown-title{padding:7px 12px 10px;color:#91a3b0;font-size:9px;font-weight:900;letter-spacing:.1em}
+.le-dropdown button{width:100%;display:flex;align-items:center;gap:12px;border:0;background:transparent;border-radius:6px;padding:10px 12px;font:650 11px Manrope,Arial,sans-serif;color:#315a73;text-align:left;cursor:pointer}
+.le-dropdown button:hover{background:#eff5fd;color:#216cc5}
+.le-dropdown button>span{width:22px;text-align:center;color:#6c91ab;font-size:17px}
+@media(max-width:1480px){
+ body.citroen-looker-edit .concept3-shell .content{margin-left:154px!important;margin-right:356px!important}
+ .le-pages-panel{width:154px}
+ .le-fields-panel{display:none}
+ .le-toolbar-info{left:154px;right:356px}
+}
+@media(max-width:990px){
+ body.citroen-looker-edit .concept3-shell .content{margin-left:59px!important;margin-right:0!important;padding:169px 12px 35px!important}
+ .le-pages-panel{width:59px}
+ .le-pages-heading span,.le-page-item>span:nth-child(2),.le-pages-foot,.le-session{display:none}
+ .le-page-item{justify-content:center;padding:11px 3px}
+ .le-rail{display:none}
+ body.citroen-looker-edit #metricInspector{top:145px!important;right:0!important;z-index:95!important;box-shadow:-12px 0 45px #23486125!important}
+ .le-toolbar-info{left:60px;right:0}
+ .le-head{gap:10px;padding:0 11px}.le-brand{min-width:auto}.le-name{font-size:11px}
+ .le-menus button{padding:5px}
+}
+@media(max-width:630px){
+ .le-head{height:60px}
+ .le-menus{max-width:55vw;overflow-x:auto}
+ .le-name,.le-brand small{display:none}
+ .le-toolbar{top:60px}
+ .le-tool-set>button{min-width:48px;padding-inline:5px}
+ body.citroen-looker-edit #metricInspector{width:min(320px,94vw)!important}
+ body.citroen-looker-edit .content .page-section.is-active{padding:12px!important}
+}
