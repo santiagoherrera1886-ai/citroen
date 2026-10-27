@@ -1,5 +1,18 @@
 # Citroën · Performance Intelligence
 
+## OPTIMIZACIONES DEL CONSTRUCTOR — 27/10/2026
+
+- **Borradores recuperables**: al crear/editar páginas, creativos, insights y filtros se guarda un borrador local etiquetado con la revisión de publicación. Si recargas el navegador, la versión pública se carga limpia y, solo después de entrar como editor, se muestran opciones **Recuperar** y **Descartar borrador**. Un fallo de API nunca expone un borrador privado a un visitante.
+- **Publicación con control de revisiones**: `POST /api/dashboard` exige `expectedRevision`. Si el borrador parte de una revisión antigua, el servidor devuelve **409** y preserva la versión publicada; el editor conserva su borrador para revisión. La última escritura aún requiere coordinación ante peticiones simultáneas (sin transacción atómica distribuida).
+- **Resumen también compartido**: Publicar sincroniza no solo páginas/insights sino orden y tamaños de los paneles del Resumen, tarjetas personalizadas, métricas KPI, paletas y fotografías enlazadas mediante URL **HTTPS**. Las imágenes subidas como archivos y almacenadas en el navegador no se suben por arte de magia al servidor; es necesario alojarlas con una URL HTTPS para compartirlas globalmente.
+- **Rendimiento**: los informes de varias páginas solo reconstruyen el lienzo de la página activa al interactuar, evitando crear SVG y tablas de páginas ocultas en cada edición.
+- **Cambios de resumen pendientes**: la detección de cambios de tarjetas, métricas y temas crea un borrador local y un aviso de publicación pendiente dentro del modo Diseño, nunca en el modo lectura.
+- **Seguridad**: el acceso a Diseño sigue autenticado. La activación del propietario acepta códigos copiados con espacios o caracteres invisibles comunes; no demuestra que la cuenta se haya activado ni revela contraseñas en el código.
+- **Pruebas**: `scripts/smoke-builder.cjs` incluye recuperación de borrador, no exposición pública, publicación del Resumen y conflicto de revisión, además de las suites existentes de gráficos y autenticación.
+
+---
+
+
 ## NUEVA INTERFAZ DE EDICIÓN TIPO LOOKER STUDIO — 27/10/2026
 
 El modo **Ver informe** conserva la interfaz premium de Citroën. El entorno de **Diseño**, accesible únicamente después de una sesión autorizada desde el botón del menú, ahora abre un workspace de autoría totalmente independiente (archivos `looker-editor.js` / `looker-editor.css`).
