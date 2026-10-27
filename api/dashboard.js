@@ -58,6 +58,7 @@ function clean(state){
   return {id:c.id,type:c.type,title:safeText(c.title,100),text:safeText(c.text,7000),source:c.source==='external'?'external':'meta',metric,dimension,shape,
    x:number(c.x,0,2400,24),y:number(c.y,0,6000,24),w:number(c.w,220,1200,410),h:number(c.h,170,850,270),
    goal:Number.isFinite(Number(c.goal))&&Number(c.goal)>0?Math.min(1e12,Number(c.goal)):null,
+   color:/^#[0-9a-f]{6}$/i.test(c.color||'')?c.color:'#8abbd8',background:/^#[0-9a-f]{6}$/i.test(c.background||'')?c.background:'#ffffff',textColor:/^#[0-9a-f]{6}$/i.test(c.textColor||'')?c.textColor:'#173e57',
    image:typeof c.image==='string'&&(c.image.startsWith('https://')||/^data:image\/(?:png|jpeg|webp);base64,/.test(c.image))&&c.image.length<120000?c.image:'',
    filter:['month','model'].includes(c.filter)?c.filter:'month'};
  };
