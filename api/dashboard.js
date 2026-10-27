@@ -4,6 +4,44 @@ import {json,error,ready,currentUser,sameOrigin} from '../lib/editor-auth.mjs';
 const PATH='private/citroen-published-workspace-v1.json';
 const EMPTY={version:1,revision:'initial',publishedAt:null,pages:[],creatives:[],insights:[],filters:{month:true,model:true,territory:true}};
 function safeText(x,max=180){return typeof x==='string'?x.slice(0,max):'';}
+function cleanSummary(source){
+ if(!source||typeof source!=='object')return null;
+ const allowedSource=new Set(['plan','meta','compare']),allowedChart=new Set(['bar','line','area','table']),allowedDimension=new Set(['month','model']);
+ const cards=(Array.isArray(source.cards)?source.cards:[]).slice(0,40).filter(c=>c&&typeof c==='object'&&/^[a-zA-Z0-9_-]{3,85}$/.test(c.id||'')&&allowedSource.has(c.source)&&allowedChart.has(c.chart)&&allowedDimension.has(c.dimension)).map(c=>({
+  id:c.id,title:safeText(c.title,90),source:c.source,metric:safeText(c.metric,70),dimension:c.dimension,chart:c.chart,model:safeText(c.model,80),sort:['original','asc','desc'].includes(c.sort)?c.sort:'original',limit:['0','3','5','10'].includes(String(c.limit))?String(c.limit):'0'
+ }));
+ const keys=new Set(['c3ComparePanel','c3FunnelPanel','c3ModelsPanel','c3CampaignPanel','c3InsightsPanel'].map(x=>'n:'+x).concat(cards.map(c=>'c:'+c.id)));
+ const order=Array.isArray(source.order)?source.order.filter(k=>keys.has(k)).slice(0,65):[];
+ const hidden=Array.isArray(source.hidden)?source.hidden.filter(k=>keys.has(k)).slice(0,65):[];
+ const sizes={};for(const [k,v] of Object.entries(source.sizes||{}))if(keys.has(k)&&[2,3,4,6].includes(Number(v)))sizes[k]=Number(v);
+ const titles={};for(const [k,v] of Object.entries(source.titles||{}))if(keys.has(k))titles[k]=safeText(v,90);
+ const m=source.metrics&&typeof source.metrics==='object'?source.metrics:{};
+ const slots={};for(const [k,v] of Object.entries(m.slots||{}))if(/^[0-5]$/.test(k)&&/^[a-z_]{1,45}$/.test(String(v)))slots[k]=v;
+ const native={};for(const [k,v] of Object.entries(m.native||{}))if(/^[a-zA-Z_]{1,50}$/.test(k)&&/^[a-z_]{1,45}$/.test(String(v)))native[k]=v;
+ const universe=Number(m.universe);
+ const metrics={slots,native,universe:Number.isSafeInteger(universe)&&universe>=1&&universe<=1e10?universe:15000000};
+ const styles={elements:{}};
+ const fields=['primary','secondary','background','text','border'];
+ const numberFields={radius:[0,32],fontScale:[.8,1.5],borderWidth:[0,5],opacity:[30,100]};
+ for(const [k,v] of Object.entries(source.styles?.elements||{}).slice(0,70)){
+  if(!keys.has(k)&&!/^[k]:[0-5]$/.test(k))continue;
+  if(!v||typeof v!=='object')continue;
+  const val={};
+  for(const field of fields)if(typeof v[field]==='string'&&/^#[a-fA-F0-9]{6}$/.test(v[field]))val[field]=v[field];
+  for(const [field,[min,max]] of Object.entries(numberFields))if(v[field]!=null&&Number(v[field])>=min&&Number(v[field])<=max)val[field]=Number(v[field]);
+  for(const field of ['showGrid','showLegend','showLabels'])if(typeof v[field]==='boolean')val[field]=v[field];
+  if(['none','soft','strong'].includes(v.shadow))val.shadow=v.shadow;
+  if(['Manrope','Inter','Arial','Georgia'].includes(v.fontFamily))val.fontFamily=v.fontFamily;
+  if(['bar','line','area'].includes(v.chartType))val.chartType=v.chartType;
+  styles.elements[k]=val;
+ }
+ const photos={};
+ for(const [key,url] of Object.entries(source.photos||{})){
+  if(!['C3','Basalt','Aircross','BERLINGO','HERO'].includes(key)||typeof url!=='string'||url.length>2048)continue;
+  try{const u=new URL(url);if(u.protocol==='https:'&&!u.username&&!u.password)photos[key]=u.href;}catch{}
+ }
+ return {cards,order,hidden,sizes,titles,metrics,styles,photos};
+}
 function clean(state){
  if(!state||typeof state!=='object'||Array.isArray(state))throw Error('Estructura inválida');
  const pages=Array.isArray(state.pages)?state.pages:[];
@@ -42,7 +80,7 @@ function clean(state){
  const sl=state.summaryLayout;
  const items={};
  if(sl?.items&&typeof sl.items==='object')for(const [k,v] of Object.entries(sl.items))if(/^[nc]:[\w-]{1,100}$/.test(k)&&v&&typeof v==='object')items[k]=Object.fromEntries(['x','y','w','h'].map(t=>[t,Number.isFinite(Number(v[t]))?Math.max(0,Math.min(6000,Math.round(Number(v[t])))):0]));
- return {version:1,revision:safeText(state.revision,85)||'initial',publishedAt:safeText(state.publishedAt,48)||null,summaryLayout:{enabled:sl?.enabled===true,items},controls,
+ return {version:1,revision:safeText(state.revision,85)||'initial',publishedAt:safeText(state.publishedAt,48)||null,summary:cleanSummary(state.summary),summaryLayout:{enabled:sl?.enabled===true,items},controls,
   pages:pages.filter(p=>p&&validId(p.id)).map(p=>({id:p.id,title:safeText(p.title,70),cards:(Array.isArray(p.cards)?p.cards:[]).slice(0,45).map(fixCard).filter(Boolean)})),
   insights:insights.filter(a=>a&&validId(a.id)).map(a=>({id:a.id,title:safeText(a.title,110),body:safeText(a.body,12000),updatedAt:safeText(a.updatedAt,50)})),
   creatives:creatives.filter(a=>a&&validId(a.id)).map(a=>({id:a.id,title:safeText(a.title,110),campaign:safeText(a.campaign,150),format:['Imagen','Vídeo','Carrusel','Otro'].includes(a.format)?a.format:'Otro',image:typeof a.image==='string'&&(a.image.startsWith('https://')||/^data:image\/(?:png|jpeg|webp);base64,/.test(a.image))&&a.image.length<120000?a.image:'',notes:safeText(a.notes,1000)})),
