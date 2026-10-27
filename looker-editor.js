@@ -8,7 +8,7 @@ const menus={
  archivo:[['Guardar vista','save','✓'],['Publicar informe','publish','↑'],['Historial de versiones','history','↶'],['Exportar diseño','export','⇩'],['Importar diseño','import','⇧'],['Exportar CSV','csv','▤']],
  editar:[['Deshacer estilo','undo','↶'],['Rehacer estilo','redo','↷'],['Duplicar gráfico','duplicate','▣'],['Restaurar resumen','reset','⟳']],
  insertar:[['Añadir gráfico','chartMenu','▥'],['Añadir control','control','☷'],['Texto / insight','insight','T'],['Foto de vehículo','photo','▧']],
- pagina:[['Añadir página','page','＋'],['Ir al Resumen','summary','▤']],
+ pagina:[['Añadir página en blanco','page','＋'],['Crear desde plantilla','templatePage','▦'],['Duplicar página actual','copyPage','⧉'],['Ir al Resumen','summary','▤']],
  organizar:[['Mover tarjetas libremente','free','✥'],['Restaurar cuadrícula','grid','⊞']],
  recurso:[['Fuentes de datos','datasource','▣'],['Administrar filtros','managefilters','☷'],['Paleta general','themeMenu','◉']],
  chart:[['Barras','bar','▥'],['Líneas','line','⌁'],['Área','area','◢'],['Tabla','table','▦'],['Comparativo','compare','▥'],['Proyección','plan','⌁']],
@@ -26,6 +26,12 @@ function act(action){
  undo:()=>{const h=window.CITROEN_LAYOUT_HISTORY,scope=h?.current();if(scope&&h?.canUndo(scope)){h.undo(scope);return;}click('metricStyleUndo');},
  redo:()=>{const h=window.CITROEN_LAYOUT_HISTORY,scope=h?.current();if(scope&&h?.canRedo(scope)){h.redo(scope);return;}click('metricStyleRedo');},
  page:()=>click('builderNewPage'),
+ templatePage:()=>window.CITROEN_BUILDER?.openTemplates?.(),
+ copyPage:()=>{
+  const current=window.CITROEN_BUILDER?.getCurrentPage?.()||'resumen';
+  if(!current.startsWith('report-')){mark('Abre una página personalizada para duplicarla');return;}
+  if(!window.CITROEN_BUILDER?.duplicatePage?.(current.slice(7)))mark('No se pudo duplicar esta página. Revisa el límite de informes.');
+ },
  datasource:()=>{go('citroen-sources');mark('Conexiones de datos abiertas');},
  photo:()=>{if(window.CITROEN_BUILDER?.addOnCurrent('image'))return;click('studioPhotos');},
  control:()=>{if(window.CITROEN_BUILDER?.addOnCurrent('filter'))return;click('builderNewFilter');},managefilters:()=>click('builderManageFilters'),
