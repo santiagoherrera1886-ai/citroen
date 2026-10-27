@@ -272,7 +272,7 @@ function createPage(){
 function newCard(type,page,changes={}){
  if(!authorized())return;
  if(page.cards.length>=45){status('Máximo 45 tarjetas por página.');return;}
- const card={id:uid(),type,title:{metric:'Indicador',chart:'Gráfico Meta Ads',note:'Insight',image:'Imagen',filter:'Filtro de mes'}[type],text:'',source:'meta',metric:'spend',dimension:'month',shape:'bar',x:24+(page.cards.length%3)*34,y:24+(page.cards.length%5)*36,w:type==='chart'?480:330,h:type==='note'?230:285};
+ const card={id:uid(),type,title:{metric:'Indicador',chart:'Gráfico Meta Ads',comparison:'Comparativo entre meses',note:'Insight',image:'Imagen',filter:'Filtro de mes'}[type],text:'',source:'meta',metric:'spend',dimension:'month',shape:'bar',x:24+(page.cards.length%3)*34,y:24+(page.cards.length%5)*36,w:type==='chart'?480:330,h:type==='note'?230:285};
  for(const field of ['title','metric','dimension','shape','text','source','image'])if(Object.hasOwn(changes,field))card[field]=changes[field];
  page.cards.push(card);selectedCardId=card.id;stash();renderPage(page);
  document.dispatchEvent(new CustomEvent('citroen:builder-card-selected',{detail:{pageId:page.id,card:{...card}}}));
@@ -317,7 +317,7 @@ function pageToolbar(page){
  const forward=button('↷ Rehacer movimiento',()=>{h?.redo(scope);});
  back.disabled=!h?.canUndo(scope);forward.disabled=!h?.canRedo(scope);
  actions.append(back,forward);
-  const kinds=[['metric','＋ Indicador'],['chart','＋ Gráfico'],['note','＋ Texto / insight'],['image','＋ Imagen'],['filter','＋ Filtro']];
+  const kinds=[['metric','＋ Indicador'],['chart','＋ Gráfico'],['comparison','＋ Comparativo'],['note','＋ Texto / insight'],['image','＋ Imagen'],['filter','＋ Filtro']];
  for(const [type,label] of kinds)actions.appendChild(button(label,()=>newCard(type,page)));
  actions.appendChild(button('Duplicar página',()=>clonePage(page.id)));
  actions.appendChild(button('Renombrar',()=>{const n=prompt('Nuevo nombre',page.title);if(n?.trim()){page.title=n.trim().slice(0,70);stash();drawPageNav();renderPage(page);}}));
@@ -394,6 +394,29 @@ function renderChart(card,page){
  if(shape==='barh')plot+=arr.map((a,i)=>'<text x="'+(p+3)+'" y="'+(18+i*Math.min(23,120/arr.length))+'" fill="#355875" font-size="9">'+esc(a.name.slice(0,25))+'</text>').join('');
  return '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+esc(card.title)+'" preserveAspectRatio="none">'+plot+'</svg>';
 }
+function renderComparison(card,page){
+ const comparator=window.CITROEN_PERIOD_COMPARE;
+ if(!comparator)return '<div class="builder-empty">No fue posible cargar el comparador de períodos.</div>';
+ const output=comparator.compare(filtered(card,page),card.metric,{
+  universe:15000000,
+  reachEstimator:window.CITROEN_REACH_MATH?.estimate
+ });
+ if(!output.ok)return '<div class="builder-compare-no-data"><strong>No hay dos períodos comparables</strong><p>'+esc(output.description||'Revisa el filtro de fechas.')+'</p></div>';
+ const sign=output.change==null?'':output.change>0?'+':output.change<0?'−':'';
+ const variation=output.change==null?'Sin base para calcular variación':sign+new Intl.NumberFormat('es-CO',{maximumFractionDigits:1}).format(Math.abs(output.change))+' %';
+ const label=esc(CL[card.metric]||card.metric);
+ return '<div class="builder-comparison-wrap">'+
+   '<div class="builder-compare-label">'+label+' · Mismo día de corte</div>'+
+   '<div class="builder-compare-periods"><div class="builder-compare-period">'+
+    '<small>'+esc(output.previousMonth)+' · días 1–'+output.cutoffDay+'</small>'+
+    '<strong>'+fmt(output.previous,card.metric)+'</strong></div>'+
+    '<div class="builder-compare-period builder-compare-current"><small>'+esc(output.currentMonth)+' · días 1–'+output.cutoffDay+'</small>'+
+    '<strong>'+fmt(output.current,card.metric)+'</strong></div></div>'+
+   '<div class="builder-compare-change '+esc(output.favorable)+'">'+
+     '<strong>'+variation+'</strong><small> Variación vs. mes anterior</small></div>'+
+   '<p class="builder-compare-caveat">* '+esc(output.description)+(card.metric==='reach'?' Alcance modelado sobre universo de 15 millones; no equivale a usuarios únicos observados.':'')+'</p>'+
+  '</div>';
+}
 function cardBody(card,page){
  if(card.type==='note')return '<p class="builder-note-body">'+esc(card.text||'Escribe aquí tus hallazgos y recomendaciones desde Editar tarjeta.').replace(/\n/g,'<br>')+'</p>';
  if(card.type==='image')return card.image?'<img class="builder-card-img" loading="lazy" alt="'+esc(card.title)+'" src="'+esc(card.image)+'">':'<div class="builder-empty">Sube o enlaza una imagen desde Editar tarjeta.</div>';
@@ -402,6 +425,7 @@ function cardBody(card,page){
   if(!external)return '<p class="builder-empty">Fuente externa privada: conecta Sheets o BigQuery desde Diseño para actualizar el gráfico.</p>';
   return renderExternal(card);
  }
+ if(card.type==='comparison')return renderComparison(card,page);
  if(card.type==='metric')return '<div class="builder-big-number">'+fmt(metric(card,filtered(card,page)),card.metric)+'</div><small>'+esc(CL[card.metric]||'Indicador')+' · Meta Ads</small>';
  return renderChart(card,page);
 }
