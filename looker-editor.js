@@ -34,7 +34,7 @@ function act(action){
  duplicate:()=>{if(selection?.startsWith('c:'))window.CITROEN_STUDIO_ACTIONS?.duplicate?.(selection);else mark('Selecciona un gráfico personalizado para duplicarlo');},
  summary:()=>go('resumen'),
  select:()=>mark('Selecciona una tarjeta del lienzo para editarla'),
- focusdata:()=>{$('leFieldSearch')?.focus();},focusproperties:()=>document.querySelector('[data-inspector-tab="data"]')?.click(),
+ focusdata:()=>{document.body.classList.toggle('le-show-data-panel');if(document.body.classList.contains('le-show-data-panel'))$('leFieldSearch')?.focus();},focusproperties:()=>{document.body.classList.remove('le-show-data-panel');document.querySelector('[data-inspector-tab="data"]')?.click();},
  styletab:()=>document.querySelector('[data-inspector-tab="style"]')?.click()
  };
  if(simple[action]){simple[action]();return;}
@@ -109,7 +109,7 @@ function setEdit(value){
  if(value){
   pages();fields();mark('Selecciona una tarjeta para configurar sus datos o estilo');
   const tab=document.querySelector('[data-inspector-tab="data"]');if(tab)tab.textContent='Configuración';
- }else close();
+ }else{close();document.body.classList.remove('le-show-data-panel');}
 }
 function start(){
  if(started)return;started=true;
