@@ -206,6 +206,7 @@ function wire(){
  for(const b of document.querySelectorAll('[data-c3-metric]'))b.onclick=()=>{state.metric=b.dataset.c3Metric;for(const el of document.querySelectorAll('[data-c3-metric]'))el.classList.toggle('active',el===b);render();};
  document.addEventListener('citroen:metric-settings',()=>{state.metric=configured('compareMetric','metric','investment');document.querySelectorAll('[data-c3-metric]').forEach(el=>el.classList.toggle('active',el.dataset.c3Metric===state.metric));render();});
  document.addEventListener('citroen:style-settings',()=>{if(state.ready)render();});
+ document.addEventListener('citroen:studio-layout',()=>{if(state.ready)setKpis(filter(state.rows));});
  document.addEventListener('citroen:advanced-filter-changed',()=>{if(state.ready)render();});
  Promise.all([
  loadPlan(),
