@@ -56,3 +56,9 @@ body.citroen-looker-edit .builder-board{min-width:1000px}
  .le-canvas-tools{top:123px;justify-content:center}
  body.citroen-looker-edit .concept3-shell .content{padding-top:178px!important}
 }
+
+.lep-dropzone{border:1px dashed #b4cadb;border-radius:9px;padding:9px;background:#f9fcff}
+.lep-dropzone>small{font-size:9px;color:#7f9db2;font-weight:650}
+.lep-dropzone.lep-dragover{background:#e3f2ff;border-color:#267fd7;box-shadow:0 0 0 3px #2b82d522}
+.le-fields-list button[draggable=true]{cursor:grab}
+.le-fields-list button[draggable=true]:active{cursor:grabbing}
