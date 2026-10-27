@@ -1,5 +1,18 @@
 # Citroën · Performance Intelligence
 
+## COMPARADOR AVANZADO A/B (27/10/2026)
+
+- Nuevo menú público **Comparador avanzado** junto a Creativos e Insights. No requiere acceso a Diseño; no permite cambiar el presupuesto, los datos ni las páginas publicadas.
+- Dos rangos de fechas editables (A y B, de hasta 366 días cada uno), con predeterminado **mes más reciente hasta el último día cargado** frente al **mes anterior hasta el mismo día**. Usuarios pueden elegir cualesquiera dos rangos válidos.
+- Cambia indicador: inversión, formularios, conversaciones, impresiones, clics, CPL, CTR o alcance estimado. Desglosa por **modelo**, **territorio** o **cuenta Meta**, con filtros independientes por modelo y territorio. KPIs A/B, variación porcentual, barras por segmento y tabla exportable como CSV.
+- La fuente es `data/meta_2026_daily.json` ya utilizada por el dashboard. No inventa metas ni resultados. `CPL = gasto / formularios` y `CTR = 100 × clics enlace / impresiones`, siempre como ratios de sumas (nunca promedios de ratios). El alcance se **estima con Sainsbury** sobre el universo fijo de 15 millones y no se presenta como deduplicación observada.
+- Diferentes cantidades de días o cobertura incompleta emiten advertencias explícitas. Sin filas para un período se muestra dato no disponible, no cero. Las variaciones con denominador cero se muestran como **Sin base comparable**.
+- Exportación CSV con escapes de fórmulas para evitar la ejecución accidental de contenido importado en hojas de cálculo. Cambiar filtros no publica nada.
+- Validado con `scripts/smoke-compare-lab.cjs`, más prueba de integración en `scripts/smoke-builder.cjs` y compilación JS en CI.
+
+---
+
+
 ## PLANTILLAS INTELIGENTES Y DUPLICACIÓN — 27/10/2026
 
 **Nuevas acciones en modo Diseño** (no aparecen a lectores sin sesión):
