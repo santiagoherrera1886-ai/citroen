@@ -10,8 +10,33 @@ const CL={spend:'Inversión',forms:'Formularios',messages:'Conversaciones',impre
 const mk=(tag,attrs={},content='')=>{const el=document.createElement(tag);for(const [k,v] of Object.entries(attrs))el.setAttribute(k,v);el.innerHTML=content;return el;};
 const button=(text,fn,cls='builder-btn')=>{const b=mk('button',{type:'button',class:cls});b.textContent=text;b.onclick=fn;return b;};
 let state=empty(),current='resumen',data=[],external=null,localFilter={month:'',model:''},busy=false;
-function localDraft(){try{return JSON.parse(localStorage.getItem(KEY)||'null');}catch{return null;}}
-function stash(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch{}}
+let lastPublishedRevision='initial',baseRevision='initial',pendingDraft=null,dirty=false;
+function localDraft(){
+ try{
+  const raw=JSON.parse(localStorage.getItem(KEY)||'null');
+  if(!raw||typeof raw!=='object')return null;
+  if(raw.draftVersion===2&&raw.workspace?.pages)return raw;
+  return Array.isArray(raw.pages)?{draftVersion:2,workspace:raw,baseRevision:null,savedAt:null}:null;
+ }catch{return null;}
+}
+function draftUI(){
+ const banner=$('builderDraftBanner');if(!banner)return;
+ banner.hidden=!authorized()||(!pendingDraft&&!dirty);
+ if(banner.hidden)return;
+ const when=pendingDraft?.savedAt?new Date(pendingDraft.savedAt).toLocaleString('es-CO'):'fecha no disponible';
+ $('builderDraftMessage').textContent=pendingDraft
+  ?'Borrador sin publicar ('+when+'). Puedes recuperarlo antes de editar.'
+  :'Cambios guardados en este navegador, todavía no publicados.';
+ $('builderDraftRestore').hidden=!pendingDraft;
+ $('builderDraftDiscard').hidden=!pendingDraft;
+}
+function stash(){
+ if(!authorized())return;
+ dirty=true;
+ try{localStorage.setItem(KEY,JSON.stringify({draftVersion:2,workspace:state,baseRevision,savedAt:Date.now()}));}
+ catch{status('No se pudo guardar el borrador; exporta el diseño antes de salir.');}
+ draftUI();
+}
 function status(s){if($('builderStatus'))$('builderStatus').textContent=s;}
 function cleanURL(s){try{const u=new URL(s);return u.protocol==='https:'&&!u.username&&!u.password?u.href:'';}catch{return typeof s==='string'&&/^data:image\/(?:jpeg|png|webp);base64,/.test(s)&&s.length<120000?s:'';}}
 function make(id,title,edit=false){const section=mk('section',{id,class:'page-section builder-page'});section.innerHTML='<div class="builder-section-head"><div><span class="builder-eyebrow">CITROËN · WORKSPACE</span><h2>'+esc(title)+'</h2></div><div class="builder-head-actions" id="'+id+'Actions"></div></div><div id="'+id+'Body"></div>';return section;}
@@ -36,7 +61,7 @@ function initSections(){
  const a=mk('div',{class:'builder-menu'},'<div class="builder-menu-title">MIS PÁGINAS</div><div id="builderPageLinks"></div>');
  nav.appendChild(a);
  const dock=mk('div',{class:'builder-global-actions',id:'builderGlobalActions',hidden:''});
- dock.innerHTML='<button id="builderNewPage" type="button">＋ Nueva página</button><button id="builderFilterSetup" type="button">⚙ Filtros</button><button id="builderNewFilter" type="button">＋ Control / filtro avanzado</button><button id="builderManageFilters" type="button">Administrar filtros</button><button id="builderPublish" type="button">Publicar cambios</button><small id="builderStatus">Modo lectura</small>';
+ dock.innerHTML='<button id="builderNewPage" type="button">＋ Nueva página</button><button id="builderFilterSetup" type="button">⚙ Filtros</button><button id="builderNewFilter" type="button">＋ Control / filtro avanzado</button><button id="builderManageFilters" type="button">Administrar filtros</button><button id="builderPublish" type="button">Publicar cambios</button><div id="builderDraftBanner" class="builder-draft-banner" hidden><strong>Guardado de borradores</strong><p id="builderDraftMessage"></p><button type="button" id="builderDraftRestore" hidden>Recuperar borrador</button><button type="button" id="builderDraftDiscard" hidden>Descartar borrador</button></div><small id="builderStatus">Modo lectura</small>';
  $('sidebar').querySelector('.sidebar-bottom').prepend(dock);
  const filt=mk('div',{id:'builderFilterModal',class:'builder-filter-modal',hidden:''});
  filt.innerHTML='<div class="builder-filter-content"><button id="builderFilterClose" type="button">×</button><h3>Filtros del dashboard</h3><p>Elige los controles que mostrarán todos los usuarios en Resumen.</p><label><input type="checkbox" data-filter-toggle="month"> Período</label><label><input type="checkbox" data-filter-toggle="territory"> Territorio</label><label><input type="checkbox" data-filter-toggle="model"> Modelo</label></div>';
@@ -48,6 +73,25 @@ function initSections(){
  $('builderNewFilter').onclick=()=>editFilter();
  $('builderManageFilters').onclick=()=>manageFilters();
  $('builderPublish').onclick=()=>publish();
+ $('builderDraftRestore').onclick=()=>{
+  if(!authorized()||!pendingDraft)return;
+  state=pendingDraft.workspace;
+  if(!Array.isArray(state.pages))return;
+  state.controls=Array.isArray(state.controls)?state.controls:[];
+  baseRevision=pendingDraft.baseRevision||lastPublishedRevision;
+  pendingDraft=null;dirty=true;
+  window.CITROEN_FILTER_ENGINE?.setDefinitions(state.controls);
+  drawPageNav();applyFilters();render();stash();
+  status(baseRevision!==lastPublishedRevision
+    ?'Borrador recuperado. Otra persona publicó una versión distinta; no se sobrescribirá.'
+    :'Borrador recuperado; listo para publicar.');
+ };
+ $('builderDraftDiscard').onclick=()=>{
+  if(!authorized())return;
+  pendingDraft=null;dirty=false;baseRevision=lastPublishedRevision;
+  try{localStorage.removeItem(KEY);}catch{}
+  draftUI();status('Borrador antiguo descartado; se conserva la versión publicada.');
+ };
 }
 function applyFilters(){
  for(const [field,id] of [['month','c3Month'],['territory','c3Territory'],['model','c3Model']]){
@@ -433,11 +477,20 @@ async function loadMeta(){
  }catch{status('No se pudo cargar la fuente Meta Ads para páginas nuevas.');}
 }
 async function loadPublished(){
+ pendingDraft=localDraft();
  try{
   const response=await fetch('/api/dashboard',{cache:'no-store'});
-  if(response.ok){const d=await response.json();state=d.workspace||empty();if(window.CITROEN_FREE_LAYOUT)window.CITROEN_FREE_LAYOUT.import(state.summaryLayout||{enabled:false,items:{}});}
-  else state=localDraft()||empty();
- }catch{state=localDraft()||empty();}
+  if(!response.ok)throw Error('Versión pública no disponible.');
+  const d=await response.json();
+  state=d.workspace||empty();
+  lastPublishedRevision=d.revision||state.revision||'initial';
+  baseRevision=lastPublishedRevision;
+  window.CITROEN_FREE_LAYOUT?.import(state.summaryLayout||{enabled:false,items:{}});
+ }catch{
+  // Fallo cerrado: los visitantes nunca reciben borradores privados del equipo.
+  state=empty();lastPublishedRevision='initial';baseRevision='initial';
+  status('No se pudo cargar la versión publicada; el borrador sigue disponible tras acceder.');
+ }
  if(!Array.isArray(state.pages))state=empty();
  state.controls=Array.isArray(state.controls)?state.controls:[
   {id:'default-period',label:'Rango de fechas',type:'relative',field:'date',scope:'report',pageId:'resumen',preset:'all',value:'',values:[],logic:'AND',exclude:false,enabled:true},
@@ -445,7 +498,7 @@ async function loadPublished(){
   {id:'default-territory',label:'Territorio',type:'select',field:'territory',scope:'report',pageId:'resumen',value:'',values:[],logic:'AND',exclude:false,enabled:true}
  ];
  window.CITROEN_FILTER_ENGINE?.setDefinitions(state.controls);
- drawPageNav();applyFilters();render();
+ drawPageNav();applyFilters();render();draftUI();
  const location=decodeURIComponent(locationHash());
  if($(location)&&location!==current)navTo(location);
 }
@@ -455,9 +508,20 @@ async function publish(){
  busy=true;status('Publicando el diseño para todos los visitantes…');
  try{
   state.summaryLayout=window.CITROEN_FREE_LAYOUT?.export()||{enabled:false,items:{}};
-  const r=await fetch('/api/dashboard',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({workspace:state})});
-  const d=await r.json();if(!r.ok)throw Error(d.error||'No se pudo publicar');
-  status('Publicado correctamente. Las páginas, creativos, insights y filtros son visibles para visitantes.');
+  const r=await fetch('/api/dashboard',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({workspace:state,expectedRevision:baseRevision})});
+  const d=await r.json();
+  if(!r.ok){
+   if(r.status===409||d.code==='REVISION_CONFLICT')throw Error('Conflicto de versiones: otra persona publicó cambios. Tu borrador está a salvo y no se sobrescribió.');
+   throw Error(d.error||'No se pudo publicar');
+  }
+  lastPublishedRevision=d.revision||d.workspace?.revision||lastPublishedRevision;
+  baseRevision=lastPublishedRevision;
+  state.revision=lastPublishedRevision;
+  state.publishedAt=d.publishedAt||new Date().toISOString();
+  dirty=false;pendingDraft=null;
+  try{localStorage.removeItem(KEY);}catch{}
+  draftUI();
+  status('Publicado correctamente · revisión '+lastPublishedRevision.slice(0,8));
  }catch(e){status('No se pudo publicar: '+e.message+'. Tu borrador permanece guardado en este navegador.');}
  busy=false;
 }
@@ -476,6 +540,7 @@ function render(){
  if(!$('builderPageLinks'))return;
  const isEditor=authorized();
  $('builderGlobalActions').hidden=!isEditor;
+ draftUI();
  const privateNav=document.querySelector('[data-target="citroen-sources"]');if(privateNav)privateNav.hidden=!isEditor;
  for(const p of state.pages)renderPage(p);
  renderCreatives();renderInsights();
