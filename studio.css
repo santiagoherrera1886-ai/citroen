@@ -446,7 +446,7 @@ body:has(.c3-dashboard.studio-edit-on) .concept3-shell .content{max-width:none;p
 @media(max-width:720px){.builder-filter-editor-panel form{grid-template-columns:1fr}.lk-controls{align-items:stretch}.lk-control{max-width:none;min-width:120px}.lk-control:has(.lk-pair){min-width:235px}}
 
 .builder-gauge{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;height:100%;min-height:120px}
-.builder-gauge-ring{width:125px;height:125px;display:grid;place-items:center;border-radius:50%;background:conic-gradient(#ed5767 var(--gauge-percent),#e6f0f6 0)}
+.builder-gauge-ring{width:125px;height:125px;display:grid;place-items:center;border-radius:50%;background:conic-gradient(var(--gauge-accent,#ed5767) var(--gauge-percent),#e6f0f6 0)}
 .builder-gauge-ring span{display:grid;place-items:center;background:white;width:91px;height:91px;border-radius:50%;font-size:23px;color:#204b64;font-weight:900}
 .builder-gauge>strong{font-size:16px;color:#194560}
 .builder-gauge>small{font-size:10px;color:#7792a6}
