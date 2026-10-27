@@ -1,5 +1,16 @@
 # Citroën · Performance Intelligence
 
+## CENTRO DE ALERTAS DE PERFORMANCE — 27/10/2026
+
+La sección pública **Centro de alertas** evalúa reglas configuradas exclusivamente por usuarios autenticados en el modo Diseño. Las reglas se almacenan en el espacio publicado `api/dashboard.js` (`alertRules`) y se muestran en modo lectura solo después de pulsar **Publicar cambios**.
+
+Métricas permitidas: `cpl = inversión / formularios`, `ctr = 100 × clics de enlace / impresiones`, inversión, formularios y conversaciones. Operadores: mayor que / menor que, con umbrales no negativos; hasta 35 reglas. Se evalúa el último mes disponible en la fuente diaria Meta Ads, sin atribuir datos a meses no cargados. Si no hay filas relevantes o falta el denominador, se indica **Sin datos**, no cero ni una falsa alerta.
+
+La sección no envía emails, notificaciones automáticas ni ejecuta vigilancia periódica fuera de la visita al dashboard. El alcance estimado no es una métrica admitida para estas alertas de volumen único, evitando presentar alcance no deduplicado como usuarios reales. Las reglas pasan por validación de servidor y pruebas automáticas de límite y denominadores.
+
+---
+
+
 ## COMPARADOR AVANZADO A/B (27/10/2026)
 
 - Nuevo menú público **Comparador avanzado** junto a Creativos e Insights. No requiere acceso a Diseño; no permite cambiar el presupuesto, los datos ni las páginas publicadas.
