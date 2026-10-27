@@ -367,6 +367,17 @@ async function downsize(file){
   };reader.readAsDataURL(file);
  });
 }
+function layoutSnapshot(page){return page.cards.map(c=>({id:c.id,x:c.x,y:c.y,w:c.w,h:c.h}));}
+function bindLayoutHistory(page){
+ const h=window.CITROEN_LAYOUT_HISTORY;
+ if(!h)return;
+ h.bind('page:'+page.id,()=>layoutSnapshot(page),snapshot=>{
+  if(!authorized())return;
+  const values=new Map(snapshot.map(r=>[r.id,r]));
+  for(const card of page.cards){const record=values.get(card.id);if(record)Object.assign(card,{x:record.x,y:record.y,w:record.w,h:record.h});}
+  stash();renderPage(page);
+ });
+}
 function installMove(el,page,card){
  if(!authorized())return;
  // The whole selected surface is the drag handle. Only true inputs remain interactive.
@@ -378,16 +389,20 @@ function installMove(el,page,card){
   if(!sizing&&target.closest(ignored))return;
   // Selection comes first; normal single clicks still work without moving the card.
   if(selectedCardId!==card.id)el.click();
-  const sx=e.clientX,sy=e.clientY,old={x:card.x,y:card.y,w:card.w,h:card.h};
+  const sx=e.clientX,sy=e.clientY,old={x:card.x,y:card.y,w:card.w,h:card.h},before=layoutSnapshot(page);
+  const assist=window.CITROEN_LAYOUT_HISTORY;
+  const peers=page.cards.filter(c=>c.id!==card.id).map(c=>({x:c.x,y:c.y,w:c.w,h:c.h}));
   let moved=false;
   const move=p=>{
    if(p.pointerId!==e.pointerId)return;
    const scale=window.CITROEN_EDITOR_ZOOM||1,dx=(p.clientX-sx)/scale,dy=(p.clientY-sy)/scale;
    if(!moved&&Math.hypot(dx,dy)<5)return;
    if(!moved){moved=true;document.body.classList.add('le-dragging');el.classList.add('le-direct-active');}
-   const step=p.altKey?1:8,round=n=>Math.round(n/step)*step;
-   if(!sizing){card.x=Math.max(0,round(old.x+dx));card.y=Math.max(0,round(old.y+dy));}
-   else{card.w=Math.max(220,Math.min(1100,round(old.w+dx)));card.h=Math.max(170,Math.min(850,round(old.h+dy)));}
+   const tentative=sizing?{...old,w:old.w+dx,h:old.h+dy}:{...old,x:old.x+dx,y:old.y+dy};
+   const adjusted=assist?.snap(tentative,peers,{mode:sizing?'resize':'move',bypass:p.altKey,grid:8,gap:12,tolerance:7})||tentative;
+   if(!sizing){card.x=Math.max(0,adjusted.x);card.y=Math.max(0,adjusted.y);}
+   else{card.w=Math.max(220,Math.min(1100,adjusted.w));card.h=Math.max(170,Math.min(850,adjusted.h));}
+   assist?.guides($('builderCanvas-'+page.id),adjusted.guides||[]);
    el.style.left=card.x+'px';el.style.top=card.y+'px';el.style.width=card.w+'px';el.style.height=card.h+'px';
    const canvas=$('builderCanvas-'+page.id);if(canvas)canvas.style.minHeight=Math.max(650,...page.cards.map(c=>c.y+c.h+35))+'px';
    if(p.cancelable)p.preventDefault();
@@ -398,7 +413,10 @@ function installMove(el,page,card){
    window.removeEventListener('pointerup',end);
    window.removeEventListener('pointercancel',end);
    document.body.classList.remove('le-dragging');el.classList.remove('le-direct-active');
+   assist?.guides($('builderCanvas-'+page.id),[]);
    if(moved){
+    if(p.type==='pointercancel'){Object.assign(card,old);renderPage(page);return;}
+    assist?.record('page:'+page.id,before,layoutSnapshot(page));
     stash();
     document.dispatchEvent(new CustomEvent('citroen:builder-card-selected',{detail:{pageId:page.id,card:{...card}}}));
     document.addEventListener('click',click=>{if(click.target===el||el.contains(click.target)){click.preventDefault();click.stopImmediatePropagation();}},{capture:true,once:true});
@@ -412,7 +430,7 @@ function installMove(el,page,card){
  el.addEventListener('pointerdown',begin);
 }
 function renderPage(page){
- const root=$('report-'+page.id);if(!root)return;pageToolbar(page);
+ const root=$('report-'+page.id);if(!root)return;pageToolbar(page);bindLayoutHistory(page);
  const target=$('report-'+page.id+'Body');
  target.innerHTML='<div class="lk-page-filters" id="lkFilters-'+page.id+'"></div><div class="builder-canvas-note">'+(authorized()?'Arrastra las tarjetas libremente usando el icono de puntos, y redimensiona desde la esquina inferior derecha.':'Vista publicada del informe.')+'</div><div class="builder-board-scroller"><div class="builder-board" id="builderCanvas-'+page.id+'"></div></div>';
  const canvas=$('builderCanvas-'+page.id);
