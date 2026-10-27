@@ -493,3 +493,38 @@ body:has(.c3-dashboard.studio-edit-on) .concept3-shell .content{max-width:none;p
 @media(prefers-reduced-motion:reduce){
  .citroen-align-guide{transition:none!important;animation:none!important}
 }
+
+
+/* Quick removal: editor-only close control in each custom card plus reversible toast. */
+.studio-card-head>.studio-card-quick-remove,.builder-card-quick-remove{
+ display:inline-flex!important;align-items:center;justify-content:center;
+ min-width:28px;width:28px;height:28px;flex:none;
+ background:#fff4f5;border:1px solid #f4c8cf;border-radius:9px;
+ color:#d84256;font:800 20px/1 Manrope,Arial,sans-serif;
+ cursor:pointer;opacity:.88;transition:background .15s,border-color .15s,transform .15s;
+}
+.studio-card-head>.studio-card-quick-remove:hover,.builder-card-quick-remove:hover,
+.studio-card-head>.studio-card-quick-remove:focus-visible,.builder-card-quick-remove:focus-visible{
+ background:#e9485c;border-color:#e9485c;color:white;opacity:1;transform:scale(1.06);
+ outline:none;
+}
+.studio-card-head>.studio-card-quick-remove:focus-visible,.builder-card-quick-remove:focus-visible{
+ box-shadow:0 0 0 3px #ed718b55;
+}
+.studio-card-head>.studio-card-quick-remove{margin-left:2px;}
+.builder-card-top strong{flex:1;min-width:0;}
+.builder-card-top>span{flex:none;}
+.citroen-delete-toast{
+ position:fixed;z-index:100000;bottom:24px;left:50%;transform:translateX(-50%);
+ width:max-content;max-width:min(94vw,560px);display:flex;align-items:center;gap:12px;
+ background:#153e56;border:1px solid #396981;color:#fff;border-radius:13px;
+ padding:13px 13px 13px 17px;
+ box-shadow:0 18px 55px #071d3280;font:700 12px/1.5 Manrope,Arial,sans-serif;
+}
+.citroen-delete-toast span{min-width:0;overflow-wrap:anywhere;}
+.citroen-delete-toast button{flex:none;cursor:pointer;border-radius:8px;font-weight:850;font-family:inherit}
+.citroen-delete-undo{background:#fff;color:#163e56;border:0;padding:9px 12px;font-size:11px}
+.citroen-delete-undo:hover{background:#d8effe}
+.citroen-delete-dismiss{background:transparent;color:#c7dde9;border:0;font-size:21px;width:25px;height:30px}
+.citroen-delete-dismiss:hover{color:#fff}
+@media(max-width:640px){.citroen-delete-toast{bottom:12px;width:calc(100vw - 34px);box-sizing:border-box;padding:10px}.citroen-delete-toast span{flex:1}.builder-card-quick-remove{min-width:30px}}
