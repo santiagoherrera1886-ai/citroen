@@ -473,3 +473,23 @@ body:has(.c3-dashboard.studio-edit-on) .concept3-shell .content{max-width:none;p
 .builder-history-row button{border:1px solid #d4e8f3;border-radius:8px;color:#25617f;background:white;cursor:pointer;font-size:10px;font-weight:800;padding:9px}
 .builder-history-row button:hover{border-color:#ee5263;color:#d94359}
 #builderHistoryStatus{font-size:11px;color:#587991;line-height:1.6}
+
+
+/* Magnetic rulers and reversible position controls in Citroën Studio. */
+.citroen-align-guide{
+ position:absolute!important;
+ z-index:90;
+ pointer-events:none!important;
+ opacity:.95;
+ box-sizing:border-box;
+ filter:drop-shadow(0 0 2px rgba(229,62,80,.28));
+}
+.citroen-align-x{top:0!important;bottom:0!important;width:0!important;border-left:1px dashed #f14659!important}
+.citroen-align-y{left:0!important;right:0!important;height:0!important;border-top:1px dashed #f14659!important}
+#studioUndoPosition:disabled,#studioRedoPosition:disabled,
+.builder-head-actions .builder-btn:disabled{opacity:.42;cursor:not-allowed;filter:grayscale(.6)}
+#studioUndoPosition:not(:disabled):hover,#studioRedoPosition:not(:disabled):hover{background:#fff2f4;border-color:#ed7b89;color:#c73f53}
+.le-dragging .citroen-align-guide{opacity:1}
+@media(prefers-reduced-motion:reduce){
+ .citroen-align-guide{transition:none!important;animation:none!important}
+}
