@@ -444,7 +444,7 @@ function renderAB(card){
   const width1=Math.max(0,(g.current||0)/barMax*100).toFixed(1),width2=Math.max(0,(g.prior||0)/barMax*100).toFixed(1);
   return '<div class="builder-ab-segment"><span title="'+esc(g.label)+'">'+esc(g.label)+'</span><div class="builder-ab-bars"><i style="width:'+width1+'%"></i><em style="width:'+width2+'%"></em></div></div>';
  }).join('');
- const warning=[r.hasDifferentLength?'Los períodos duran distinto.',r.hasIncompleteCoverage?'Hay días sin registros.',r.reachCaveat].filter(Boolean).join(' ');
+ const warning=[r.hasDifferentLength?'Los períodos duran distinto.':null,r.hasIncompleteCoverage?'Hay días sin registros.':null,r.reachCaveat].filter(Boolean).join(' ');
  return '<div class="builder-ab-view">'+
   '<div class="builder-ab-head"><div><small>A · '+esc(r.aStart)+' al '+esc(r.aEnd)+'</small><strong>'+fmt(r.totalA,card.metric)+'</strong></div>'+
   '<div><small>B · '+esc(r.bStart)+' al '+esc(r.bEnd)+'</small><strong>'+fmt(r.totalB,card.metric)+'</strong></div></div>'+
