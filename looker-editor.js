@@ -23,7 +23,9 @@ function act(action){
  if(!editing)return;
  close();
  const simple={
- undo:()=>click('metricStyleUndo'),redo:()=>click('metricStyleRedo'),page:()=>click('builderNewPage'),
+ undo:()=>{const h=window.CITROEN_LAYOUT_HISTORY,scope=h?.current();if(scope&&h?.canUndo(scope)){h.undo(scope);return;}click('metricStyleUndo');},
+ redo:()=>{const h=window.CITROEN_LAYOUT_HISTORY,scope=h?.current();if(scope&&h?.canRedo(scope)){h.redo(scope);return;}click('metricStyleRedo');},
+ page:()=>click('builderNewPage'),
  datasource:()=>{go('citroen-sources');mark('Conexiones de datos abiertas');},
  photo:()=>{if(window.CITROEN_BUILDER?.addOnCurrent('image'))return;click('studioPhotos');},
  control:()=>{if(window.CITROEN_BUILDER?.addOnCurrent('filter'))return;click('builderNewFilter');},managefilters:()=>click('builderManageFilters'),
