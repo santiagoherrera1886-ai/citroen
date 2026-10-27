@@ -547,13 +547,14 @@ function renderPage(page){
  window.CITROEN_FILTER_ENGINE?.render('lkFilters-'+page.id,'report-'+page.id);
  canvas.style.minHeight=Math.max(650,...page.cards.map(c=>c.y+c.h+35))+'px';
  for(const card of page.cards){
-  const tools=authorized()?'<button type="button" class="builder-card-edit">Editar</button><button type="button" class="builder-card-quick-remove" title="Eliminar esta tarjeta" aria-label="Eliminar '+esc(card.title)+'">×</button><span class="builder-card-grip" title="Arrastrar libremente">⠿</span>':'';
+  const tools=authorized()?'<button type="button" class="builder-card-edit">Editar</button><button type="button" class="builder-card-quick-duplicate" title="Duplicar tarjeta" aria-label="Duplicar '+esc(card.title)+'">⧉</button><button type="button" class="builder-card-quick-remove" title="Eliminar esta tarjeta" aria-label="Eliminar '+esc(card.title)+'">×</button><span class="builder-card-grip" title="Arrastrar libremente">⠿</span>':'';
   const html='<div class="builder-card-top"><strong>'+esc(card.title)+'</strong><span>'+tools+'</span></div><div class="builder-card-inner">'+cardBody(card,page)+'</div>'+(authorized()?'<div class="builder-card-resize" title="Redimensionar"></div>':'');
   const el=mk('article',{class:'builder-board-card'+(selectedCardId===card.id?' le-builder-selected':''), 'data-card-id':card.id},html);
   if(card.background&&/^#[0-9a-f]{6}$/i.test(card.background))el.style.background=card.background;
   if(card.textColor&&/^#[0-9a-f]{6}$/i.test(card.textColor))el.style.color=card.textColor;
   Object.assign(el.style,{left:card.x+'px',top:card.y+'px',width:card.w+'px',height:card.h+'px'});
   el.querySelector('.builder-card-edit')?.addEventListener('click',e=>{e.stopPropagation();editCard(page,card);});
+  el.querySelector('.builder-card-quick-duplicate')?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();window.CITROEN_BUILDER?.duplicateCard(page.id,card.id);});
   el.querySelector('.builder-card-quick-remove')?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();removeCreatedCard(page.id,card.id);});
   el.addEventListener('click',e=>{
    if(!authorized()||e.target.closest('button,input,select,textarea,a,.builder-card-grip,.builder-card-resize'))return;
