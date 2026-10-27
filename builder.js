@@ -49,7 +49,7 @@ function watchSummary(){
  stash();
  status('Cambios del Resumen guardados como borrador. Pulsa Publicar cambios para compartirlos.');
 }
-function cleanURL(s){try{const u=new URL(s);return u.protocol==='https:'&&!u.username&&!u.password?u.href:'';}catch{return typeof s==='string'&&/^data:image\/(?:jpeg|png|webp);base64,/.test(s)&&s.length<120000?s:'';}}
+function cleanURL(s){if(window.CITROEN_SHARED_MEDIA?.isManaged(s))return s;try{const u=new URL(s);return u.protocol==='https:'&&!u.username&&!u.password?u.href:'';}catch{return typeof s==='string'&&/^data:image\/(?:jpeg|png|webp);base64,/.test(s)&&s.length<120000?s:'';}}
 function make(id,title,edit=false){const section=mk('section',{id,class:'page-section builder-page'});section.innerHTML='<div class="builder-section-head"><div><span class="builder-eyebrow">CITROËN · WORKSPACE</span><h2>'+esc(title)+'</h2></div><div class="builder-head-actions" id="'+id+'Actions"></div></div><div id="'+id+'Body"></div>';return section;}
 function navTo(id){
  if(!$(id))return;
@@ -347,7 +347,12 @@ function editCard(page,card){
  };
  $('builderCardUpload').onchange=async e=>{
   const file=e.target.files?.[0];if(!file||!file.type.startsWith('image/')||file.size>5*1024*1024)return status('Sube JPG/PNG/WebP de máximo 5 MB.');
-  const src=await downsize(file);if(src){card.image=src;stash();status('Imagen lista; pulsa Guardar tarjeta.');}
+  const src=await downsize(file);
+  if(src){
+   try{card.image=await window.CITROEN_SHARED_MEDIA.upload(src);status('Imagen subida a biblioteca privada. Guarda tarjeta y publica para compartir.');}
+   catch(err){card.image=src;status('Imagen guardada localmente; no disponible para todos: '+err.message);}
+   stash();
+  }
  };
 }
 async function downsize(file){
@@ -455,7 +460,11 @@ function editCreative(target){
  $('builderCreativeUpload').onchange=async e=>{
   const file=e.target.files?.[0];
   if(!file||!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5*1024*1024){status('Usa JPG, PNG o WebP hasta 5 MB.');return;}
-  uploaded=await downsize(file);if(!uploaded)status('No se pudo comprimir la imagen. Prueba con una más pequeña.');
+  uploaded=await downsize(file);
+  if(!uploaded){status('No se pudo comprimir la imagen. Prueba con una más pequeña.');return;}
+  try{uploaded=await window.CITROEN_SHARED_MEDIA.upload(uploaded);status('Creativo subido a biblioteca privada; guarda y publica para compartir.');}
+  catch(err){status('El creativo quedó local: '+err.message);}
+
  };
  $('builderCreativeSave').onclick=()=>{
   const title=$('builderCreativeTitle').value.trim(),campaign=$('builderCreativeCampaign').value,format=$('builderCreativeFormat').value,notes=$('builderCreativeNotes').value;
