@@ -5,7 +5,7 @@ const $=id=>document.getElementById(id);
 const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const metrics=[['Fecha','date','date'],['Mes','month','date'],['Modelo','model','text'],['Territorio','territory','text'],['Cuenta Meta','account','text'],['Campaña','campaign','text'],['Inversión','spend','metric'],['Formularios','forms','metric'],['Conversaciones','messages','metric'],['Impresiones','impressions','metric'],['Alcance estimado*','reach','metric'],['Clics enlace','clicks','metric'],['CPL','cpl','metric'],['CTR','ctr','metric'],['CPM','cpm','metric']];
 const menus={
- archivo:[['Guardar vista','save','✓'],['Publicar informe','publish','↑'],['Exportar diseño','export','⇩'],['Importar diseño','import','⇧'],['Exportar CSV','csv','▤']],
+ archivo:[['Guardar vista','save','✓'],['Publicar informe','publish','↑'],['Historial de versiones','history','↶'],['Exportar diseño','export','⇩'],['Importar diseño','import','⇧'],['Exportar CSV','csv','▤']],
  editar:[['Deshacer estilo','undo','↶'],['Rehacer estilo','redo','↷'],['Duplicar gráfico','duplicate','▣'],['Restaurar resumen','reset','⟳']],
  insertar:[['Añadir gráfico','chartMenu','▥'],['Añadir control','control','☷'],['Texto / insight','insight','T'],['Foto de vehículo','photo','▧']],
  pagina:[['Añadir página','page','＋'],['Ir al Resumen','summary','▤']],
@@ -31,6 +31,7 @@ function act(action){
  free:()=>click('studioFreeLayout'),grid:()=>{if($('studioFreeLayout')?.getAttribute('aria-pressed')==='true')click('studioFreeLayout');},
  save:()=>{click('studioSave');mark('Guardado localmente · Publicar comparte páginas e insights');},
  publish:()=>{click('builderPublish');mark('Publicación solicitada · comprueba el estado en el menú');},
+ history:()=>{if(window.CITROEN_ACCESS?.isOwner?.())click('builderHistory');else mark('El historial solo está disponible para el administrador maestro');},
  export:()=>click('studioExport'),import:()=>click('studioImport'),csv:()=>click('studioCsv'),reset:()=>click('studioReset'),
  duplicate:()=>{if(window.CITROEN_LOOKER_PROPERTIES?.duplicateSelection?.())return;if(selection?.startsWith('c:'))window.CITROEN_STUDIO_ACTIONS?.duplicate?.(selection);else mark('Selecciona un gráfico personalizado para duplicarlo');},
  summary:()=>go('resumen'),
