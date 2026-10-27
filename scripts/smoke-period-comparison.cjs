@@ -27,7 +27,7 @@ assert.equal(zeros.previous,0);assert.equal(zeros.change,null,'No infinite perce
 assert.equal(value('cpl',rows.filter(x=>x.month==='2026-09').map(x=>({...x,forms:0}))),null);
 const bound=compare(rows,'reach',{reachEstimator:(numbers,universe)=>{assert.equal(universe,15000000);return Math.min(universe,numbers.reduce((a,v)=>a+v,0));}});
 assert.equal(bound.ok,true);
-assert.equal(bound.favorable,'neutral','No bogus green/red positive when reach unchanged');
+assert.equal(bound.favorable,'unknown','No green/red label without a nonzero reference reach');
 const reverse=compare(rows,'cpl');
 assert.equal(reverse.favorable,'neutral');
 assert.equal(compare(rows,'fake').ok,false,'Unsupported fields must be rejected');
