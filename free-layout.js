@@ -65,7 +65,7 @@ function bind(el,handle,mode){
   const init={...start},sx=e.clientX,sy=e.clientY;
   handle.setPointerCapture?.(e.pointerId);
   const move=ev=>{
-   const dx=ev.clientX-sx,dy=ev.clientY-sy;
+   const scale=window.CITROEN_EDITOR_ZOOM||1,dx=(ev.clientX-sx)/scale,dy=(ev.clientY-sy)/scale;
    if(mode==='move'){start.x=bounded(init.x+dx,0,2200);start.y=bounded(init.y+dy,0,6000);}
    else{start.w=bounded(init.w+dx,240,1300);start.h=bounded(init.h+dy,170,1000);}
    el.style.left=start.x+'px';el.style.top=start.y+'px';el.style.width=start.w+'px';el.style.height=start.h+'px';
