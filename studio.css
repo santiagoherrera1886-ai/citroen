@@ -450,3 +450,7 @@ body:has(.c3-dashboard.studio-edit-on) .concept3-shell .content{max-width:none;p
 .builder-gauge-ring span{display:grid;place-items:center;background:white;width:91px;height:91px;border-radius:50%;font-size:23px;color:#204b64;font-weight:900}
 .builder-gauge>strong{font-size:16px;color:#194560}
 .builder-gauge>small{font-size:10px;color:#7792a6}
+
+.lk-native-filters:not(:empty){margin:12px 0 16px;padding:11px;background:#f7fbfe;border-radius:11px;border:1px solid #dbe7f0}
+.lk-native-filters .lk-controls{gap:7px}
+.lk-native-filters .lk-control{min-width:110px}
