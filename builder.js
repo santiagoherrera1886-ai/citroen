@@ -73,7 +73,7 @@ function initSections(){
  const a=mk('div',{class:'builder-menu'},'<div class="builder-menu-title">MIS PÁGINAS</div><div id="builderPageLinks"></div>');
  nav.appendChild(a);
  const dock=mk('div',{class:'builder-global-actions',id:'builderGlobalActions',hidden:''});
- dock.innerHTML='<button id="builderNewPage" type="button">＋ Nueva página</button><button id="builderFilterSetup" type="button">⚙ Filtros</button><button id="builderNewFilter" type="button">＋ Control / filtro avanzado</button><button id="builderManageFilters" type="button">Administrar filtros</button><button id="builderPublish" type="button">Publicar cambios</button><button id="builderHistory" type="button" hidden>↶ Historial de versiones</button><div id="builderDraftBanner" class="builder-draft-banner" hidden><strong>Guardado de borradores</strong><p id="builderDraftMessage"></p><button type="button" id="builderDraftRestore" hidden>Recuperar borrador</button><button type="button" id="builderDraftDiscard" hidden>Descartar borrador</button></div><small id="builderStatus">Modo lectura</small>';
+ dock.innerHTML='<button id="builderNewPage" type="button">＋ Nueva página</button><button id="builderTemplates" type="button">▦ Plantillas de informes</button><button id="builderFilterSetup" type="button">⚙ Filtros</button><button id="builderNewFilter" type="button">＋ Control / filtro avanzado</button><button id="builderManageFilters" type="button">Administrar filtros</button><button id="builderPublish" type="button">Publicar cambios</button><button id="builderHistory" type="button" hidden>↶ Historial de versiones</button><div id="builderDraftBanner" class="builder-draft-banner" hidden><strong>Guardado de borradores</strong><p id="builderDraftMessage"></p><button type="button" id="builderDraftRestore" hidden>Recuperar borrador</button><button type="button" id="builderDraftDiscard" hidden>Descartar borrador</button></div><small id="builderStatus">Modo lectura</small>';
  $('sidebar').querySelector('.sidebar-bottom').prepend(dock);
  const filt=mk('div',{id:'builderFilterModal',class:'builder-filter-modal',hidden:''});
  filt.innerHTML='<div class="builder-filter-content"><button id="builderFilterClose" type="button">×</button><h3>Filtros del dashboard</h3><p>Elige los controles que mostrarán todos los usuarios en Resumen.</p><label><input type="checkbox" data-filter-toggle="month"> Período</label><label><input type="checkbox" data-filter-toggle="territory"> Territorio</label><label><input type="checkbox" data-filter-toggle="model"> Modelo</label></div>';
@@ -82,6 +82,7 @@ function initSections(){
  $('builderFilterSetup').onclick=()=>{if(!authorized())return;filt.hidden=false;filt.querySelectorAll('input').forEach(i=>i.checked=state.filters[i.dataset.filterToggle]!==false);};
  filt.querySelectorAll('input').forEach(x=>x.onchange=()=>{if(!authorized())return;state.filters[x.dataset.filterToggle]=x.checked;applyFilters();stash();status('Filtros editados; publica para compartirlos.');});
  $('builderNewPage').onclick=()=>createPage();
+ $('builderTemplates').onclick=()=>openTemplateGallery();
  $('builderNewFilter').onclick=()=>editFilter();
  $('builderManageFilters').onclick=()=>manageFilters();
  $('builderPublish').onclick=()=>publish();
@@ -189,13 +190,84 @@ function editFilter(existing){
   stash();dialog.hidden=true;refreshControls();
  };
 }
+function canCreatePage(){
+ if(!authorized())return false;
+ if(state.pages.length>=15){status('Límite de 15 páginas. Duplica o elimina una página existente antes de continuar.');return false;}
+ return true;
+}
+function installPage(newPage,notice){
+ if(!canCreatePage()||!newPage||!Array.isArray(newPage.cards))return false;
+ if(newPage.cards.length>45){status('La página supera el límite de 45 tarjetas.');return false;}
+ state.pages.push(newPage);
+ selectedCardId=null;
+ stash();drawPageNav();navTo('report-'+newPage.id);
+ status(notice||'Página creada en tu borrador; pulsa Publicar para compartirla.');
+ return true;
+}
+function clonePage(pageId){
+ if(!canCreatePage())return false;
+ const page=state.pages.find(p=>p.id===pageId);
+ if(!page)return false;
+ const idMap=new Map();
+ const cards=page.cards.map(original=>{
+  const newId=uid();idMap.set('c:'+original.id,'c:'+newId);
+  return {...original,id:newId};
+ });
+ const copy={id:uid(),title:(page.title+' · copia').slice(0,70),cards};
+ const related=(state.controls||[]).filter(control=>{
+  return control.scope==='page'&&control.pageId==='report-'+page.id
+   ||control.scope==='chart'&&control.pageId==='report-'+page.id;
+ }).slice(0,Math.max(0,40-(state.controls||[]).length)).map(control=>({
+  ...control,id:uid(),pageId:'report-'+copy.id,
+  cardId:idMap.get(control.cardId)||control.cardId
+ }));
+ state.controls=(state.controls||[]).concat(related);
+ window.CITROEN_FILTER_ENGINE?.setDefinitions(state.controls);
+ return installPage(copy,'Página duplicada con '+cards.length+' tarjetas y '+related.length+' controles. Publica cuando esté lista.');
+}
+function openTemplateGallery(){
+ if(!canCreatePage())return;
+ const api=window.CITROEN_REPORT_TEMPLATES;
+ if(!api){status('Plantillas no disponibles. Recarga la página e inténtalo otra vez.');return;}
+ let modal=$('builderTemplateDialog');
+ if(!modal){
+  modal=document.createElement('div');
+  modal.id='builderTemplateDialog';modal.className='builder-dialog';modal.hidden=true;
+  modal.setAttribute('role','dialog');modal.setAttribute('aria-modal','true');modal.setAttribute('aria-labelledby','builderTemplateHeading');
+  modal.innerHTML='<div class="builder-dialog-panel builder-template-panel"><button class="builder-close" type="button" id="builderTemplateClose" aria-label="Cerrar galería">×</button><span class="builder-eyebrow">CITROËN STUDIO / CREAR PÁGINA</span><h3 id="builderTemplateHeading">Elige una plantilla</h3><p>Diseños listos para organizar. Las cifras se calculan con los datos disponibles de Meta Ads; no contienen metas inventadas.</p><div class="builder-template-grid" id="builderTemplateGrid"></div></div>';
+  document.body.appendChild(modal);
+  $('builderTemplateClose').onclick=()=>modal.hidden=true;
+ }
+ const grid=$('builderTemplateGrid');grid.replaceChildren();
+ const blank=document.createElement('button');
+ blank.type='button';blank.className='builder-template-option builder-template-blank';
+ blank.innerHTML='<span class="builder-template-art" aria-hidden="true">＋</span><strong>Página en blanco</strong><span>Crea tu propio diseño desde cero</span><small>Sin tarjetas predefinidas</small>';
+ blank.onclick=()=>{modal.hidden=true;createPage();};
+ grid.appendChild(blank);
+ for(const template of api.list()){
+  const item=document.createElement('button');item.type='button';item.className='builder-template-option';
+  item.style.setProperty('--template-accent',template.accent);
+  const art=document.createElement('span');art.className='builder-template-art';art.textContent=template.icon;art.setAttribute('aria-hidden','true');
+  const name=document.createElement('strong');name.textContent=template.title;
+  const subtitle=document.createElement('span');subtitle.textContent=template.subtitle;
+  const footer=document.createElement('small');footer.textContent=template.count+' tarjetas · '+template.label;
+  item.append(art,name,subtitle,footer);
+  item.onclick=()=>{
+   if(!canCreatePage())return;
+   const page=api.instantiate(template.id,uid);
+   if(installPage(page,'Plantilla «'+template.title+'» añadida como borrador. Todos los valores provienen de datos reales.'))modal.hidden=true;
+  };
+  grid.appendChild(item);
+ }
+ modal.hidden=false;grid.querySelector('button')?.focus();
+}
 function createPage(){
  if(!authorized())return;
  if(state.pages.length>=15){status('Máximo 15 páginas.');return;}
  const name=prompt('Nombre de la nueva página (por ejemplo: Ventas por modelo)','Nuevo informe');
  if(!name?.trim())return;
  const p={id:uid(),title:name.trim().slice(0,70),cards:[]};
- state.pages.push(p);stash();drawPageNav();navTo('report-'+p.id);status('Página creada. Agrega tarjetas y publica cuando esté lista.');
+ installPage(p,'Página en blanco creada. Agrega tarjetas y publica cuando esté lista.');
 }
 function newCard(type,page,changes={}){
  if(!authorized())return;
@@ -237,6 +309,7 @@ function pageToolbar(page){
  actions.append(back,forward);
   const kinds=[['metric','＋ Indicador'],['chart','＋ Gráfico'],['note','＋ Texto / insight'],['image','＋ Imagen'],['filter','＋ Filtro']];
  for(const [type,label] of kinds)actions.appendChild(button(label,()=>newCard(type,page)));
+ actions.appendChild(button('Duplicar página',()=>clonePage(page.id)));
  actions.appendChild(button('Renombrar',()=>{const n=prompt('Nuevo nombre',page.title);if(n?.trim()){page.title=n.trim().slice(0,70);stash();drawPageNav();renderPage(page);}}));
  actions.appendChild(button('Eliminar página',()=>deletePage(page),'builder-btn-danger'));
 }
@@ -751,6 +824,8 @@ function wire(){
 document.addEventListener('DOMContentLoaded',wire);
 window.CITROEN_BUILDER={render,loadPublished,publish,
  getCurrentPage:()=>current,getPages:()=>state.pages.map(p=>({id:p.id,title:p.title,count:p.cards.length})),
+ openTemplates:openTemplateGallery,
+ duplicatePage:clonePage,
  getCard(pageId,cardId){const p=state.pages.find(p=>p.id===pageId);const c=p?.cards.find(c=>c.id===cardId);return c?{...c}:null;},
  addOnCurrent(type,changes={}){if(!authorized())return false;const p=state.pages.find(p=>'report-'+p.id===current);if(!p)return false;newCard(type,p,changes);return true;},
  updateCard(pageId,cardId,patch){if(!authorized()||!patch||typeof patch!=='object')return false;
