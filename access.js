@@ -181,6 +181,6 @@ function wire(){
  window.setInterval(()=>checkSessionDuringEdit().catch(()=>{}),90000);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkSessionDuringEdit().catch(()=>{});});
 }
-window.CITROEN_ACCESS={requestEdit,canEdit:()=>Boolean(user&&!user.mustChange),logout,showMaster};
+window.CITROEN_ACCESS={requestEdit,canEdit:()=>Boolean(user&&!user.mustChange),isOwner:()=>Boolean(user&&!user.mustChange&&user.role==='owner'),logout,showMaster};
 document.addEventListener('DOMContentLoaded',wire);
 })();
