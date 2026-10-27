@@ -1,5 +1,17 @@
 # Citroën · Performance Intelligence
 
+## PLANTILLAS INTELIGENTES Y DUPLICACIÓN — 27/10/2026
+
+**Nuevas acciones en modo Diseño** (no aparecen a lectores sin sesión):
+
+- **Plantillas de informes** desde el menú lateral o **Página → Crear desde plantilla**. Cinco formatos con estilos Montecarlo, basados **únicamente en columnas reales de Meta Ads**: Resumen ejecutivo, Rendimiento por modelo, Evolución y eficiencia, Interacción y conversión y Análisis territorial. También hay opción de página en blanco. Ninguna tarjeta contiene números inventados ni metas atribuidas al cliente.
+- **Duplicar página** desde la barra de la propia página o **Página → Duplicar página actual**. Se crean nuevos ID para cada tarjeta, y se copian los filtros avanzados limitados a esa página (con nuevos ID y referencias a las tarjetas duplicadas). Editar la copia no modifica el original.
+- **Duplicar tarjeta** desde el icono **⧉** en el encabezado de cada tarjeta de informe; se mueve ligeramente la copia y puede redimensionarse. Se conserva el límite de 45 tarjetas por página y 15 páginas.
+- **Eliminar página** también limpia los filtros cuya aplicación era exclusiva de esa página, evitando controles huérfanos en el reporte.
+- **Seguridad/publicación**: todas las plantillas/duplicaciones requieren editor autenticado; se almacenan como borrador hasta pulsar **Publicar cambios**. La lectura pública y los datos fuente existentes siguen sin modificaciones.
+- **Verificación**: \`scripts/smoke-report-templates.cjs\` comprueba que las cinco plantillas usen métricas/dimensiones soportadas, tengan tarjetas con IDs únicos y que sus layouts no se solapen; \`scripts/smoke-builder.cjs\` prueba selección de plantilla, render real, duplicación de tarjetas/páginas, independencia de los cambios y copia/limpieza de filtros de página.
+
+
 ## OPTIMIZACIONES DEL CONSTRUCTOR — 27/10/2026
 
 - **Borradores recuperables**: al crear/editar páginas, creativos, insights y filtros se guarda un borrador local etiquetado con la revisión de publicación. Si recargas el navegador, la versión pública se carga limpia y, solo después de entrar como editor, se muestran opciones **Recuperar** y **Descartar borrador**. Un fallo de API nunca expone un borrador privado a un visitante.
