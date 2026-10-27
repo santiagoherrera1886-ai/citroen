@@ -551,3 +551,23 @@ body:has(.c3-dashboard.studio-edit-on) .concept3-shell .content{max-width:none;p
 .builder-card-quick-duplicate:hover,.builder-card-quick-duplicate:focus-visible{background:#dff1fb;border-color:#94c6e5;outline:2px solid #94c6e566}
 @media(max-width:770px){.builder-template-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.builder-template-option{min-height:165px}}
 @media(max-width:490px){.builder-template-grid{grid-template-columns:1fr}.builder-template-option{min-height:118px}.builder-template-panel{padding:16px}}
+
+
+/* Comparable month-to-date cards: intentionally separate from ordinary KPIs. */
+.builder-comparison-wrap{display:flex;flex-direction:column;gap:11px;height:100%;min-height:0;color:#193e57}
+.builder-compare-label{font-size:10px;letter-spacing:.045em;font-weight:850;color:#68859b}
+.builder-compare-periods{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.builder-compare-period{background:#f4f9fc;border:1px solid #e0ecf4;border-radius:11px;padding:12px 10px;min-width:0}
+.builder-compare-period small{display:block;color:#718da2;font-size:10px;margin-bottom:9px}
+.builder-compare-period strong{font-size:clamp(14px,1.8vw,23px);letter-spacing:-.035em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;color:#214c65}
+.builder-compare-current{background:#fdf1f3;border-color:#f4dce1}
+.builder-compare-current strong{color:#cb4057}
+.builder-compare-change{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:6px 10px;border-radius:9px;color:#627b8a;background:#f5f8fb}
+.builder-compare-change strong{font-size:19px}
+.builder-compare-change small{font-size:10px}
+.builder-compare-change.positive{color:#18745b;background:#eaf7f1}
+.builder-compare-change.negative{color:#b34655;background:#fff0f1}
+.builder-compare-caveat{font-size:9px!important;color:#8198ab!important;line-height:1.65!important;margin:0!important}
+.builder-compare-no-data{border:1px dashed #d7e6f0;background:#f8fbfe;border-radius:9px;padding:14px;color:#4c7188;font-size:12px}
+.builder-compare-no-data p{line-height:1.6;color:#8ba1af}
+@media(max-width:580px){.builder-compare-periods{grid-template-columns:1fr}.builder-compare-period strong{font-size:18px}}
