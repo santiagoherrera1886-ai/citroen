@@ -112,6 +112,18 @@ export default async function handler(req,res){
   const workspace=clean(req.body?.workspace);
   workspace.revision=randomUUID();
   workspace.publishedAt=new Date().toISOString();
+  // Preserve the version being replaced, before changing the live report.
+  // Snapshots are immutable, readable only by authenticated owners.
+  if(published.revision!=='initial'&&/^[a-f0-9-]{36}$/i.test(published.revision)){
+   const archive='private/citroen-history/'+published.revision+'.json';
+   await put(archive,JSON.stringify(published),{
+    access:'private',contentType:'application/json',
+    addRandomSuffix:false,allowOverwrite:false
+   }).catch(e=>{
+    // An existing snapshot is fine; unexpected storage errors must block publication.
+    if(!/already exists|precondition/i.test(String(e?.message||'')))throw e;
+   });
+  }
   await put(PATH,JSON.stringify(workspace),{access:'private',contentType:'application/json',allowOverwrite:true,addRandomSuffix:false});
   return json(res,200,{ok:true,revision:workspace.revision,publishedAt:workspace.publishedAt,workspace});
  }catch(e){console.error('Citroen workspace',e?.message||'error');return error(res,503,'No se pudo guardar o cargar la versión publicada.');}
