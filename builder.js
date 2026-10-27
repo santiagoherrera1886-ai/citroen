@@ -249,7 +249,7 @@ function renderChart(card,page){
  if(shape==='pie'||shape==='donut'){
   const total=arr.reduce((x,r)=>x+r.value,0);if(total<=0)return '<div class="builder-empty">No hay valores positivos para mostrar la distribución.</div>';
   let last=0;const cx=120,cy=103,rad=77,small=shape==='donut';
-  const palette=['#ea5668','#99c9e1','#245977','#f4b26b','#7cc1ad','#ae9ada','#e0accc','#75afdc'];
+  const palette=[seriesColor,'#99c9e1','#245977','#f4b26b','#7cc1ad','#ae9ada','#e0accc','#75afdc'];
   const slices=arr.map((a,i)=>{
    const start=last;last+=a.value/total;
    if(a.value<=0)return '';
@@ -266,7 +266,7 @@ function renderChart(card,page){
   const total=arr.reduce((a,b)=>a+b.value,0),goal=Number(card.goal)>0?Number(card.goal):null;
   if(!goal)return '<p class="builder-empty">Configura un objetivo numérico en Editar tarjeta para calcular el medidor.</p>';
   const part=Math.min(1,total/goal);
-  return '<div class="builder-gauge"><div class="builder-gauge-ring" style="--gauge-percent:'+(100*part).toFixed(2)+'%"><span>'+Math.round(part*100)+'%</span></div><strong>'+fmt(total,card.metric)+'</strong><small>Objetivo configurado: '+fmt(goal,card.metric)+'</small></div>';
+  return '<div class="builder-gauge"><div class="builder-gauge-ring" style="--gauge-percent:'+(100*part).toFixed(2)+'%;--gauge-accent:'+seriesColor+'"><span>'+Math.round(part*100)+'%</span></div><strong>'+fmt(total,card.metric)+'</strong><small>Objetivo configurado: '+fmt(goal,card.metric)+'</small></div>';
  }
  let plot='',pts=[];
  arr.forEach((a,i)=>{
