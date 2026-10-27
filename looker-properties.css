@@ -1,0 +1,58 @@
+/* Second pass: real contextual editor for selected chart cards and canvas. */
+body.citroen-looker-edit.le-custom-page #metricInspector{display:none!important}
+.lep-shell[hidden]{display:none!important}
+.lep-shell{position:fixed;top:143px;bottom:0;right:49px;width:305px;z-index:88;overflow-y:auto;box-sizing:border-box;background:#fff;border-left:1px solid #d7e3ed;color:#23475e;font:600 11px Manrope,"DM Sans",Arial,sans-serif;scrollbar-width:thin}
+.lep-header{padding:20px 16px 15px;display:flex;flex-direction:column;gap:7px;border-bottom:1px solid #e9eff5}
+.lep-header small{letter-spacing:.11em;font-size:9px;color:#8ea2b2;font-weight:900}
+.lep-header strong{font-size:17px;color:#193d55;letter-spacing:-.025em}
+.lep-header>span{font-size:9px;color:#748fa0;letter-spacing:.09em}
+.lep-tabs{display:flex;border-bottom:1px solid #e8eff5}
+.lep-tabs button{flex:1;border:0;border-bottom:3px solid transparent;padding:13px 7px;background:white;font-size:11px;color:#8298aa;cursor:pointer;font-weight:800}
+.lep-tabs button.active{border-bottom-color:#2b79d5;color:#256eaf}
+.lep-body{padding:16px;display:flex;flex-direction:column;gap:11px}
+.lep-muted{font-size:11px;color:#8398a9;line-height:1.7}
+.lep-heading{font-weight:900;color:#365b74;padding:10px 0 5px;font-size:12px;border-top:1px solid #eff3f7}
+.lep-dataset{border:1px solid #d5e9de;background:#f5fbf8;border-radius:9px;padding:12px;color:#29775c;font-size:11px}
+.lep-dataset small{display:block;margin:5px 0 0 21px;color:#789a87;font-size:9px}
+.lep-body label{display:flex;flex-direction:column;gap:7px;color:#4c6c82;font-size:11px;font-weight:800}
+.lep-body input:not([type=color]),.lep-body select,.lep-body textarea{background:#fbfdff;border:1px solid #d5e4ef;border-radius:8px;padding:10px;width:100%;font:600 12px Manrope,Arial,sans-serif;color:#284e66;box-sizing:border-box}
+.lep-body textarea{resize:vertical;min-height:100px;line-height:1.6}
+.lep-color{flex-direction:row!important;justify-content:space-between;align-items:center;gap:10px}
+.lep-color input{width:52px;height:34px;border:1px solid #dce7ed;border-radius:8px;background:transparent;cursor:pointer;padding:3px}
+.lep-sizes{display:flex;justify-content:space-between;font-size:11px;color:#7a94a6}
+.lep-actions{display:flex;flex-wrap:wrap;gap:7px}
+.lep-actions button,.lep-more,.lep-quick-grid button{padding:10px;background:#f0f6fc;border:1px solid #d8e7f3;border-radius:9px;color:#316284;font:800 10px Manrope,Arial,sans-serif;cursor:pointer}
+.lep-actions .danger{background:#fff0f2;color:#c44759;border-color:#f5d7dc}
+.lep-actions button:hover,.lep-more:hover,.lep-quick-grid button:hover{border-color:#96bedb;background:#e8f2fb}
+.lep-quick-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.lep-more{width:100%}
+.le-builder-selected{outline:2px solid #2579d8!important;outline-offset:2px!important;box-shadow:0 0 0 5px #2278da20,0 13px 29px #234b6921!important}
+body.citroen-looker-edit .builder-board-card{transition:outline-color .18s,box-shadow .18s;cursor:pointer}
+body.citroen-looker-edit .builder-board-card:hover{outline:1px solid #97c1e3}
+body.citroen-looker-edit .builder-board-card .builder-card-top strong{color:inherit}
+.le-canvas-tools{position:fixed;left:174px;right:565px;top:151px;z-index:83;height:29px;display:flex;align-items:center;justify-content:flex-end;gap:9px;padding:0 16px;background:#eef2f6;border-bottom:1px solid #e1e8ef;font:700 10px Manrope,Arial,sans-serif;color:#7a93a6}
+.le-canvas-tools label{display:flex;align-items:center;gap:6px}
+.le-canvas-tools select{border:1px solid #d6e3ed;border-radius:7px;background:#fff;color:#44637a;padding:3px;font:700 10px Manrope,Arial,sans-serif}
+.le-canvas-tools button{border:1px solid #d6e3ed;border-radius:7px;background:#fff;color:#486980;padding:4px 7px;font:750 9px Manrope,Arial,sans-serif;cursor:pointer}
+.le-canvas-tools button[aria-pressed=false]{opacity:.55}
+.le-canvas-tools>span{font-size:9px;color:#9aabba}
+body.citroen-looker-edit .concept3-shell .content{padding-top:188px!important}
+body.citroen-looker-edit .content>.page-section.is-active{zoom:var(--le-canvas-zoom,1)}
+body.citroen-looker-edit.le-grid-on .content>.page-section.is-active{
+ background-color:#fff!important;
+ background-image:linear-gradient(#dce8f155 1px,transparent 1px),linear-gradient(90deg,#dce8f155 1px,transparent 1px)!important;
+ background-size:20px 20px!important
+}
+body.citroen-looker-edit .builder-canvas-note{display:none}
+body.citroen-looker-edit .builder-board-scroller{border:1px solid #d3e1ed}
+body.citroen-looker-edit .builder-board{min-width:1000px}
+@media(max-width:1480px){.le-canvas-tools{left:154px;right:356px}}
+@media(max-width:990px){
+ .le-canvas-tools{left:59px;right:0}
+ .lep-shell{right:0;top:176px;width:min(320px,94vw);z-index:95;box-shadow:-9px 0 28px #24456220}
+}
+@media(max-width:630px){
+ .le-canvas-tools>span{display:none}
+ .le-canvas-tools{top:123px;justify-content:center}
+ body.citroen-looker-edit .concept3-shell .content{padding-top:178px!important}
+}
