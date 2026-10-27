@@ -1,104 +1,200 @@
-/* Optional true freeform positioning of Resumen panels. Never changes source metrics. */
+/* Citroën Studio — direct manipulation of native graphs AND KPI cards.
+   Drag the selected object itself (no extra grip required), resize from its corner,
+   and share positions through the existing published summaryLayout object. */
 (function(){
 'use strict';
 const KEY='citroen_free_summary_layout_v1',$=id=>document.getElementById(id);
-const editing=()=>window.CITROEN_ACCESS?.canEdit()&&$('c3Dashboard')?.classList.contains('studio-edit-on');
-let state={enabled:false,items:{}},installed=new WeakSet();
-try{const o=JSON.parse(localStorage.getItem(KEY)||'null');if(o&&typeof o==='object')state={enabled:!!o.enabled,items:o.items||{}};}catch{}
-function persist(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch{}}
-const bounded=(n,min,max)=>Math.max(min,Math.min(max,Math.round(Number(n)||0)));
-function nodes(){return Array.from($('studioCards')?.children||[]).filter(el=>el.dataset.panelKey&&!el.hidden);}
-function autoLayout(){
- const base=$('studioCards'),rect=base.getBoundingClientRect(),size=base.clientWidth||1180;
- let ix=0,iy=12,rowHeight=0;
- for(const el of nodes()){
-  const k=el.dataset.panelKey;if(state.items[k])continue;
-  const a=el.getBoundingClientRect(),span=Number((el.style.gridColumn||'').replace(/\D/g,''))||3;
-  const w=a.width>100?a.width:Math.min(700,Math.round(size*span/6)-12);
-  const h=a.height>100?a.height:el.id==='c3ComparePanel'?365:el.id==='c3FunnelPanel'?365:285;
-  let x=a.width>100&&rect.width>0?a.left-rect.left:ix,y=a.height>100&&rect.height>0?a.top-rect.top:iy;
-  if(a.width<=100||rect.width===0){if(x+w>size){ix=0;iy+=rowHeight+15;rowHeight=0;}x=ix;y=iy;ix+=w+15;rowHeight=Math.max(rowHeight,h);}
-  state.items[k]={x:bounded(x,0,2200),y:bounded(y,0,6000),w:bounded(w,240,1300),h:bounded(h,170,1000)};
+const editing=()=>window.CITROEN_ACCESS?.canEdit()===true&&$('c3Dashboard')?.classList.contains('studio-edit-on')===true;
+const clamp=(v,min,max)=>Math.max(min,Math.min(max,Math.round(Number(v)||0)));
+let state={enabled:false,items:{}},busy=null,booted=false;
+try{const raw=JSON.parse(localStorage.getItem(KEY)||'null');if(raw&&typeof raw==='object')state={enabled:raw.enabled===true,items:raw.items||{}};}catch{}
+const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify(state));}catch{}};
+const panels=()=>Array.from($('studioCards')?.children||[]).filter(el=>el.dataset.panelKey&&!el.hidden);
+const kpis=()=>Array.from($('c3Kpis')?.querySelectorAll('[data-metric-slot]')||[]);
+const lookup=(node)=>node?.dataset?.panelKey|| (node?.hasAttribute('data-metric-slot')?'k:'+node.dataset.metricSlot:null);
+const rectPosition=(el,container,fallback)=>{
+ const parent=container.getBoundingClientRect(),box=el.getBoundingClientRect();
+ return {
+  x:clamp(box.width>30?box.left-parent.left:fallback.x,0,2600),
+  y:clamp(box.height>30?box.top-parent.top:fallback.y,0,6800),
+  w:clamp(box.width>80?box.width:fallback.w,170,1400),
+  h:clamp(box.height>60?box.height:fallback.h,100,1100)
+ };
+};
+function initialPanels(){
+ const board=$('studioCards');if(!board)return;
+ const width=Math.max(1180,board.clientWidth||1250),nodes=panels();
+ let fallbackY=16;
+ for(let i=0;i<nodes.length;i++){
+  const node=nodes[i],key=lookup(node);
+  if(state.items[key])continue;
+  const cols=Number((node.style.gridColumn||'').replace(/\D/g,''))||3;
+  const approximateW=clamp(Math.round((width-12*5)*cols/6),270,1240);
+  const position=rectPosition(node,board,{x:(i%2)*(approximateW+12)+14,y:fallbackY,w:approximateW,h:node.id==='c3ComparePanel'||node.id==='c3FunnelPanel'?360:310});
+  state.items[key]=position;
+  if(i%2===1)fallbackY+=Math.max(position.h,330)+18;
  }
- persist();
+}
+function initialKPIs(){
+ const board=$('c3Kpis');if(!board)return;
+ const width=Math.max(1180,board.clientWidth||1250),all=kpis(),gap=12,w=(width-gap*5)/6;
+ for(let i=0;i<all.length;i++){
+  const key=lookup(all[i]);if(state.items[key])continue;
+  state.items[key]=rectPosition(all[i],board,{x:i*(w+gap),y:0,w,h:135});
+ }
+}
+function clearElement(el){
+ for(const name of ['left','top','width','height','position','zIndex'])el.style.removeProperty(name);
+ el.querySelector(':scope > .citroen-free-resize')?.remove();
+ el.classList.remove('le-pointer-selected');
+}
+function clearLayout(container,elements){
+ container?.classList.remove('citroen-free-mode','citroen-free-kpis');
+ if(container)container.style.removeProperty('minHeight');
+ for(const el of elements)clearElement(el);
+}
+function applyContainer(container,nodes,kind){
+ if(!container)return;
+ const active=state.enabled;
+ container.classList.toggle(kind==='kpi'?'citroen-free-kpis':'citroen-free-mode',active);
+ if(!active){clearLayout(container,nodes);return;}
+ let bottom=kind==='kpi'?150:650;
+ for(const el of nodes){
+  const k=lookup(el),p=state.items[k];
+  if(!p)continue;
+  el.style.left=p.x+'px';el.style.top=p.y+'px';el.style.width=p.w+'px';el.style.height=p.h+'px';
+  el.style.position='absolute';bottom=Math.max(bottom,p.y+p.h+26);
+  const old=el.querySelector(':scope > .citroen-free-resize');
+  if(editing()){
+   if(!old){
+    const h=document.createElement('span');h.className='citroen-free-resize';
+    h.title='Arrastra para cambiar el tamaño';h.setAttribute('aria-hidden','true');el.appendChild(h);
+   }
+  }else old?.remove();
+  const grip=el.querySelector('.studio-drag');if(grip)grip.draggable=false;
+ }
+ container.style.minHeight=bottom+'px';
 }
 function apply(){
- const canvas=$('studioCards');if(!canvas)return;
+ const board=$('studioCards'),kp=$('c3Kpis');
+ if(!board||!kp)return;
+ if(state.enabled){initialPanels();initialKPIs();}
+ applyContainer(board,panels(),'panels');
+ applyContainer(kp,kpis(),'kpi');
  const btn=$('studioFreeLayout');
- if(btn){btn.setAttribute('aria-pressed',String(state.enabled));btn.textContent=state.enabled?'▦ Volver a cuadrícula':'↔ Mover libremente';}
- if(!state.enabled){
-  canvas.classList.remove('citroen-free-mode');
-  canvas.style.minHeight='';
-  for(const el of nodes()){
-   el.style.removeProperty('left');el.style.removeProperty('top');el.style.removeProperty('width');el.style.removeProperty('height');
-   const grip=el.querySelector('.studio-drag');if(grip)grip.draggable=editing();
-   el.querySelector('.citroen-free-resize')?.remove();
-  }
-  return;
+ if(btn){
+  btn.setAttribute('aria-pressed',String(state.enabled));
+  btn.textContent=state.enabled?'▦ Restablecer cuadrícula':'✥ Activar posicionamiento libre';
  }
- if(!Object.keys(state.items).length)autoLayout();
- canvas.classList.add('citroen-free-mode');
- let bottom=640;
- for(const el of nodes()){
-  const k=el.dataset.panelKey;
-  if(!state.items[k]){autoLayout();}
-  const pos=state.items[k];if(!pos)continue;
-  for(const [style,v] of [['left',pos.x],['top',pos.y],['width',pos.w],['height',pos.h]])el.style[style]=v+'px';
-  bottom=Math.max(bottom,pos.y+pos.h+35);
-  const grip=el.querySelector('.studio-drag');
-  if(grip)grip.draggable=false;
-  let resize=el.querySelector('.citroen-free-resize');
-  if(!resize){resize=document.createElement('span');resize.className='citroen-free-resize';resize.title='Cambiar tamaño libremente';el.appendChild(resize);}
-  resize.hidden=!editing();
-  if(grip)bind(el,grip,'move');
-  bind(el,resize,'size');
- }
- canvas.style.minHeight=bottom+'px';
 }
-function bind(el,handle,mode){
- if(!handle||installed.has(handle))return;
- installed.add(handle);handle.style.touchAction='none';
- handle.addEventListener('pointerdown',e=>{
-  if(!state.enabled||!editing()||(e.button!==0&&e.pointerType!=='touch'))return;
-  e.preventDefault();e.stopPropagation();
-  const k=el.dataset.panelKey,start=state.items[k];if(!start)return;
-  const init={...start},sx=e.clientX,sy=e.clientY;
-  handle.setPointerCapture?.(e.pointerId);
-  const move=ev=>{
-   const scale=window.CITROEN_EDITOR_ZOOM||1,dx=(ev.clientX-sx)/scale,dy=(ev.clientY-sy)/scale;
-   if(mode==='move'){start.x=bounded(init.x+dx,0,2200);start.y=bounded(init.y+dy,0,6000);}
-   else{start.w=bounded(init.w+dx,240,1300);start.h=bounded(init.h+dy,170,1000);}
-   el.style.left=start.x+'px';el.style.top=start.y+'px';el.style.width=start.w+'px';el.style.height=start.h+'px';
-   $('studioCards').style.minHeight=Math.max(650,...Object.values(state.items).map(x=>x.y+x.h+35))+'px';
-  };
-  const end=()=>{handle.removeEventListener('pointermove',move);handle.removeEventListener('pointerup',end);handle.removeEventListener('pointercancel',end);persist();};
-  handle.addEventListener('pointermove',move);handle.addEventListener('pointerup',end,{once:true});handle.addEventListener('pointercancel',end,{once:true});
- });
+function enable(){
+ if(!editing())return;
+ if(state.enabled){apply();return;}
+ state.enabled=true;
+ // Measure against the natural 6-column grid before setting absolute positions.
+ initialPanels();initialKPIs();
+ persist();apply();
 }
 function toggle(){
  if(!editing())return;
- if(!state.enabled){
-  state.items={};autoLayout();state.enabled=true;
- }else state.enabled=false;
+ if(state.enabled){
+  state.enabled=false;persist();apply();
+ }else enable();
+}
+function editableHit(node,container){
+ const el=node?.closest?.(container.id==='c3Kpis'?'[data-metric-slot]':'.c3-panel,.studio-card');
+ return el&&container.contains(el)?el:null;
+}
+const INTERACTIVE='button,select,input,textarea,a,[contenteditable="true"],[role="button"],[data-board-filter],.lk-control,.lk-native-filters,.citroen-free-resize';
+const isInteractive=t=>!!t?.closest?.(INTERACTIVE);
+function pointerStart(ev,container){
+ if(!editing()||!state.enabled||busy)return;
+ if(ev.pointerType!=='touch'&&ev.button!==0)return;
+ const el=editableHit(ev.target,container);
+ if(!el)return;
+ const handle=ev.target.closest('.citroen-free-resize');
+ if(!handle&&isInteractive(ev.target))return;
+ const key=lookup(el),p=state.items[key];
+ if(!p)return;
+ const resize=!!handle,initial={...p},start={x:ev.clientX,y:ev.clientY},scale=window.CITROEN_EDITOR_ZOOM||1;
+ let moved=false;
+ // Normal clicks are intentionally left alone: metric-editor.js selects that card.
+ function movement(e){
+  if(e.pointerId!==ev.pointerId)return;
+  const dx=(e.clientX-start.x)/scale,dy=(e.clientY-start.y)/scale;
+  if(!moved&&Math.hypot(dx,dy)<5)return;
+  if(!moved){
+   moved=true;document.body.classList.add('le-dragging');
+   el.classList.add('le-direct-active');
+   if(e.cancelable)e.preventDefault();
+  }
+  const snap=e.altKey?1:8;
+  const round=n=>Math.round(n/snap)*snap;
+  if(resize){
+   p.w=clamp(round(initial.w+dx),container.id==='c3Kpis'?174:280,1400);
+   p.h=clamp(round(initial.h+dy),container.id==='c3Kpis'?115:190,1100);
+  }else{
+   p.x=clamp(round(initial.x+dx),0,2600);
+   p.y=clamp(round(initial.y+dy),0,6800);
+  }
+  Object.assign(el.style,{left:p.x+'px',top:p.y+'px',width:p.w+'px',height:p.h+'px'});
+  container.style.minHeight=Math.max(container.id==='c3Kpis'?150:650,...(container.id==='c3Kpis'?kpis():panels()).map(n=>{
+   const v=state.items[lookup(n)];return v?v.y+v.h+27:0;
+  }))+'px';
+ }
+ function finish(e){
+  if(e.pointerId!==ev.pointerId)return;
+  window.removeEventListener('pointermove',movement);
+  window.removeEventListener('pointerup',finish);
+  window.removeEventListener('pointercancel',finish);
+  if(moved){persist();document.body.classList.remove('le-dragging');el.classList.remove('le-direct-active');
+   // Keep native card selected and suppress the click emitted after a drag.
+   const cancelClick=click=>{if(click.target===el||el.contains(click.target)){click.preventDefault();click.stopImmediatePropagation();}};
+   document.addEventListener('click',cancelClick,{capture:true,once:true});
+  }
+  busy=null;
+ }
+ busy={element:el,key};
+ window.addEventListener('pointermove',movement,{passive:false});
+ window.addEventListener('pointerup',finish);
+ window.addEventListener('pointercancel',finish);
+ if(resize){ev.preventDefault();ev.stopPropagation();}
+}
+function exported(){return {enabled:state.enabled,items:JSON.parse(JSON.stringify(state.items))};}
+function imported(data){
+ if(!data||typeof data!=='object')return;
+ const items={};
+ for(const [key,pos]of Object.entries(data.items||{})){
+  if(!/^[nck]:[\w-]{1,100}$/.test(key)||!pos||typeof pos!=='object')continue;
+  items[key]={
+   x:clamp(pos.x,0,2600),y:clamp(pos.y,0,6800),
+   w:clamp(pos.w,170,1400),h:clamp(pos.h,100,1100)
+  };
+ }
+ state={enabled:data.enabled===true,items};
  persist();apply();
 }
-function exportData(){return {enabled:!!state.enabled,items:JSON.parse(JSON.stringify(state.items))};}
-function importData(other){
- if(!other||typeof other!=='object')return;
- const items={};
- for(const [key,v] of Object.entries(other.items||{})){
-  if(!/^[nc]:[\w-]{1,100}$/.test(key)||!v||typeof v!=='object')continue;
-  items[key]={x:bounded(v.x,0,2200),y:bounded(v.y,0,6000),w:bounded(v.w,240,1300),h:bounded(v.h,170,1000)};
- }
- state={enabled:!!other.enabled,items};persist();apply();
-}
-function wire(){
- const btn=$('studioFreeLayout');if(!btn)return;
- btn.onclick=toggle;
- document.addEventListener('citroen:studio-layout',apply);
+function init(){
+ if(booted)return;booted=true;
+ $('studioFreeLayout')?.addEventListener('click',toggle);
+ for(const id of ['studioCards','c3Kpis'])$(id)?.addEventListener('pointerdown',e=>pointerStart(e,$(id)));
+ document.addEventListener('citroen:studio-layout',()=>{
+  if(editing()&&!state.enabled)enable();
+  else apply();
+ });
+ document.addEventListener('citroen:summary-rendered',apply);
  window.addEventListener('resize',()=>{if(state.enabled)apply();});
+ if(typeof MutationObserver!=='undefined'){
+  let queued=false;
+  const redraw=()=>{
+   if(queued)return;queued=true;
+   Promise.resolve().then(()=>{queued=false;if(state.enabled)apply();});
+  };
+  // Only observe direct added KPI cards; mutations of style attributes must not loop.
+  const kp=$('c3Kpis');if(kp)new MutationObserver(redraw).observe(kp,{childList:true});
+ }
  apply();
 }
-window.CITROEN_FREE_LAYOUT={export:exportData,import:importData,apply};
-document.addEventListener('DOMContentLoaded',wire);
+window.CITROEN_FREE_LAYOUT={export:exported,import:imported,apply,enable};
+document.addEventListener('DOMContentLoaded',init);
 })();
