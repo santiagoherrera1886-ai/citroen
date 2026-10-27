@@ -10,7 +10,14 @@ const editing=()=>window.CITROEN_ACCESS?.canEdit()===true&&$('c3Dashboard')?.cla
 const clamp=(v,min,max)=>Math.max(min,Math.min(max,Math.round(Number(v)||0)));
 const DEFAULT_KEYS=['b:header','b:hero','b:context','b:filters'];
 let state={enabled:false,version:2,items:{}},busy=null,booted=false,selected=null;
-try{const raw=JSON.parse(localStorage.getItem(KEY)||'null');if(raw&&typeof raw==='object')state={enabled:raw.enabled===true,version:raw.version===2?2:1,items:raw.items||{}};}catch{}
+try{
+ const raw=JSON.parse(localStorage.getItem(KEY)||'null');
+ if(raw&&typeof raw==='object'){
+  // Legacy layouts could position KPI cards on top of the header.
+  // Keep coordinates available but NEVER auto-enable free positioning after reload.
+  state={enabled:false,version:raw.version===2?2:1,items:raw.items||{}};
+ }
+}catch{}
 function persist(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch{}}
 const panels=()=>Array.from($('studioCards')?.children||[]).filter(el=>el.dataset.panelKey&&!el.hidden);
 const kpis=()=>Array.from($('c3Kpis')?.querySelectorAll('[data-metric-slot]')||[]);
@@ -149,7 +156,8 @@ function controls(el){
 }
 function apply(){
  const canvas=$('c3DesignCanvas');if(!canvas)return;
- const enabled=state.enabled;
+ // Report viewers and new sessions always see the stable responsive grid.
+ const enabled=state.enabled&&editing();
  canvas.classList.toggle('c3-canvas-free',enabled);
  $('c3Kpis')?.classList.toggle('citroen-free-kpis',enabled);
  $('studioCards')?.classList.toggle('citroen-free-mode',enabled);
@@ -173,7 +181,12 @@ function apply(){
 }
 function enable(){
  if(!editing())return;
- if(!state.enabled){initializePositions();state.enabled=true;persist();}
+ if(!state.enabled){
+  // New free-mode session begins from currently rendered normal grid, not stale
+  // absolute positions stored in a previous viewport (or a broken version).
+  state.items={};state.version=2;
+  initializePositions();state.enabled=true;persist();
+ }
  apply();
 }
 function toggle(){
@@ -254,7 +267,9 @@ function imported(value){
   items[key]={x:clamp(pos.x,0,2600),y:clamp(pos.y,0,6800),
    w:clamp(pos.w,170,1400),h:clamp(pos.h,60,1100)};
  }
- state={enabled:value.enabled===true,version:value.version===2?2:1,items};
+ // Import coordinates for later manual editing; never apply an old free layout
+ // just because it was published or saved by an earlier version.
+ state={enabled:false,version:value.version===2?2:1,items};
  selected=null;persist();apply();
 }
 function init(){
@@ -286,18 +301,20 @@ function init(){
  canvas.addEventListener('pointerdown',pointerStart);
  document.addEventListener('citroen:layout-history',buttons);
  document.addEventListener('citroen:studio-layout',()=>{
-  if(editing()&&!state.enabled)enable();else apply();
-  buttons();
+  // Explicit user intent is required to activate absolute positioning.
+  // Simply clicking Editar resumen must not rearrange the entire report.
+  if(!editing()&&state.enabled){state.enabled=false;persist();}
+  apply();buttons();
  });
  document.addEventListener('citroen:summary-rendered',apply);
  document.addEventListener('citroen:advanced-filter-changed',filterConsolidation);
  document.addEventListener('citroen:filter-definitions-loaded',filterConsolidation);
- window.addEventListener('resize',()=>{if(state.enabled)apply();});
+ window.addEventListener('resize',()=>{if(state.enabled&&editing()){state.enabled=false;persist();apply();}else apply();});
  if(typeof MutationObserver!=='undefined'){
   let queued=false;
   const redraw=()=>{
    if(queued)return;queued=true;
-   Promise.resolve().then(()=>{queued=false;if(document?.documentElement&&state.enabled)apply();});
+   Promise.resolve().then(()=>{queued=false;if(document?.documentElement&&state.enabled&&editing())apply();});
   };
   if($('c3Kpis'))new MutationObserver(redraw).observe($('c3Kpis'),{childList:true});
   if($('studioCards'))new MutationObserver(redraw).observe($('studioCards'),{childList:true});
