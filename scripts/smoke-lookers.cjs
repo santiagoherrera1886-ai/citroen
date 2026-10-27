@@ -41,5 +41,8 @@ assert.equal(filter.apply(rows,[{id:'neg',type:'advanced',field:'account',operat
 const meta=[{date:'2026-10-20',month:'2026-10',model:'C3',territory:'Bogotá',v:[7000,7,1,13000,600,700,10000]}];
 assert.equal(filter.apply(meta,[{id:'spend',type:'number',field:'spend',min:7000,max:7000,scope:'report'}]).length,1,'Raw Meta rows are compatible with daily indices');
 assert.equal(filter.apply(meta,[{id:'date',type:'date',field:'date',start:'2026-10-21',scope:'report'}]).length,0,'Exact date not month only');
+assert.equal(filter.apply(rows,[{id:'radio',type:'radio',field:'model',scope:'report',value:'C3'}]).length,2,'Radio buttons filter exact category');
+assert.equal(filter.apply(rows,[{id:'slider',type:'slider',field:'spend',scope:'report',min:10000,max:15000}]).length,2,'Dual numeric slider bounds');
+assert.equal(filter.apply([{forms:0},{forms:4}], [{id:'checkbox',type:'checkbox',field:'forms',scope:'report',value:'true'}]).length,1,'Boolean switch filters records with metric values');
 assert.equal(filter.normalize({id:'bad',type:'relative',field:'spend'}),null,'Relative dates must use a date column');
 console.log('PASS: 14 relative date windows, calendar validity, raw Meta daily, scope report/page/chart, multi-select, numeric bounds, advanced operators, AND/OR and exclusion.');
