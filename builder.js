@@ -382,6 +382,17 @@ function bindLayoutHistory(page){
   for(const card of page.cards){const record=values.get(card.id);if(record)Object.assign(card,{x:record.x,y:record.y,w:record.w,h:record.h});}
   stash();renderPage(page);
  });
+ h.bindNudge('page:'+page.id,(dx,dy)=>{
+  if(!authorized()||current!=='report-'+page.id||!selectedCardId)return false;
+  const selected=page.cards.find(c=>c.id===selectedCardId);
+  if(!selected)return false;
+  const before=layoutSnapshot(page);
+  selected.x=Math.max(0,Math.min(2400,selected.x+dx));
+  selected.y=Math.max(0,Math.min(6000,selected.y+dy));
+  if(!h.record('page:'+page.id,before,layoutSnapshot(page)))return false;
+  stash();renderPage(page);
+  return true;
+ });
 }
 function installMove(el,page,card){
  if(!authorized())return;
