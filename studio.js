@@ -108,10 +108,10 @@ function cardHtml(card,index){
  '<button type="button" data-act="up" title="Mover arriba" aria-label="Mover panel a la izquierda">←</button>'+
  '<button type="button" data-act="down" title="Mover abajo" aria-label="Mover panel a la derecha">→</button>'+
  '<label>Tamaño<select data-card-size>'+sizeOptions(state.sizes["c:"+card.id]||3)+'</select></label>'+
- '<button type="button" data-act="remove" class="studio-danger" title="Eliminar gráfico" aria-label="Eliminar gráfico">×</button></div>':"";
+ '</div>':"";
  const notes=card.source==="compare"?"El plan incluye varios medios; la ejecución cubre solo Meta. No representa cumplimiento. Las metas de leads y los formularios no son equivalentes.":card.source==="meta"?"Resultados Meta Ads del export hasta el 20 de octubre. El alcance usa estimación Sainsbury solo cuando hay universo configurado.":"Plan de inversión o metas comerciales, no ejecución. Mayo tiene una diferencia pendiente de conciliación de $992.624.";
  return '<article class="studio-card" data-id="'+html(card.id)+'" role="group" aria-label="'+html(card.title)+'">'+
- '<div class="studio-card-head"><span class="studio-drag" title="Arrastrar tarjeta" draggable="'+state.edit+'">⠿</span><input class="studio-card-title" aria-label="Título de gráfico" value="'+html(card.title)+'" '+(state.edit?"":"readonly")+'><span class="studio-card-label">'+html(card.source==="compare"?"COMPARATIVO":card.source==="plan"?"PROYECCIÓN":"META REAL")+"</span></div>"+
+ '<div class="studio-card-head"><span class="studio-drag" title="Arrastrar tarjeta" draggable="'+state.edit+'">⠿</span><input class="studio-card-title" aria-label="Título de gráfico" value="'+html(card.title)+'" '+(state.edit?"":"readonly")+'><span class="studio-card-label">'+html(card.source==="compare"?"COMPARATIVO":card.source==="plan"?"PROYECCIÓN":"META REAL")+'</span>'+(state.edit?'<button type="button" class="studio-card-quick-remove" title="Eliminar gráfico creado" aria-label="Eliminar gráfico '+html(card.title)+'">×</button>':"")+'</div>'+
  controls+'<div class="studio-visual">'+(card.chart==="table"?table(data,card):chartSvg(data,card))+'</div>'+
  (card.source==="compare"?'<div class="studio-legend"><span><i class="studio-dot plan"></i> Planeado total</span><span><i class="studio-dot meta"></i> Meta Ads</span></div>':"")+
  '<p class="studio-card-note">'+html(notes)+"</p></article>";
@@ -184,6 +184,29 @@ function bindDrag(el){
   dragged=null;persist();draw();
  };
 }
+function removeCreatedGraph(key){
+ if(!ready||!state.edit||!window.CITROEN_ACCESS?.canEdit?.()||!/^c:[\w-]+$/.test(key))return false;
+ const index=state.cards.findIndex(card=>"c:"+card.id===key);
+ if(index<0)return false;
+ const record={...state.cards[index]},orderIndex=state.order.indexOf(key);
+ const size=state.sizes[key],hidden=state.hidden.includes(key),title=state.titles[key];
+ state.cards.splice(index,1);state.order=state.order.filter(v=>v!==key);
+ delete state.sizes[key];delete state.titles[key];state.hidden=state.hidden.filter(v=>v!==key);
+ persist();draw();
+ document.dispatchEvent(new CustomEvent("citroen:studio-removed",{detail:{key}}));
+ window.CITROEN_QUICK_DELETE?.offer?.(record.title,()=>{
+  if(!ready||!state.edit||!window.CITROEN_ACCESS?.canEdit?.()||state.cards.some(c=>c.id===record.id))return false;
+  state.cards.splice(Math.min(index,state.cards.length),0,record);
+  state.order.splice(Math.min(Math.max(0,orderIndex),state.order.length),0,key);
+  if(size!==undefined)state.sizes[key]=size;
+  if(title!==undefined)state.titles[key]=title;
+  if(hidden&&!state.hidden.includes(key))state.hidden.push(key);
+  persist();draw();
+  document.dispatchEvent(new CustomEvent("citroen:studio-created",{detail:{key}}));
+  return true;
+ });
+ return true;
+}
 function bindCustom(el){
  const key=el.dataset.panelKey,card=state.cards.find(c=>"c:"+c.id===key);
  if(!card)return;
@@ -193,12 +216,12 @@ function bindCustom(el){
   if(["plan","compare"].includes(card.source)&&!["investment","leads","cpl"].includes(card.metric))card.metric="investment";
   persist();draw();
  });
+ el.querySelector(".studio-card-quick-remove")?.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();removeCreatedGraph(key);});
  el.querySelectorAll("[data-act]").forEach(b=>b.onclick=()=>{
   const a=b.dataset.act;
-  if(a==="remove"){state.cards=state.cards.filter(c=>c.id!==card.id);state.order=state.order.filter(v=>v!==key);delete state.sizes[key];}
-  else if(a==="up")return movePanel(key,-1);
-  else if(a==="down")return movePanel(key,1);
-  persist();draw();
+  if(a==="remove")return removeCreatedGraph(key);
+  if(a==="up")return movePanel(key,-1);
+  if(a==="down")return movePanel(key,1);
  });
  const sz=el.querySelector("[data-card-size]");
  if(sz){sz.value=String(state.sizes[key]||3);sz.onchange=e=>{state.sizes[key]=Number(e.target.value);persist();draw();};}
@@ -267,6 +290,7 @@ function appliedSummary(summary){
 window.CITROEN_STUDIO_ACTIONS={
  exportPublished:exportedSummary,
  importPublished:appliedSummary,
+ deleteCustom:removeCreatedGraph,
  getCustom(k){const c=state.cards.find(x=>"c:"+x.id===k);return c?{...c}:null;},
  updateCustom(k,changes){
   const c=state.cards.find(x=>"c:"+x.id===k);if(!c||!changes||typeof changes!=="object")return;
