@@ -4,6 +4,8 @@ import {json,error,ready,currentUser,sameOrigin} from '../lib/editor-auth.mjs';
 const PATH='private/citroen-published-workspace-v1.json';
 const EMPTY={version:1,revision:'initial',publishedAt:null,pages:[],creatives:[],insights:[],filters:{month:true,model:true,territory:true}};
 function safeText(x,max=180){return typeof x==='string'?x.slice(0,max):'';}
+const isMedia=x=>typeof x==='string'&&/^\/api\/media\?id=m-[a-f0-9]{32}$/.test(x);
+const imageRef=x=>typeof x==='string'&&(isMedia(x)||x.startsWith('https://')&&x.length<=2048||/^data:image\/(?:png|jpeg|webp);base64,/.test(x)&&x.length<120000)?x:'';
 function cleanSummary(source){
  if(!source||typeof source!=='object')return null;
  const allowedSource=new Set(['plan','meta','compare']),allowedChart=new Set(['bar','line','area','table']),allowedDimension=new Set(['month','model']);
@@ -38,6 +40,7 @@ function cleanSummary(source){
  const photos={};
  for(const [key,url] of Object.entries(source.photos||{})){
   if(!['C3','Basalt','Aircross','BERLINGO','HERO'].includes(key)||typeof url!=='string'||url.length>2048)continue;
+  if(isMedia(url)){photos[key]=url;continue;}
   try{const u=new URL(url);if(u.protocol==='https:'&&!u.username&&!u.password)photos[key]=u.href;}catch{}
  }
  return {cards,order,hidden,sizes,titles,metrics,styles,photos};
@@ -59,7 +62,7 @@ function clean(state){
    x:number(c.x,0,2400,24),y:number(c.y,0,6000,24),w:number(c.w,220,1200,410),h:number(c.h,170,850,270),
    goal:Number.isFinite(Number(c.goal))&&Number(c.goal)>0?Math.min(1e12,Number(c.goal)):null,
    color:/^#[0-9a-f]{6}$/i.test(c.color||'')?c.color:'#8abbd8',background:/^#[0-9a-f]{6}$/i.test(c.background||'')?c.background:'#ffffff',textColor:/^#[0-9a-f]{6}$/i.test(c.textColor||'')?c.textColor:'#173e57',
-   image:typeof c.image==='string'&&(c.image.startsWith('https://')||/^data:image\/(?:png|jpeg|webp);base64,/.test(c.image))&&c.image.length<120000?c.image:'',
+   image:imageRef(c.image),
    filter:['month','model'].includes(c.filter)?c.filter:'month'};
  };
  const TYPES=new Set(['date','relative','select','multi','list','radio','search','number','slider','checkbox','advanced']);
@@ -84,7 +87,7 @@ function clean(state){
  return {version:1,revision:safeText(state.revision,85)||'initial',publishedAt:safeText(state.publishedAt,48)||null,summary:cleanSummary(state.summary),summaryLayout:{enabled:sl?.enabled===true,items},controls,
   pages:pages.filter(p=>p&&validId(p.id)).map(p=>({id:p.id,title:safeText(p.title,70),cards:(Array.isArray(p.cards)?p.cards:[]).slice(0,45).map(fixCard).filter(Boolean)})),
   insights:insights.filter(a=>a&&validId(a.id)).map(a=>({id:a.id,title:safeText(a.title,110),body:safeText(a.body,12000),updatedAt:safeText(a.updatedAt,50)})),
-  creatives:creatives.filter(a=>a&&validId(a.id)).map(a=>({id:a.id,title:safeText(a.title,110),campaign:safeText(a.campaign,150),format:['Imagen','Vídeo','Carrusel','Otro'].includes(a.format)?a.format:'Otro',image:typeof a.image==='string'&&(a.image.startsWith('https://')||/^data:image\/(?:png|jpeg|webp);base64,/.test(a.image))&&a.image.length<120000?a.image:'',notes:safeText(a.notes,1000)})),
+  creatives:creatives.filter(a=>a&&validId(a.id)).map(a=>({id:a.id,title:safeText(a.title,110),campaign:safeText(a.campaign,150),format:['Imagen','Vídeo','Carrusel','Otro'].includes(a.format)?a.format:'Otro',image:imageRef(a.image),notes:safeText(a.notes,1000)})),
   filters:Object.fromEntries(['month','model','territory'].map(k=>[k,state.filters?.[k]!==false]))
  };
 }
