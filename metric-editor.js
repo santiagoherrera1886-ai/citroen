@@ -181,6 +181,7 @@ function wire(){
   updateUI();
  });
  document.addEventListener("citroen:studio-created",e=>{if(e.detail&&e.detail.key)choose(e.detail.key);});
+ document.addEventListener("citroen:studio-removed",e=>{if(selected===e.detail?.key){selected=null;updateUI();document.dispatchEvent(new CustomEvent("citroen:selection-changed",{detail:{key:null}}));}});
  document.addEventListener("citroen:summary-rendered",()=>{if(inspector.hidden)return;const info=panelInfo();if(info)updateUI();});
  updateUI();
 }
