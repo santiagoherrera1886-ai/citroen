@@ -1,221 +1,297 @@
-/* Citroën Studio — direct manipulation of native graphs AND KPI cards.
-   Drag the selected object itself (no extra grip required), resize from its corner,
-   and share positions through the existing published summaryLayout object. */
+/* Citroën 2026 | One freeform Summary canvas
+ * Header, hero, context, ONE filter dock, 6 KPIs and all graph panels share
+ * absolute coordinates. Legacy relative KPI / chart positions are migrated
+ * once, and the layout is compatible with published summaryLayout.
+ */
 (function(){
 'use strict';
 const KEY='citroen_free_summary_layout_v1',$=id=>document.getElementById(id);
 const editing=()=>window.CITROEN_ACCESS?.canEdit()===true&&$('c3Dashboard')?.classList.contains('studio-edit-on')===true;
 const clamp=(v,min,max)=>Math.max(min,Math.min(max,Math.round(Number(v)||0)));
-let state={enabled:false,items:{}},busy=null,booted=false;
-try{const raw=JSON.parse(localStorage.getItem(KEY)||'null');if(raw&&typeof raw==='object')state={enabled:raw.enabled===true,items:raw.items||{}};}catch{}
-const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify(state));}catch{}};
+const DEFAULT_KEYS=['b:header','b:hero','b:context','b:filters'];
+let state={enabled:false,version:2,items:{}},busy=null,booted=false,selected=null;
+try{const raw=JSON.parse(localStorage.getItem(KEY)||'null');if(raw&&typeof raw==='object')state={enabled:raw.enabled===true,version:raw.version===2?2:1,items:raw.items||{}};}catch{}
+function persist(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch{}}
 const panels=()=>Array.from($('studioCards')?.children||[]).filter(el=>el.dataset.panelKey&&!el.hidden);
 const kpis=()=>Array.from($('c3Kpis')?.querySelectorAll('[data-metric-slot]')||[]);
-const lookup=(node)=>node?.dataset?.panelKey|| (node?.hasAttribute('data-metric-slot')?'k:'+node.dataset.metricSlot:null);
-const rectPosition=(el,container,fallback)=>{
- const parent=container.getBoundingClientRect(),box=el.getBoundingClientRect();
- return {
-  x:clamp(box.width>30?box.left-parent.left:fallback.x,0,2600),
-  y:clamp(box.height>30?box.top-parent.top:fallback.y,0,6800),
-  w:clamp(box.width>80?box.width:fallback.w,170,1400),
-  h:clamp(box.height>60?box.height:fallback.h,100,1100)
+const fixed=()=>[document.querySelector('#c3DesignCanvas > .c3-header'),document.querySelector('#c3DesignCanvas > .c3-hero'),$('c3Context'),$('c3FilterDock')].filter(Boolean);
+const all=()=>[...fixed(),...kpis(),...panels()];
+function lookup(el){
+ if(!el)return null;
+ if(el.matches?.('.c3-header'))return 'b:header';
+ if(el.matches?.('.c3-hero'))return 'b:hero';
+ if(el.id==='c3Context')return 'b:context';
+ if(el.id==='c3FilterDock')return 'b:filters';
+ if(el.hasAttribute?.('data-metric-slot'))return 'k:'+el.dataset.metricSlot;
+ return el.dataset?.panelKey||null;
+}
+function safePosition(el,board,fallback){
+ const br=board.getBoundingClientRect(),r=el.getBoundingClientRect();
+ return {x:clamp(r.width>50?r.left-br.left:fallback.x,0,2600),
+  y:clamp(r.height>30?r.top-br.top:fallback.y,0,6800),
+  w:clamp(r.width>80?r.width:fallback.w,170,1400),
+  h:clamp(r.height>30?r.height:fallback.h,60,1100)};
+}
+function createSurface(){
+ const dash=$('c3Dashboard');if(!dash)return;
+ let canvas=$('c3DesignCanvas');
+ if(canvas)return canvas;
+ const header=dash.querySelector(':scope > .c3-header');
+ const hero=dash.querySelector(':scope > .c3-hero');
+ const context=$('c3Context'),legacy=$('lkGlobalFilters'),kp=$('c3Kpis'),charts=$('studioCards');
+ if(!header||!hero||!context||!legacy||!kp||!charts)return;
+ canvas=document.createElement('div');canvas.id='c3DesignCanvas';canvas.className='c3-design-canvas';
+ dash.insertBefore(canvas,header);
+ // Keep the editor toolbar outside the saved design, ABOVE the design canvas.
+ const tools=$('studioTools');
+ if(tools)dash.insertBefore(tools,canvas);
+ canvas.append(header,hero,context);
+ const filter=document.createElement('section');filter.id='c3FilterDock';filter.className='c3-filter-dock';
+ filter.setAttribute('aria-label','Filtros del informe');
+ filter.innerHTML='<div class="c3-filter-dock-title"><strong>Filtros del informe</strong><small>Una sola barra · período, territorio y modelo</small></div><div class="c3-filter-dock-content"><div id="c3NativeFilters" class="c3-native-filters"></div></div>';
+ const native=filter.querySelector('#c3NativeFilters');
+ const holder=filter.querySelector('.c3-filter-dock-content');
+ for(const id of ['c3Month','c3Territory','c3Model']){
+  const el=$(id),label=el?.closest('label');if(label)native.append(label);
+ }
+ holder.append(legacy);
+ canvas.append(filter,kp,charts);
+ return canvas;
+}
+function filterConsolidation(){
+ const engine=window.CITROEN_FILTER_ENGINE;
+ const defs=engine?.getDefinitions?.()||[];
+ const enabled=defs.filter(d=>d.enabled&&(d.scope==='report'||d.pageId==='resumen'&&d.scope==='page'));
+ const covered={
+  c3Month:enabled.some(d=>['date','month'].includes(d.field)||(d.type==='relative'&&d.field==='date')),
+  c3Territory:enabled.some(d=>d.field==='territory'),
+  c3Model:enabled.some(d=>d.field==='model')
  };
-};
-function initialPanels(){
- const board=$('studioCards');if(!board)return;
- const width=Math.max(1180,board.clientWidth||1250),nodes=panels();
- let fallbackY=16;
- for(let i=0;i<nodes.length;i++){
-  const node=nodes[i],key=lookup(node);
-  if(state.items[key])continue;
-  const cols=Number((node.style.gridColumn||'').replace(/\D/g,''))||3;
-  const approximateW=clamp(Math.round((width-12*5)*cols/6),270,1240);
-  const position=rectPosition(node,board,{x:(i%2)*(approximateW+12)+14,y:fallbackY,w:approximateW,h:node.id==='c3ComparePanel'||node.id==='c3FunnelPanel'?360:310});
-  state.items[key]=position;
-  if(i%2===1)fallbackY+=Math.max(position.h,330)+18;
+ for(const [id,duplicate] of Object.entries(covered)){
+  const select=$(id),label=select?.closest('label');
+  if(!select||!label)continue;
+  // The configurable control replaces the legacy control. Clearing the old value
+  // prevents invisible double-filtering when the editor creates a new filter.
+  if(duplicate&&select.value){select.value='';select.dispatchEvent(new Event('change',{bubbles:true}));}
+  label.hidden=duplicate||document.querySelector('#builderFilterModal input[data-filter-toggle="'+({c3Month:'month',c3Territory:'territory',c3Model:'model'}[id])+'"]')?.checked===false;
+  label.dataset.replacedByAdvanced=duplicate?'true':'false';
+ }
+ const native=$('c3NativeFilters');
+ const advanced=$('lkGlobalFilters');
+ const dock=$('c3FilterDock');
+ if(dock) {
+  const hasNative=!!native?.querySelector('label:not([hidden])');
+  const hasAdvanced=!!advanced?.querySelector('.lk-control');
+  dock.classList.toggle('c3-filter-empty',!hasNative&&!hasAdvanced);
  }
 }
-function initialKPIs(){
- const board=$('c3Kpis');if(!board)return;
- const width=Math.max(1180,board.clientWidth||1250),all=kpis(),gap=12,w=(width-gap*5)/6;
- for(let i=0;i<all.length;i++){
-  const key=lookup(all[i]);if(state.items[key])continue;
-  state.items[key]=rectPosition(all[i],board,{x:i*(w+gap),y:0,w,h:135});
+function basePositions(){
+ const canvas=$('c3DesignCanvas');if(!canvas)return;
+ const width=Math.max(1100,canvas.clientWidth||1200),inset=12;
+ const map={
+  'b:header':{x:0,y:0,w:width,h:95},
+  'b:hero':{x:0,y:111,w:width,h:248},
+  'b:context':{x:0,y:374,w:width,h:36},
+  'b:filters':{x:0,y:427,w:width,h:112}
+ };
+ const kpW=(width-5*12)/6;
+ for(let i=0;i<6;i++)map['k:'+i]={x:i*(kpW+12),y:559,w:kpW,h:142};
+ let y=727;
+ for(let i=0;i<panels().length;i++){
+  const el=panels()[i],key=lookup(el);
+  if(!key)continue;
+  const w=i===0?Math.min(width,1180):Math.min((width-16)/2,570);
+  const x=i===0?0:(i%2===1?0:w+16);
+  map[key]={x,y,w,h:335};
+  if(i===0||i%2===0)y+=352;
  }
+ return map;
+}
+function initializePositions(){
+ const canvas=$('c3DesignCanvas');if(!canvas)return;
+ const fallback=basePositions(),rect=canvas.getBoundingClientRect();
+ // Old saved KPI/chart coordinates were relative to separate grids. Translate
+ // them into a single Summary coordinate system exactly once.
+ if(state.version!==2){
+  for(const node of [...kpis(),...panels()]){
+   const key=lookup(node),old=state.items[key],parent=node.parentElement;
+   if(!key||!old||!parent)continue;
+   const box=parent.getBoundingClientRect();
+   const offsetX=box.width?box.left-rect.left:fallback[key]?.x||0;
+   const offsetY=box.height?box.top-rect.top:(key.startsWith('k:')?559:727);
+   state.items[key]={...old,x:clamp(old.x+offsetX,0,2600),y:clamp(old.y+offsetY,0,6800)};
+  }
+  state.version=2;
+ }
+ for(const el of all()){
+  const key=lookup(el);
+  if(!key||state.items[key])continue;
+  const guess=fallback[key]||{x:inset,y:740,w:480,h:310};
+  state.items[key]=safePosition(el,canvas,guess);
+ }
+ persist();
 }
 function clearElement(el){
- for(const name of ['left','top','width','height','position','zIndex'])el.style.removeProperty(name);
+ for(const field of ['left','top','width','height','position','zIndex'])el.style.removeProperty(field);
  el.querySelector(':scope > .citroen-free-resize')?.remove();
+ el.querySelector(':scope > .c3-layout-grip')?.remove();
  el.classList.remove('le-pointer-selected');
 }
-function clearLayout(container,elements){
- container?.classList.remove('citroen-free-mode','citroen-free-kpis');
- if(container)container.style.removeProperty('minHeight');
- for(const el of elements)clearElement(el);
-}
-function applyContainer(container,nodes,kind){
- if(!container)return;
- const active=state.enabled;
- container.classList.toggle(kind==='kpi'?'citroen-free-kpis':'citroen-free-mode',active);
- if(!active){clearLayout(container,nodes);return;}
- let bottom=kind==='kpi'?150:650;
- for(const el of nodes){
-  const k=lookup(el),p=state.items[k];
-  if(!p)continue;
-  el.style.left=p.x+'px';el.style.top=p.y+'px';el.style.width=p.w+'px';el.style.height=p.h+'px';
-  el.style.position='absolute';bottom=Math.max(bottom,p.y+p.h+26);
-  const old=el.querySelector(':scope > .citroen-free-resize');
-  if(editing()){
-   if(!old){
-    const h=document.createElement('span');h.className='citroen-free-resize';
-    h.title='Arrastra para cambiar el tamaño';h.setAttribute('aria-hidden','true');el.appendChild(h);
-   }
-  }else old?.remove();
-  const grip=el.querySelector('.studio-drag');if(grip)grip.draggable=false;
+function controls(el){
+ if(!el.querySelector(':scope > .citroen-free-resize')){
+  const corner=document.createElement('span');corner.className='citroen-free-resize';corner.title='Cambiar tamaño';corner.setAttribute('aria-hidden','true');el.append(corner);
  }
- container.style.minHeight=bottom+'px';
+ if(lookup(el)?.startsWith('b:')&&!el.querySelector(':scope > .c3-layout-grip')){
+  const handle=document.createElement('span');handle.className='c3-layout-grip';
+  handle.textContent='⠿ Mover';handle.title='Arrastrar este bloque';handle.setAttribute('aria-label','Mover elemento del informe');
+  el.append(handle);
+ }
 }
 function apply(){
- const board=$('studioCards'),kp=$('c3Kpis');
- if(!board||!kp)return;
- if(state.enabled){initialPanels();initialKPIs();}
- applyContainer(board,panels(),'panels');
- applyContainer(kp,kpis(),'kpi');
- const btn=$('studioFreeLayout');
- if(btn){
-  btn.setAttribute('aria-pressed',String(state.enabled));
-  btn.textContent=state.enabled?'▦ Restablecer cuadrícula':'✥ Activar posicionamiento libre';
+ const canvas=$('c3DesignCanvas');if(!canvas)return;
+ const enabled=state.enabled;
+ canvas.classList.toggle('c3-canvas-free',enabled);
+ $('c3Kpis')?.classList.toggle('citroen-free-kpis',enabled);
+ $('studioCards')?.classList.toggle('citroen-free-mode',enabled);
+ if(enabled)initializePositions();
+ let bottom=650;
+ for(const el of all()){
+  const key=lookup(el),p=state.items[key];
+  if(enabled&&p){
+   Object.assign(el.style,{position:'absolute',left:p.x+'px',top:p.y+'px',width:p.w+'px',height:p.h+'px'});
+   bottom=Math.max(bottom,p.y+p.h+28);
+   if(editing())controls(el);
+   else{el.querySelector(':scope > .citroen-free-resize')?.remove();el.querySelector(':scope > .c3-layout-grip')?.remove();}
+  }else clearElement(el);
+  if(el.querySelector('.studio-drag'))el.querySelector('.studio-drag').draggable=false;
+  el.classList.toggle('le-pointer-selected',enabled&&editing()&&selected===key);
  }
+ canvas.style.minHeight=enabled?bottom+'px':'';
+ const btn=$('studioFreeLayout');
+ if(btn){btn.setAttribute('aria-pressed',String(enabled));btn.textContent=enabled?'▦ Volver a cuadrícula':'✥ Posicionamiento libre';}
+ filterConsolidation();
 }
 function enable(){
  if(!editing())return;
- if(state.enabled){apply();return;}
- state.enabled=true;
- // Measure against the natural 6-column grid before setting absolute positions.
- initialPanels();initialKPIs();
- persist();apply();
+ if(!state.enabled){initializePositions();state.enabled=true;persist();}
+ apply();
 }
 function toggle(){
  if(!editing())return;
- if(state.enabled){
-  state.enabled=false;persist();apply();
- }else enable();
-}
-function editableHit(node,container){
- const el=node?.closest?.(container.id==='c3Kpis'?'[data-metric-slot]':'.c3-panel,.studio-card');
- return el&&container.contains(el)?el:null;
+ if(state.enabled){state.enabled=false;persist();apply();}
+ else enable();
 }
 const INTERACTIVE='button,select,input,textarea,a,[contenteditable="true"],[role="button"],[data-board-filter],.lk-control,.lk-native-filters,.citroen-free-resize';
-const isInteractive=t=>!!t?.closest?.(INTERACTIVE);
-function pointerStart(ev,container){
- if(!editing()||!state.enabled||busy)return;
- if(ev.pointerType!=='touch'&&ev.button!==0)return;
- const el=editableHit(ev.target,container);
- if(!el)return;
- const handle=ev.target.closest('.citroen-free-resize');
- if(!handle&&isInteractive(ev.target))return;
- const key=lookup(el),p=state.items[key];
- if(!p)return;
- // Match Looker: pointer-down selects immediately; dragging keeps that selection.
- if(!el.classList.contains('metric-selected'))el.click();
- const resize=!!handle,initial={...p},before=exported(),start={x:ev.clientX,y:ev.clientY},scale=window.CITROEN_EDITOR_ZOOM||1;
- const peers=(container.id==='c3Kpis'?kpis():panels()).filter(n=>n!==el).map(n=>state.items[lookup(n)]).filter(Boolean);
+function hit(target){
+ const match=target?.closest?.('.c3-header,.c3-hero,#c3Context,#c3FilterDock,[data-metric-slot],[data-panel-key]');
+ return match&&$('c3DesignCanvas')?.contains(match)?match:null;
+}
+function pointerStart(ev){
+ if(!editing()||!state.enabled||busy||(ev.pointerType!=='touch'&&ev.button!==0))return;
+ const el=hit(ev.target);if(!el)return;
+ const resizing=!!ev.target.closest('.citroen-free-resize');
+ const fromHandle=!!ev.target.closest('.c3-layout-grip');
+ if(!resizing&&!fromHandle&&ev.target.closest(INTERACTIVE))return;
+ const key=lookup(el),p=state.items[key];if(!p)return;
+ selected=key;
+ el.classList.add('le-pointer-selected');
+ // Retain the inspector behavior of native KPI/chart objects.
+ if(key.startsWith('k:')||key.startsWith('n:')||key.startsWith('c:')){
+  if(!el.classList.contains('metric-selected'))el.click();
+ }
+ const initial={...p},before=exported(),sx=ev.clientX,sy=ev.clientY,scale=window.CITROEN_EDITOR_ZOOM||1;
+ const peers=all().filter(n=>n!==el).map(n=>state.items[lookup(n)]).filter(Boolean);
  const assist=window.CITROEN_LAYOUT_HISTORY;
  let moved=false;
- // Normal clicks are intentionally left alone: metric-editor.js selects that card.
- function movement(e){
+ function move(e){
   if(e.pointerId!==ev.pointerId)return;
-  const dx=(e.clientX-start.x)/scale,dy=(e.clientY-start.y)/scale;
-  if(!moved&&Math.hypot(dx,dy)<5)return;
-  if(!moved){
-   moved=true;document.body.classList.add('le-dragging');
-   el.classList.add('le-direct-active');
-   if(e.cancelable)e.preventDefault();
-  }
-  const raw=resize
-   ?{...initial,w:initial.w+dx,h:initial.h+dy}
-   :{...initial,x:initial.x+dx,y:initial.y+dy};
-  const aligned=assist?.snap(raw,peers,{mode:resize?'resize':'move',bypass:e.altKey,grid:8,tolerance:7,gap:12})||raw;
-  if(resize){
-   p.w=clamp(aligned.w,container.id==='c3Kpis'?174:280,1400);
-   p.h=clamp(aligned.h,container.id==='c3Kpis'?115:190,1100);
-  }else{
-   p.x=clamp(aligned.x,0,2600);p.y=clamp(aligned.y,0,6800);
-  }
-  assist?.guides(container,aligned.guides||[]);
+  const dx=(e.clientX-sx)/scale,dy=(e.clientY-sy)/scale;
+  if(!moved&&Math.hypot(dx,dy)<4)return;
+  if(!moved){moved=true;document.body.classList.add('le-dragging');el.classList.add('le-direct-active');}
+  const raw=resizing?{...initial,w:initial.w+dx,h:initial.h+dy}:{...initial,x:initial.x+dx,y:initial.y+dy};
+  const result=assist?.snap(raw,peers,{mode:resizing?'resize':'move',bypass:e.altKey,grid:8,tolerance:7,gap:12})||raw;
+  if(resizing){p.w=clamp(result.w,key.startsWith('k:')?174:230,1400);p.h=clamp(result.h,key.startsWith('k:')?115:60,1100);}
+  else{p.x=clamp(result.x,0,2600);p.y=clamp(result.y,0,6800);}
+  assist?.guides($('c3DesignCanvas'),result.guides||[]);
   Object.assign(el.style,{left:p.x+'px',top:p.y+'px',width:p.w+'px',height:p.h+'px'});
-  container.style.minHeight=Math.max(container.id==='c3Kpis'?150:650,...(container.id==='c3Kpis'?kpis():panels()).map(n=>{
-   const v=state.items[lookup(n)];return v?v.y+v.h+27:0;
-  }))+'px';
+  $('c3DesignCanvas').style.minHeight=Math.max(650,...Object.values(state.items).map(x=>x.y+x.h+28))+'px';
+  if(e.cancelable)e.preventDefault();
  }
  function finish(e){
   if(e.pointerId!==ev.pointerId)return;
-  window.removeEventListener('pointermove',movement);
+  window.removeEventListener('pointermove',move);
   window.removeEventListener('pointerup',finish);
   window.removeEventListener('pointercancel',finish);
-  assist?.guides(container,[]);
-  if(moved){
-   if(e.type==='pointercancel')state.items[key]={...initial};
-   else{persist();assist?.record('summary',before,exported());document.dispatchEvent(new CustomEvent('citroen:layout-committed',{detail:{scope:'summary'}}));}
-   document.body.classList.remove('le-dragging');el.classList.remove('le-direct-active');
-   // Keep native card selected and suppress the click emitted after a drag.
-   const cancelClick=click=>{if(click.target===el||el.contains(click.target)){click.preventDefault();click.stopImmediatePropagation();}};
-   document.addEventListener('click',cancelClick,{capture:true,once:true});
+  assist?.guides($('c3DesignCanvas'),[]);
+  if(e.type==='pointercancel'){state.items[key]={...initial};apply();}
+  else if(moved){
+   persist();assist?.record('summary',before,exported());
+   document.dispatchEvent(new CustomEvent('citroen:layout-committed',{detail:{scope:'summary'}}));
   }
-  busy=null;if(e.type==='pointercancel')apply();
+  document.body.classList.remove('le-dragging');el.classList.remove('le-direct-active');
+  busy=null;
+  if(moved){
+   // Only suppress the actual post-drag click, not the next unrelated user action.
+   const once=e2=>{
+    const associated=e2.target===el||el.contains(e2.target);
+    if(associated){e2.stopImmediatePropagation();e2.preventDefault();}
+   };
+   el.addEventListener('click',once,{capture:true,once:true});
+  }
  }
  busy={element:el,key};
- window.addEventListener('pointermove',movement,{passive:false});
+ window.addEventListener('pointermove',move,{passive:false});
  window.addEventListener('pointerup',finish);
  window.addEventListener('pointercancel',finish);
- if(resize){ev.preventDefault();ev.stopPropagation();}
+ if(resizing||fromHandle){ev.preventDefault();ev.stopPropagation();}
 }
-function exported(){return {enabled:state.enabled,items:JSON.parse(JSON.stringify(state.items))};}
-function imported(data){
- if(!data||typeof data!=='object')return;
+function exported(){return {enabled:state.enabled,version:2,items:JSON.parse(JSON.stringify(state.items))};}
+function imported(value){
+ if(!value||typeof value!=='object')return;
  const items={};
- for(const [key,pos]of Object.entries(data.items||{})){
-  if(!/^[nck]:[\w-]{1,100}$/.test(key)||!pos||typeof pos!=='object')continue;
-  items[key]={
-   x:clamp(pos.x,0,2600),y:clamp(pos.y,0,6800),
-   w:clamp(pos.w,170,1400),h:clamp(pos.h,100,1100)
-  };
+ for(const [key,pos] of Object.entries(value.items||{})){
+  if(!/^(?:[nck]:[\w-]{1,100}|b:(?:header|hero|context|filters))$/.test(key)||!pos||typeof pos!=='object')continue;
+  items[key]={x:clamp(pos.x,0,2600),y:clamp(pos.y,0,6800),
+   w:clamp(pos.w,170,1400),h:clamp(pos.h,60,1100)};
  }
- state={enabled:data.enabled===true,items};
- persist();apply();
+ state={enabled:value.enabled===true,version:value.version===2?2:1,items};
+ selected=null;persist();apply();
 }
 function init(){
  if(booted)return;booted=true;
- const h=window.CITROEN_LAYOUT_HISTORY;
- h?.bind('summary',exported,data=>{imported(data);document.dispatchEvent(new CustomEvent('citroen:layout-committed',{detail:{scope:'summary'}}));});
- h?.bindNudge('summary',(dx,dy)=>{
+ const canvas=createSurface();if(!canvas)return;
+ const assist=window.CITROEN_LAYOUT_HISTORY;
+ assist?.bind('summary',exported,x=>{
+  imported(x);document.dispatchEvent(new CustomEvent('citroen:layout-committed',{detail:{scope:'summary'}}));
+ });
+ assist?.bindNudge('summary',(dx,dy)=>{
   if(!editing()||!state.enabled)return false;
-  const key=window.CITROEN_METRIC_EDITOR?.selected?.();
+  const key=selected&&state.items[selected]?selected:window.CITROEN_METRIC_EDITOR?.selected?.();
   if(!key||!state.items[key])return false;
-  const p=state.items[key],before=exported(),maxX=2600,maxY=6800;
-  p.x=clamp(p.x+dx,0,maxX);p.y=clamp(p.y+dy,0,maxY);
-  if(!h.record('summary',before,exported()))return false;
+  const p=state.items[key],before=exported();
+  p.x=clamp(p.x+dx,0,2600);p.y=clamp(p.y+dy,0,6800);
+  if(!assist?.record('summary',before,exported()))return false;
   persist();apply();
   document.dispatchEvent(new CustomEvent('citroen:layout-committed',{detail:{scope:'summary'}}));
   return true;
  });
- const updateHistory=()=>{
-  for(const [id,act] of [['studioUndoPosition','canUndo'],['studioRedoPosition','canRedo']]){
-   const el=$(id);if(el)el.disabled=!editing()||!h?.[act]('summary');
+ const buttons=()=>{
+  for(const [id,action] of [['studioUndoPosition','canUndo'],['studioRedoPosition','canRedo']]){
+   const b=$(id);if(b)b.disabled=!editing()||!assist?.[action]('summary');
   }
  };
- $('studioUndoPosition')?.addEventListener('click',()=>h?.undo('summary'));
- $('studioRedoPosition')?.addEventListener('click',()=>h?.redo('summary'));
- document.addEventListener('citroen:layout-history',updateHistory);
- document.addEventListener('citroen:studio-layout',updateHistory);
- updateHistory();
+ $('studioUndoPosition')?.addEventListener('click',()=>assist?.undo('summary'));
+ $('studioRedoPosition')?.addEventListener('click',()=>assist?.redo('summary'));
  $('studioFreeLayout')?.addEventListener('click',toggle);
- for(const id of ['studioCards','c3Kpis'])$(id)?.addEventListener('pointerdown',e=>pointerStart(e,$(id)));
+ canvas.addEventListener('pointerdown',pointerStart);
+ document.addEventListener('citroen:layout-history',buttons);
  document.addEventListener('citroen:studio-layout',()=>{
-  if(editing()&&!state.enabled)enable();
-  else apply();
+  if(editing()&&!state.enabled)enable();else apply();
+  buttons();
  });
  document.addEventListener('citroen:summary-rendered',apply);
+ document.addEventListener('citroen:advanced-filter-changed',filterConsolidation);
+ document.addEventListener('citroen:filter-definitions-loaded',filterConsolidation);
  window.addEventListener('resize',()=>{if(state.enabled)apply();});
  if(typeof MutationObserver!=='undefined'){
   let queued=false;
@@ -223,10 +299,10 @@ function init(){
    if(queued)return;queued=true;
    Promise.resolve().then(()=>{queued=false;if(state.enabled)apply();});
   };
-  // Only observe direct added KPI cards; mutations of style attributes must not loop.
-  const kp=$('c3Kpis');if(kp)new MutationObserver(redraw).observe(kp,{childList:true});
+  if($('c3Kpis'))new MutationObserver(redraw).observe($('c3Kpis'),{childList:true});
+  if($('studioCards'))new MutationObserver(redraw).observe($('studioCards'),{childList:true});
  }
- apply();
+ filterConsolidation();apply();buttons();
 }
 window.CITROEN_FREE_LAYOUT={export:exported,import:imported,apply,enable};
 document.addEventListener('DOMContentLoaded',init);
