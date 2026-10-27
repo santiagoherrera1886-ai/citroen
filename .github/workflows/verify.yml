@@ -29,6 +29,7 @@ jobs:
           node --check lib/editor-auth.mjs
           node --check builder.js
           node --check looker-filter-engine.js
+          node --check looker-editor.js
           node --check free-layout.js
           node --check api/dashboard.js
           node --check api/data-connect.js
@@ -55,3 +56,6 @@ jobs:
         run: node scripts/smoke-builder.cjs
       - name: Advanced Looker filter dates, scopes and operator math
         run: node scripts/smoke-lookers.cjs
+
+      - name: Looker-style editor workspace, insertion and view-mode regression
+        run: node scripts/smoke-looker-editor.cjs
