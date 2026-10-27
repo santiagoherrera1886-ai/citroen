@@ -87,8 +87,8 @@ function clean(state){
  const controls=(Array.isArray(state.controls)?state.controls:[]).slice(0,40).map(cleanControl).filter(Boolean);
  const sl=state.summaryLayout;
  const items={};
- if(sl?.items&&typeof sl.items==='object')for(const [k,v] of Object.entries(sl.items))if(/^[nck]:[\w-]{1,100}$/.test(k)&&v&&typeof v==='object')items[k]=Object.fromEntries(['x','y','w','h'].map(t=>[t,Number.isFinite(Number(v[t]))?Math.max(0,Math.min(6000,Math.round(Number(v[t])))):0]));
- return {version:1,revision:safeText(state.revision,85)||'initial',publishedAt:safeText(state.publishedAt,48)||null,summary:cleanSummary(state.summary),summaryLayout:{enabled:sl?.enabled===true,items},controls,
+ if(sl?.items&&typeof sl.items==='object')for(const [k,v] of Object.entries(sl.items))if(/^(?:[nck]:[\w-]{1,100}|b:(?:header|hero|context|filters))$/.test(k)&&v&&typeof v==='object')items[k]=Object.fromEntries(['x','y','w','h'].map(t=>[t,Number.isFinite(Number(v[t]))?Math.max(0,Math.min(6000,Math.round(Number(v[t])))):0]));
+ return {version:1,revision:safeText(state.revision,85)||'initial',publishedAt:safeText(state.publishedAt,48)||null,summary:cleanSummary(state.summary),summaryLayout:{enabled:sl?.enabled===true,version:sl?.version===2?2:1,items},controls,
   pages:pages.filter(p=>p&&validId(p.id)).map(p=>({id:p.id,title:safeText(p.title,70),cards:(Array.isArray(p.cards)?p.cards:[]).slice(0,45).map(fixCard).filter(Boolean)})),
   insights:insights.filter(a=>a&&validId(a.id)).map(a=>({id:a.id,title:safeText(a.title,110),body:safeText(a.body,12000),updatedAt:safeText(a.updatedAt,50)})),
   creatives:creatives.filter(a=>a&&validId(a.id)).map(a=>({id:a.id,title:safeText(a.title,110),campaign:safeText(a.campaign,150),format:['Imagen','Vídeo','Carrusel','Otro'].includes(a.format)?a.format:'Otro',image:imageRef(a.image),notes:safeText(a.notes,1000)})),
