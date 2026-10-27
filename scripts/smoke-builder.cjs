@@ -52,6 +52,17 @@ const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
  assert.ok(card.querySelector('.builder-card-grip'),'Card has free dragging handle');
  assert.ok(card.querySelector('.builder-card-resize'),'Card has resize handle');
  assert.ok(card.querySelector('svg'),'Card visualizes real Meta data');
+ const startLeft=Number.parseInt(card.style.left,10);
+ const pointer=(target,type,x,y)=>{
+  const event=new w.MouseEvent(type,{bubbles:true,cancelable:true,clientX:x,clientY:y,button:0});
+  Object.defineProperty(event,'pointerId',{value:22});
+  target.dispatchEvent(event);
+ };
+ pointer(card,'pointerdown',50,80);
+ pointer(w,'pointermove',140,110);
+ pointer(w,'pointerup',140,110);
+ assert.ok(Number.parseInt(card.style.left,10)>startLeft,'Custom page cards drag directly from their surface');
+
  $('builderFilterSetup').click();assert.equal($('builderFilterModal').hidden,false,'Filter configuration visible; auth='+isEditor+'; edit='+$('c3Dashboard').className+'; onclick='+typeof $('builderFilterSetup').onclick+'; id='+$('builderFilterModal').id);
  const checkbox=$('builderFilterModal').querySelector('[data-filter-toggle="territory"]');checkbox.checked=false;checkbox.dispatchEvent(new w.Event('change',{bubbles:true}));
  assert.equal(published.filters.territory,true,'Filter changes require publish');
