@@ -16,7 +16,10 @@ const cars=[
 const state={plan:null,rows:[],campaigns:[],month:'',model:'',territory:'',metric:'investment',ready:false};
 const add=(rows,i)=>rows.reduce((a,r)=>a+(r.v[i]||0),0);
 const norm=s=>String(s||'').trim().toUpperCase();
-const filter=rows=>rows.filter(r=>(!state.month||r.month===state.month)&&(!state.model||norm(r.model)===norm(state.model))&&(!state.territory||r.territory===state.territory));
+const filter=rows=>{
+ const basic=rows.filter(r=>(!state.month||r.month===state.month)&&(!state.model||norm(r.model)===norm(state.model))&&(!state.territory||r.territory===state.territory));
+ return window.CITROEN_FILTER_ENGINE?.filter(basic,'resumen')||basic;
+};
 const opt=(value,label)=>`<option value="${esc(value)}">${esc(label)}</option>`;
 const configured=(kind,slot,fallback)=>{const prefs=window.CITROEN_METRIC_OVERRIDES||{};return kind==='slot'?(prefs.slots&&prefs.slots[slot])||fallback:(prefs.native&&prefs.native[kind])||fallback;};
 const metricNames={planned:'Inversión planeada',spend:'Inversión Meta',forms:'Formularios',messages:'Conversaciones',impressions:'Impresiones',reach:'Alcance estimado*',clicks:'Clics en enlace',all_clicks:'Clics totales',ctr:'CTR de enlace',cpm:'CPM calculado',cpl:'Costo / formulario*',cost_message:'Costo / conversación*'};
@@ -60,7 +63,7 @@ async function loadPlan(){
 function actualData(d,detail){
  if(d.schema!=='citroen-meta-actuals/2026-v1'||detail.schema!==d.schema||d.rows_source!==27840||detail.rows_source!==27840)throw Error('Fuente Meta no válida.');
  const dd=d.dictionaries,dc=detail.dictionaries;
- const rows=d.daily.map(r=>({month:dd.dates[r[0]].slice(0,7),model:dd.models[r[1]],territory:dd.territories[r[2]],account:dd.accounts[r[3]],v:r.slice(4)}));
+ const rows=d.daily.map(r=>({date:dd.dates[r[0]],month:dd.dates[r[0]].slice(0,7),model:dd.models[r[1]],territory:dd.territories[r[2]],account:dd.accounts[r[3]],platform:'Meta Ads',v:r.slice(4)}));
  const campaigns=detail.campaigns.map(r=>({month:dc.months[r[0]],campaign:dc.campaigns[r[1]],model:dc.models[r[3]],territory:dc.territories[r[4]],account:dc.accounts[r[2]],v:r.slice(5)}));
  if(add(rows,0)!==909508844||add(campaigns,0)!==909508844)throw Error('Los totales de Meta no concilian.');
  return {rows,campaigns};
@@ -179,7 +182,13 @@ function insights(rows){
  $('c3Insights').innerHTML=sections.map((x,i)=>`<div class="c3-insight"><span class="n">${i+1}</span><div><b>${esc(x[0])}</b><span>${esc(x[1])}</span></div></div>`).join('');
 }
 function render(){
- if(!state.ready)return;const rows=filter(state.rows);setKpis(rows);comparison(rows);funnel(rows);models(rows);campaigns();insights(rows);document.dispatchEvent(new Event('citroen:summary-rendered'));
+ if(!state.ready)return;
+ const rows=filter(state.rows);
+ setKpis(rows);
+ comparison(window.CITROEN_FILTER_ENGINE?.filter(rows,'resumen','n:c3ComparePanel')||rows);
+ funnel(window.CITROEN_FILTER_ENGINE?.filter(rows,'resumen','n:c3FunnelPanel')||rows);
+ models(window.CITROEN_FILTER_ENGINE?.filter(rows,'resumen','n:c3ModelsPanel')||rows);
+ campaigns();insights(rows);document.dispatchEvent(new Event('citroen:summary-rendered'));
 }
 function wire(){
  if(!$('c3Dashboard'))return;
@@ -190,6 +199,7 @@ function wire(){
  for(const b of document.querySelectorAll('[data-c3-metric]'))b.onclick=()=>{state.metric=b.dataset.c3Metric;for(const el of document.querySelectorAll('[data-c3-metric]'))el.classList.toggle('active',el===b);render();};
  document.addEventListener('citroen:metric-settings',()=>{state.metric=configured('compareMetric','metric','investment');document.querySelectorAll('[data-c3-metric]').forEach(el=>el.classList.toggle('active',el.dataset.c3Metric===state.metric));render();});
  document.addEventListener('citroen:style-settings',()=>{if(state.ready)render();});
+ document.addEventListener('citroen:advanced-filter-changed',()=>{if(state.ready)render();});
  Promise.all([
  loadPlan(),
  fetch('./data/meta_2026_daily.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Reporte diario no disponible.');return r.json();}),
