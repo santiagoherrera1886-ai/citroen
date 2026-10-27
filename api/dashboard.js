@@ -1,7 +1,8 @@
 import {get,put} from '@vercel/blob';
+import {randomUUID} from 'node:crypto';
 import {json,error,ready,currentUser,sameOrigin} from '../lib/editor-auth.mjs';
 const PATH='private/citroen-published-workspace-v1.json';
-const EMPTY={version:1,pages:[],creatives:[],insights:[],filters:{month:true,model:true,territory:true}};
+const EMPTY={version:1,revision:'initial',publishedAt:null,pages:[],creatives:[],insights:[],filters:{month:true,model:true,territory:true}};
 function safeText(x,max=180){return typeof x==='string'?x.slice(0,max):'';}
 function clean(state){
  if(!state||typeof state!=='object'||Array.isArray(state))throw Error('Estructura inválida');
@@ -41,7 +42,7 @@ function clean(state){
  const sl=state.summaryLayout;
  const items={};
  if(sl?.items&&typeof sl.items==='object')for(const [k,v] of Object.entries(sl.items))if(/^[nc]:[\w-]{1,100}$/.test(k)&&v&&typeof v==='object')items[k]=Object.fromEntries(['x','y','w','h'].map(t=>[t,Number.isFinite(Number(v[t]))?Math.max(0,Math.min(6000,Math.round(Number(v[t])))):0]));
- return {version:1,summaryLayout:{enabled:sl?.enabled===true,items},controls,
+ return {version:1,revision:safeText(state.revision,85)||'initial',publishedAt:safeText(state.publishedAt,48)||null,summaryLayout:{enabled:sl?.enabled===true,items},controls,
   pages:pages.filter(p=>p&&validId(p.id)).map(p=>({id:p.id,title:safeText(p.title,70),cards:(Array.isArray(p.cards)?p.cards:[]).slice(0,45).map(fixCard).filter(Boolean)})),
   insights:insights.filter(a=>a&&validId(a.id)).map(a=>({id:a.id,title:safeText(a.title,110),body:safeText(a.body,12000),updatedAt:safeText(a.updatedAt,50)})),
   creatives:creatives.filter(a=>a&&validId(a.id)).map(a=>({id:a.id,title:safeText(a.title,110),campaign:safeText(a.campaign,150),format:['Imagen','Vídeo','Carrusel','Otro'].includes(a.format)?a.format:'Otro',image:typeof a.image==='string'&&(a.image.startsWith('https://')||/^data:image\/(?:png|jpeg|webp);base64,/.test(a.image))&&a.image.length<120000?a.image:'',notes:safeText(a.notes,1000)})),
@@ -57,15 +58,22 @@ async function read(){
 export default async function handler(req,res){
  try{
   if(!ready())return error(res,503,'El almacenamiento privado no está configurado.');
-  if(req.method==='GET')return json(res,200,{ok:true,workspace:await read()});
+  if(req.method==='GET'){const workspace=await read();return json(res,200,{ok:true,workspace,revision:workspace.revision,publishedAt:workspace.publishedAt});}
   if(req.method!=='POST')return error(res,405,'Método no permitido.');
   const user=await currentUser(req);
   if(!user||user.mustChange)return error(res,401,'Debes iniciar sesión como editor autorizado.');
   if(!sameOrigin(req)||!String(req.headers['content-type']||'').includes('application/json'))return error(res,403,'Origen no autorizado.');
   const raw=JSON.stringify(req.body||{});
   if(raw.length>350000)return error(res,413,'La configuración supera el tamaño permitido.');
+  const published=await read();
+  const expected=req.body?.expectedRevision;
+  if(typeof expected!=='string'||expected!==published.revision){
+   return json(res,409,{ok:false,code:'REVISION_CONFLICT',error:'Otro editor publicó una versión nueva. Tu borrador no se sobrescribió.',revision:published.revision,publishedAt:published.publishedAt});
+  }
   const workspace=clean(req.body?.workspace);
+  workspace.revision=randomUUID();
+  workspace.publishedAt=new Date().toISOString();
   await put(PATH,JSON.stringify(workspace),{access:'private',contentType:'application/json',allowOverwrite:true,addRandomSuffix:false});
-  return json(res,200,{ok:true,workspace,updatedBy:user.email});
+  return json(res,200,{ok:true,revision:workspace.revision,publishedAt:workspace.publishedAt,workspace});
  }catch(e){console.error('Citroen workspace',e?.message||'error');return error(res,503,'No se pudo guardar o cargar la versión publicada.');}
 }
