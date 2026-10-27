@@ -454,3 +454,11 @@ body:has(.c3-dashboard.studio-edit-on) .concept3-shell .content{max-width:none;p
 .lk-native-filters:not(:empty){margin:12px 0 16px;padding:11px;background:#f7fbfe;border-radius:11px;border:1px solid #dbe7f0}
 .lk-native-filters .lk-controls{gap:7px}
 .lk-native-filters .lk-control{min-width:110px}
+
+/* Unsaved changes remain local until the editor explicitly publishes. */
+.builder-draft-banner{background:#eff8fe;border:1px solid #7fb7da;border-radius:12px;padding:10px;margin:10px 0;display:flex;flex-direction:column;gap:7px;color:#244b67}
+.builder-draft-banner[hidden],.builder-draft-banner button[hidden]{display:none!important}
+.builder-draft-banner strong{font-size:11px;font-weight:900}
+.builder-draft-banner p{font-size:10px;line-height:1.6;margin:0;color:#446e85}
+.builder-draft-banner button{border-radius:8px;border:1px solid #bad8eb;background:#fff;color:#255a78;font-size:10px;font-weight:800;padding:8px;cursor:pointer}
+.builder-draft-banner button:hover{background:#e2f3fc}
