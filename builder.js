@@ -369,7 +369,7 @@ function installMove(el,page,card){
   e.preventDefault();el.setPointerCapture?.(e.pointerId);
   const sx=e.clientX,sy=e.clientY,original={x:card.x,y:card.y,w:card.w,h:card.h};
   const move=p=>{
-   const dx=p.clientX-sx,dy=p.clientY-sy;
+   const scale=window.CITROEN_EDITOR_ZOOM||1,dx=(p.clientX-sx)/scale,dy=(p.clientY-sy)/scale;
    if(mode==='move'){card.x=Math.max(0,Math.round((original.x+dx)/8)*8);card.y=Math.max(0,Math.round((original.y+dy)/8)*8);}
    else{card.w=Math.max(220,Math.min(1100,Math.round((original.w+dx)/8)*8));card.h=Math.max(170,Math.min(850,Math.round((original.h+dy)/8)*8));}
    el.style.left=card.x+'px';el.style.top=card.y+'px';el.style.width=card.w+'px';el.style.height=card.h+'px';
