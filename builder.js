@@ -298,7 +298,17 @@ function removeCreatedCard(pageId,cardId){
  });
  return true;
 }
-function deletePage(p){if(!authorized()||!confirm('¿Eliminar esta página y sus tarjetas?'))return;state.pages=state.pages.filter(x=>x.id!==p.id);stash();drawPageNav();navTo('resumen');}
+function deletePage(p){
+ if(!authorized()||!confirm('¿Eliminar esta página y sus tarjetas?'))return;
+ state.pages=state.pages.filter(x=>x.id!==p.id);
+ state.controls=(state.controls||[]).filter(c=>!(
+  (c.scope==='page'||c.scope==='chart')&&c.pageId==='report-'+p.id
+ ));
+ window.CITROEN_FILTER_ENGINE?.setDefinitions(state.controls);
+ selectedCardId=null;
+ stash();drawPageNav();navTo('resumen');
+ status('Página y filtros exclusivos eliminados del borrador. Publica para compartir este cambio.');
+}
 function pageToolbar(page){
  const actions=$('report-'+page.id+'Actions');actions.replaceChildren();
  if(!authorized())return;
