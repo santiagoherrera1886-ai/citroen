@@ -1,5 +1,7 @@
 const assert=require('node:assert/strict');
-const {compare,value}=require('../period-compare.js');
+const fs=require('node:fs'),vm=require('node:vm');
+const ctx={window:{}};vm.runInNewContext(fs.readFileSync('period-compare.js','utf8'),ctx,{filename:'period-compare.js'});
+const {compare,value}=ctx.window.CITROEN_PERIOD_COMPARE;
 const rows=[];
 for(let i=1;i<=30;i++)rows.push({month:'2026-09',date:'2026-09-'+String(i).padStart(2,'0'),spend:100,forms:1,clicks:10,impressions:1000,messages:1});
 for(let i=1;i<=20;i++)rows.push({month:'2026-10',date:'2026-10-'+String(i).padStart(2,'0'),spend:200,forms:2,clicks:30,impressions:1500,messages:3});
