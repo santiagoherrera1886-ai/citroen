@@ -11,12 +11,23 @@ w.CITROEN_EDITOR_ZOOM=1;
 let activeDefs=[];w.CITROEN_FILTER_ENGINE={getDefinitions:()=>activeDefs};
 $('c3Kpis').addEventListener('click',()=>selected++);
 for(const id of ['c3Kpis','studioCards'])$(id).getBoundingClientRect=()=>({left:0,top:0,width:1260,height:630});
+// Simulate previously broken absolute coordinates stored for this browser.
+w.localStorage.setItem('citroen_free_summary_layout_v1',JSON.stringify({
+ enabled:true,version:2,items:{'k:1':{x:500,y:0,w:300,h:140},'b:header':{x:0,y:500,w:800,h:95}}
+}));
 w.eval(fs.readFileSync('free-layout.js','utf8'));
 w.document.dispatchEvent(new w.Event('DOMContentLoaded',{bubbles:true}));
 $('c3Dashboard').classList.add('studio-edit-on');
 w.document.dispatchEvent(new w.Event('citroen:studio-layout'));
+const locked=w.CITROEN_FREE_LAYOUT.export();
+assert.equal(locked.enabled,false,'Previously stored free layout cannot auto-enable on fresh page');
+assert.equal($('c3DesignCanvas').classList.contains('c3-canvas-free'),false,'Stale KPI positions do not overlap the header');
+assert.equal($('c3Kpis').classList.contains('citroen-free-kpis'),false,'Responsive KPI grid is preserved on initial edit');
+$('studioFreeLayout').click();
 const lay=w.CITROEN_FREE_LAYOUT.export();
-assert.equal(lay.enabled,true,'Opening edit mode automatically enables direct placement');
+assert.equal(lay.enabled,true,'Free positioning starts only when the user clicks the button');
+assert.notEqual(lay.items['k:1'].y,0,'Broken old KPI y-position is discarded');
+assert.notEqual(lay.items['b:header'].y,500,'Broken old header coordinate is discarded');
 assert.equal(Object.keys(lay.items).length,12,'Hero, header, context, one filter dock, six KPIs and two charts share the same canvas');
 assert.ok($('c3DesignCanvas').contains($('c3FilterDock')),'Single filter dock is inside the unified canvas');
 assert.equal($('c3NativeFilters').querySelectorAll('select').length,3,'Native selects are moved to one filter dock');
@@ -67,8 +78,12 @@ assert.ok(w.CITROEN_FREE_LAYOUT.export().items['n:c3ComparePanel'].w>before,'Nat
 editor=false;$('c3Dashboard').classList.remove('studio-edit-on');
 w.document.dispatchEvent(new w.Event('citroen:studio-layout'));
 assert.equal(native.querySelector('.citroen-free-resize'),null,'No editing resize handles leak into reader mode');
+assert.equal($('c3DesignCanvas').classList.contains('c3-canvas-free'),false,'Reading always restores the stable responsive grid');
+assert.equal($('c3Kpis').classList.contains('citroen-free-kpis'),false,'KPI cards return to normal grid when editing ends');
 assert.equal(w.CITROEN_FREE_LAYOUT.export().items['k:1'].x,moved,'Position persists after editing ends');
 w.CITROEN_FREE_LAYOUT.import(lay);
-assert.ok(Object.keys(w.CITROEN_FREE_LAYOUT.export().items).includes('k:5'),'Published import accepts KPI placements');
-console.log('PASS: Automatic editor drag, direct card selection, KPI dragging, native graph drag/resize and persisted layout without editor affordances in viewer mode.');
+assert.ok(Object.keys(w.CITROEN_FREE_LAYOUT.export().items).includes('k:5'),'Published import retains KPI coordinates for manual editing');
+assert.equal(w.CITROEN_FREE_LAYOUT.export().enabled,false,'Published old free layout is never forcibly reactivated');
+assert.equal($('c3DesignCanvas').classList.contains('c3-canvas-free'),false,'Published old coordinates cannot break reader layout');
+console.log('PASS: stable reader grid, old broken layout ignored, opt-in direct placement, drag/resize and edit-to-read reset.');
 w.close();
