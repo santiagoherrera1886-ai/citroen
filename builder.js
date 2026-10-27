@@ -395,7 +395,11 @@ async function loadPublished(){
   else state=localDraft()||empty();
  }catch{state=localDraft()||empty();}
  if(!Array.isArray(state.pages))state=empty();
- state.controls=Array.isArray(state.controls)?state.controls:[];
+ state.controls=Array.isArray(state.controls)?state.controls:[
+  {id:'default-period',label:'Rango de fechas',type:'relative',field:'date',scope:'report',pageId:'resumen',preset:'all',value:'',values:[],logic:'AND',exclude:false,enabled:true},
+  {id:'default-model',label:'Modelo',type:'multi',field:'model',scope:'report',pageId:'resumen',value:'',values:[],logic:'AND',exclude:false,enabled:true},
+  {id:'default-territory',label:'Territorio',type:'select',field:'territory',scope:'report',pageId:'resumen',value:'',values:[],logic:'AND',exclude:false,enabled:true}
+ ];
  window.CITROEN_FILTER_ENGINE?.setDefinitions(state.controls);
  drawPageNav();applyFilters();render();
  const location=decodeURIComponent(locationHash());
