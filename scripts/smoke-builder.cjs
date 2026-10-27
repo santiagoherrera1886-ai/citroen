@@ -7,14 +7,20 @@ w.DecompressionStream=class{constructor(type){assert.equal(type,'gzip')}};
 w.Blob=class{constructor(parts){this.parts=parts}stream(){const that=this;return{pipeThrough(){return that}}}};
 w.Response=class{constructor(stream){this.stream=stream}async text(){return zlib.gunzipSync(Buffer.from(this.stream.parts[0])).toString('utf8')}};
 const daily=JSON.parse(fs.readFileSync('data/meta_2026_daily.json','utf8'));
-let isEditor=false,published={version:1,summaryLayout:{enabled:false,items:{}},pages:[],creatives:[],insights:[],filters:{month:true,model:true,territory:true}},writeCount=0;
+let isEditor=false,published={version:1,revision:'initial',summaryLayout:{enabled:false,items:{}},pages:[],creatives:[],insights:[],filters:{month:true,model:true,territory:true}},writeCount=0;
 w.CITROEN_ACCESS={canEdit:()=>isEditor,requestEdit:()=>{}};
 w.confirm=()=>true;let answer='';w.prompt=()=>answer;
 w.fetch=async(url,opt={})=>{
- const json=(body,ok=true)=>({ok,json:async()=>body});
+ const json=(body,ok=true,status=ok?200:400)=>({ok,status,json:async()=>body});
  if(url==='/api/dashboard'){
-  if(opt.method==='POST'){if(!isEditor)return json({error:'Unauthorized'},false);published=JSON.parse(opt.body).workspace;writeCount++;return json({ok:true,workspace:published});}
-  return json({ok:true,workspace:JSON.parse(JSON.stringify(published))});
+  if(opt.method==='POST'){
+   if(!isEditor)return json({error:'Unauthorized'},false,401);
+   const request=JSON.parse(opt.body);
+   if(request.expectedRevision!==published.revision)return json({ok:false,code:'REVISION_CONFLICT',error:'Version changed'},false,409);
+   writeCount++;published={...request.workspace,revision:'rev-'+writeCount,publishedAt:'2026-10-27T15:00:00.000Z'};
+   return json({ok:true,workspace:JSON.parse(JSON.stringify(published)),revision:published.revision,publishedAt:published.publishedAt});
+  }
+  return json({ok:true,workspace:JSON.parse(JSON.stringify(published)),revision:published.revision});
  }
  if(url==='/api/data-connect')return json({ok:true,source:'Public Sheet test',columns:['Modelo','Leads'],rows:[{Modelo:'C3',Leads:'32'}],previewOnly:true});
  return json(daily);
@@ -74,6 +80,8 @@ const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
  assert.equal(published.creatives.length,1,'Creative metadata published');
  assert.equal(published.filters.territory,false,'Filter changes published');
  assert.equal(published.summaryLayout.enabled,true,'Free Summary coordinates published');
+ assert.ok(published.summary?.order?.includes('n:c3ComparePanel'),'Original summary arrangement is published with pages');
+ assert.equal(w.localStorage.getItem('citroen_workspace_draft_v1'),null,'Successful publication clears local draft');
  $('builderNewFilter').click();
  assert.equal($('builderFilterEditor').hidden,false,'Filter authoring modal opens in edit mode');
  const form=$('builderFilterEditorForm');
@@ -97,6 +105,26 @@ const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
  await w.CITROEN_BUILDER.publish();
  assert.equal(published.controls.length,5,'Filter configurations persist to server-published workspace');
  assert.equal(writeCount,2,'Second explicit publish stores advanced controls');
+ assert.equal(w.localStorage.getItem('citroen_workspace_draft_v1'),null,'No phantom draft after publishing');
+ w.document.querySelector('[data-target="citroen-insights"]').click();
+ $('citroen-insightsActions').querySelector('button').click();
+ $('builderInsightTitle').value='Hallazgo sin publicar';
+ $('builderInsightBody').value='Este insight todavía es borrador privado.';
+ $('builderInsightSave').click();
+ const saved=JSON.parse(w.localStorage.getItem('citroen_workspace_draft_v1'));
+ assert.equal(saved.draftVersion,2,'New drafts include versioned recovery metadata');
+ assert.equal(saved.baseRevision,'rev-2','Draft pins published revision');
+ await w.CITROEN_BUILDER.loadPublished();
+ assert.equal($('builderDraftBanner').hidden,false,'Editor sees recovery banner for prior draft');
+ assert.ok(!$('citroen-insightsBody').textContent.includes('Hallazgo sin publicar'),'Unpublished draft does not leak into public workspace');
+ $('builderDraftRestore').click();
+ assert.ok($('citroen-insightsBody').textContent.includes('Hallazgo sin publicar'),'Recover draft without losing its insights');
+ published.revision='rev-from-another-editor';
+ await w.CITROEN_BUILDER.publish();
+ assert.equal(writeCount,2,'Stale editor cannot overwrite another published revision');
+ assert.ok($('builderStatus').textContent.includes('Conflicto'),'Conflict presented clearly to editor');
+ assert.ok(w.localStorage.getItem('citroen_workspace_draft_v1'),'Draft remains recoverable after version conflict');
+
 
  w.CITROEN_STUDIO_LOCK();isEditor=false;await tick();
  assert.equal($('builderGlobalActions').hidden,true,'Editor controls hidden when session ends');
