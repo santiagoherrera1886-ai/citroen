@@ -36,7 +36,8 @@ function rowsFor(card){
  const groupVals=card.dimension==="month"?selectedMonths:selectedModels.filter(m=>!useModel||useModel===m);
  const rows=groupVals.map(key=>{
   const p=plan.models.filter(r=>(card.dimension==="month"?plan.months[r[0]][0]===key: norm(r[1])===norm(key))&&(!state.month||plan.months[r[0]][0]===state.month)&&(!useModel||norm(r[1])===norm(useModel)));
-  const a=meta.filter(r=>(card.dimension==="month"?r.month===key:norm(r.model)===norm(key))&&(!state.month||r.month===state.month)&&(!useModel||norm(r.model)===norm(useModel)));
+  const candidate=window.CITROEN_FILTER_ENGINE?.filter(meta,'resumen','c:'+card.id)||meta;
+  const a=candidate.filter(r=>(card.dimension==="month"?r.month===key:norm(r.model)===norm(key))&&(!state.month||r.month===state.month)&&(!useModel||norm(r.model)===norm(useModel)));
   const included=card.metric==="leads"||card.metric==="cpl" ? p.filter(r=>useModel||card.dimension==="model"||r[1]!=="BERLINGO") : p;
   const pi=p.reduce((v,r)=>v+(Number(r[2])||0),0);
   const pl=included.some(r=>r[3]==null)?null:included.reduce((v,r)=>v+(Number(r[3])||0),0);
@@ -261,6 +262,7 @@ function exportCsv(){
 function wire(){
  document.addEventListener("citroen:metric-settings",()=>{if(ready)draw();});
  document.addEventListener("citroen:style-settings",()=>{if(ready)draw();});
+ document.addEventListener("citroen:advanced-filter-changed",()=>{if(ready)draw();});
  $("studioGallery").onclick=e=>{
   const btn=e.target.closest("[data-gallery-chart]");
   if(!btn)return;
@@ -344,7 +346,7 @@ async function start(){
   try{
    const response=await fetch("./data/meta_2026_daily.json",{cache:"no-store"});
    if(response.ok){const raw=await response.json(),dict=raw.dictionaries;
-    meta=raw.daily.map(r=>({month:String(dict.dates[r[0]]).slice(0,7),model:String(dict.models[r[1]]),spend:Number(r[4])||0,forms:Number(r[5])||0,messages:Number(r[6])||0,impressions:Number(r[7])||0,clicks:Number(r[8])||0,all_clicks:Number(r[9])||0,reach:Number(r[10])||0}));
+    meta=raw.daily.map(r=>({date:String(dict.dates[r[0]]),month:String(dict.dates[r[0]]).slice(0,7),model:String(dict.models[r[1]]),territory:String(dict.territories[r[2]]),account:String(dict.accounts[r[3]]),platform:'Meta Ads',spend:Number(r[4])||0,forms:Number(r[5])||0,messages:Number(r[6])||0,impressions:Number(r[7])||0,clicks:Number(r[8])||0,all_clicks:Number(r[9])||0,reach:Number(r[10])||0}));
    }
   }catch(err){console.warn("Studio: ejecución Meta no disponible",err);}
   const store=saved();
