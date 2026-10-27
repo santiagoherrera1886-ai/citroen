@@ -22,7 +22,7 @@ function clean(state){
    image:typeof c.image==='string'&&(c.image.startsWith('https://')||/^data:image\/(?:png|jpeg|webp);base64,/.test(c.image))&&c.image.length<120000?c.image:'',
    filter:['month','model'].includes(c.filter)?c.filter:'month'};
  };
- const TYPES=new Set(['date','relative','select','multi','list','search','number','checkbox','advanced']);
+ const TYPES=new Set(['date','relative','select','multi','list','radio','search','number','slider','checkbox','advanced']);
  const FIELDS=new Set(['date','month','model','territory','account','platform','spend','forms','messages','impressions','reach','clicks']);
  const OPS=new Set(['contains','equals','starts','ends','notcontains','gt','gte','lt','lte','between','in','notin','empty','notempty','regex']);
  const iso=x=>typeof x==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x)?x:'';
