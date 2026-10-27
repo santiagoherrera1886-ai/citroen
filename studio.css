@@ -528,3 +528,26 @@ body:has(.c3-dashboard.studio-edit-on) .concept3-shell .content{max-width:none;p
 .citroen-delete-dismiss{background:transparent;color:#c7dde9;border:0;font-size:21px;width:25px;height:30px}
 .citroen-delete-dismiss:hover{color:#fff}
 @media(max-width:640px){.citroen-delete-toast{bottom:12px;width:calc(100vw - 34px);box-sizing:border-box;padding:10px}.citroen-delete-toast span{flex:1}.builder-card-quick-remove{min-width:30px}}
+
+
+/* Premium self-service page templates; visible only after authenticated Design access. */
+.builder-template-panel{width:min(840px,96vw);padding:27px;max-width:94vw}
+.builder-template-panel>p{font-size:12px;line-height:1.7;color:#69869a;margin:5px 0 20px}
+.builder-template-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.builder-template-option{--template-accent:#8db9cf;min-width:0;display:flex;flex-direction:column;text-align:left;gap:6px;
+ padding:14px;min-height:177px;cursor:pointer;border:1px solid #ddeaf2;border-radius:14px;background:#fff;
+ color:#183f57;font-family:Manrope,Arial,sans-serif;box-shadow:0 4px 20px rgba(27,69,97,.035);
+ transition:transform .15s,border-color .15s,box-shadow .15s}
+.builder-template-option:hover,.builder-template-option:focus-visible{border-color:var(--template-accent);transform:translateY(-2px);
+ box-shadow:0 10px 25px rgba(16,55,85,.13);outline:none}
+.builder-template-art{width:50px;height:46px;display:grid;place-items:center;background:color-mix(in srgb,var(--template-accent) 11%,white);
+ border-radius:11px;color:var(--template-accent);font-size:25px;font-weight:900;margin-bottom:7px}
+.builder-template-option strong{font-size:12px;font-weight:850;line-height:1.35}
+.builder-template-option>span:not(.builder-template-art){font-size:10px;color:#64879e;line-height:1.5;flex:1}
+.builder-template-option small{font-size:9px;color:#95a8b6;line-height:1.4;max-width:100%}
+.builder-template-blank{border-style:dashed;--template-accent:#4b829e;background:#f8fbfd}
+.builder-card-quick-duplicate{display:inline-flex;align-items:center;justify-content:center;min-width:27px;height:28px;
+ color:#477b99;background:#f1f7fb;border:1px solid #d9e9f2;border-radius:9px;cursor:pointer;font:800 17px Manrope,Arial,sans-serif}
+.builder-card-quick-duplicate:hover,.builder-card-quick-duplicate:focus-visible{background:#dff1fb;border-color:#94c6e5;outline:2px solid #94c6e566}
+@media(max-width:770px){.builder-template-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.builder-template-option{min-height:165px}}
+@media(max-width:490px){.builder-template-grid{grid-template-columns:1fr}.builder-template-option{min-height:118px}.builder-template-panel{padding:16px}}
