@@ -1,5 +1,19 @@
 # Citroën · Performance Intelligence
 
+## NUEVA INTERFAZ DE EDICIÓN TIPO LOOKER STUDIO — 27/10/2026
+
+El modo **Ver informe** conserva la interfaz premium de Citroën. El entorno de **Diseño**, accesible únicamente después de una sesión autorizada desde el botón del menú, ahora abre un workspace de autoría totalmente independiente (archivos `looker-editor.js` / `looker-editor.css`).
+
+**Estructura visual:** barra de menús superior (Archivo, Editar, Insertar, Página, Organizar, Recurso); barra de herramientas con Añadir página, Añadir datos, Añadir gráfico, Añadir control, Texto/insight, Imágenes, Tema/diseño, Mover libremente, Guardar y Publicar; columna de páginas a la izquierda; lienzo del informe central sobre superficie gris; panel derecho con propiedades contextuales (Configuración, Estilo, Diseño), catálogo buscable de campos y pestañas de navegación. El panel de campos se oculta en pantallas de escritorio angostas para preservar espacio; los controles accesibles continúan disponibles.
+
+**Los botones ejecutan flujos existentes:** los gráficos se insertan con la galería real del Resumen; nuevas páginas usan el constructor de páginas; controles abren el creador de filtros; fuentes llevan al área de Sheets/BigQuery; estilos aplican paletas y propiedades; imágenes abren el gestor de fotografías; Guardar persiste la vista local y Publicar intenta publicar páginas/insights/filtros en Vercel. Los campos de métricas compatibles se aplican al componente seleccionado; mes y modelo pueden elegirse como dimensiones de gráficos personalizados. En elementos que no soporten un campo se indica que requiere un gráfico compatible; no se finge una edición exitosa.
+
+**Acceso y salida:** la vista de editor aparece solo si el Dashboard tiene la clase `studio-edit-on`, que el módulo de estudio concede después de sesión válida. **Ver informe** llama al control oficial de terminar edición, elimina la carcasa tipo Looker y restaura inmediatamente la vista normal. El inspector y los controles originales permanecen en el DOM para reutilizar sus eventos, sin duplicar sus cálculos.
+
+**Verificaciones:** `scripts/smoke-looker-editor.cjs` prueba el modo público intacto, activación del workspace, menú de gráficos, creación de páginas, aplicación de campos, paletas y salida. Se incluye `node --check looker-editor.js` en GitHub Actions. Interfaz inspirada en Looker Studio, no una copia ni una implementación de todas sus operaciones o conectores.
+
+---
+
 ## LOOKER-STYLE FILTER STUDIO — 27/10/2026
 
 **Verificación funcional**: `looker-filter-engine.js` y el constructor de páginas incorporan un motor de controles reutilizables. El usuario con acceso de edición utiliza **＋ Control / filtro avanzado** en el menú lateral, configura el control, puede seleccionar ámbito (todo el informe, una página o un gráfico), y luego pulsa **Publicar cambios** para compartir las definiciones en Vercel Blob. Los lectores pueden cambiar los valores de cada control sin iniciar sesión. Los valores de lectura son temporales y no modifican ni la fuente ni las definiciones publicadas.
