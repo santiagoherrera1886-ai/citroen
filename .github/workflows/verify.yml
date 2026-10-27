@@ -35,6 +35,7 @@ jobs:
           node --check layout-assist.js
           node --check report-templates.js
           node --check period-compare.js
+          node --check compare-lab.js
           node --check api/dashboard.js
           node --check api/data-connect.js
           node --check api/history.js
@@ -69,6 +70,8 @@ jobs:
         run: node scripts/smoke-looker-editor.cjs
       - name: Looker contextual chart editing, canvas zoom and reader isolation
         run: node scripts/smoke-looker-properties.cjs
+      - name: Manual A/B comparison by model and territory
+        run: node scripts/smoke-compare-lab.cjs
       - name: Grounded month-to-date comparison math
         run: node scripts/smoke-period-comparison.cjs
       - name: Magnetic guidelines, alignment and undo/redo history
