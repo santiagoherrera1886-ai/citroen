@@ -73,7 +73,7 @@ function filterConsolidation(){
   // The configurable control replaces the legacy control. Clearing the old value
   // prevents invisible double-filtering when the editor creates a new filter.
   if(duplicate&&select.value){select.value='';select.dispatchEvent(new Event('change',{bubbles:true}));}
-  label.hidden=duplicate||document.querySelector('#builderFilterModal input[data-filter-toggle="'+({c3Month:'month',c3Territory:'territory',c3Model:'model'}[id])+'"]')?.checked===false;
+  label.hidden=duplicate||window.CITROEN_BUILDER?.getFilterVisibility?.({c3Month:'month',c3Territory:'territory',c3Model:'model'}[id])===false;
   label.dataset.replacedByAdvanced=duplicate?'true':'false';
  }
  const native=$('c3NativeFilters');
@@ -126,7 +126,7 @@ function initializePositions(){
  for(const el of all()){
   const key=lookup(el);
   if(!key||state.items[key])continue;
-  const guess=fallback[key]||{x:inset,y:740,w:480,h:310};
+  const guess=fallback[key]||{x:12,y:740,w:480,h:310};
   state.items[key]=safePosition(el,canvas,guess);
  }
  persist();
