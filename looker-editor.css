@@ -138,3 +138,6 @@ body.citroen-looker-edit #metricInspector .metric-layout-pane{scrollbar-color:#b
  body.citroen-looker-edit #metricInspector{width:min(320px,94vw)!important}
  body.citroen-looker-edit .content .page-section.is-active{padding:12px!important}
 }
+
+@media(max-width:1480px){body.citroen-looker-edit.le-show-data-panel .le-fields-panel{display:flex!important;right:354px!important;z-index:99;box-shadow:-10px 2px 35px #1b41652b}}
+@media(max-width:990px){body.citroen-looker-edit .le-rail{display:flex;top:126px;bottom:auto;right:0;width:49px;background:#f4f7fa;z-index:102}body.citroen-looker-edit.le-show-data-panel .le-fields-panel{right:0!important;width:min(320px,94vw)!important;top:179px;z-index:101}body.citroen-looker-edit.le-show-data-panel #metricInspector{visibility:hidden}}
