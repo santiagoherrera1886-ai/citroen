@@ -96,7 +96,7 @@ function fields(){
   const subset=matches.filter(r=>r[2]===type);
   if(!subset.length)return '';
   return '<div class="le-field-group">'+({date:'TIEMPO',text:'DIMENSIONES',metric:'MÉTRICAS'}[type])+'</div>'+
-    subset.map(r=>'<button type="button" data-field-key="'+escape(r[1])+'"><span class="le-kind '+type+'">'+(type==='metric'?'123':type==='text'?'ABC':'▦')+'</span>'+escape(r[0])+'<b>＋</b></button>').join('');
+    subset.map(r=>'<button type="button" draggable="true" data-field-key="'+escape(r[1])+'"><span class="le-kind '+type+'">'+(type==='metric'?'123':type==='text'?'ABC':'▦')+'</span>'+escape(r[0])+'<b>＋</b></button>').join('');
  }).join('')||'<div class="le-empty">No hay campos</div>';
 }
 function chooseField(key){
@@ -144,6 +144,11 @@ function start(){
  $('leView').onclick=()=>{click('studioEdit');mark('Modo lectura');};
  $('leFieldSearch').oninput=fields;
  $('leFieldsList').onclick=e=>{const el=e.target.closest('[data-field-key]');if(el)chooseField(el.dataset.fieldKey);};
+ $('leFieldsList').addEventListener('dragstart',e=>{
+  const f=e.target.closest('[data-field-key]');if(!f||!e.dataTransfer)return;
+  e.dataTransfer.setData('text/plain',f.dataset.fieldKey);
+  e.dataTransfer.effectAllowed='copy';
+ });
  document.addEventListener('citroen:studio-layout',()=>{setEdit($('c3Dashboard')?.classList.contains('studio-edit-on')===true);if(editing)pages();});
  document.addEventListener('citroen:builder-page-changed',()=>{if(editing)pages();});
  document.addEventListener('citroen:builder-page-order',()=>{if(editing)pages();});
