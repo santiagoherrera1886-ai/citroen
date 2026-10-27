@@ -50,7 +50,7 @@ w.document.dispatchEvent(new w.Event('DOMContentLoaded',{bubbles:true}));
  w.document.querySelector('.citroen-delete-undo').click();
  assert.equal(id('studioCards').querySelectorAll('.studio-card').length,2,'Undo restores removed custom chart');
  const keyboardCard=id('studioCards').lastElementChild;
- w.CITROEN_METRIC_EDITOR={selected:()=> 'c:'+keyboardCard.dataset.id};
+ w.CITROEN_METRIC_EDITOR={selected:()=> 'c:'+keyboardCard.dataset.id,reset:()=>{}};
  w.document.dispatchEvent(new w.KeyboardEvent('keydown',{bubbles:true,cancelable:true,key:'Delete'}));
  assert.equal(id('studioCards').querySelectorAll('.studio-card').length,1,'Delete key removes only selected custom chart');
  w.document.querySelector('.citroen-delete-undo').click();
