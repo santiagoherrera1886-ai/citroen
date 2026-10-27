@@ -245,6 +245,7 @@ function renderChart(card,page){
  if(!arr.length)return '<p class="builder-empty">Sin datos para los filtros seleccionados.</p>';
  if(shape==='table'||shape==='pivot')return '<table class="builder-data-table"><thead><tr><th>'+esc(card.dimension||'Dimensión')+'</th><th>'+esc(CL[card.metric])+'</th></tr></thead><tbody>'+arr.map(a=>'<tr><td>'+esc(a.name)+'</td><td>'+fmt(a.value,card.metric)+'</td></tr>').join('')+'</tbody></table>';
  const W=540,H=200,p=30,max=Math.max(1,...arr.map(x=>x.value)),step=(W-p*2)/arr.length;
+ const seriesColor=/^#[0-9a-f]{6}$/i.test(card.color||'')?card.color:'#8abbd8';
  if(shape==='pie'||shape==='donut'){
   const total=arr.reduce((x,r)=>x+r.value,0);if(total<=0)return '<div class="builder-empty">No hay valores positivos para mostrar la distribución.</div>';
   let last=0;const cx=120,cy=103,rad=77,small=shape==='donut';
@@ -271,14 +272,14 @@ function renderChart(card,page){
  arr.forEach((a,i)=>{
   const x=p+step*(i+.5),y=H-p-(a.value/max)*(H-2*p);
   pts.push([x,y]);
-  if(shape==='bar')plot+='<rect x="'+(x-step*.27)+'" y="'+y+'" width="'+step*.54+'" height="'+(H-p-y)+'" rx="3" fill="#8abbd8"><title>'+esc(a.name)+'</title></rect>';
-  if(shape==='barh')plot+='<rect x="'+p+'" y="'+(22+i*Math.min(23,120/arr.length))+'" width="'+(a.value/max*(W-p*2))+'" height="'+Math.max(5,Math.min(17,110/arr.length))+'" rx="3" fill="#8abbd8"><title>'+esc(a.name)+'</title></rect>';
+  if(shape==='bar')plot+='<rect x="'+(x-step*.27)+'" y="'+y+'" width="'+step*.54+'" height="'+(H-p-y)+'" rx="3" fill="'+seriesColor+'"><title>'+esc(a.name)+'</title></rect>';
+  if(shape==='barh')plot+='<rect x="'+p+'" y="'+(22+i*Math.min(23,120/arr.length))+'" width="'+(a.value/max*(W-p*2))+'" height="'+Math.max(5,Math.min(17,110/arr.length))+'" rx="3" fill="'+seriesColor+'"><title>'+esc(a.name)+'</title></rect>';
   if(shape!=='barh')plot+='<text x="'+x+'" y="'+(H-5)+'" text-anchor="middle" font-size="9" fill="#456b85">'+esc(a.name.slice(0,9))+'</text>';
  });
  if(['line','area'].includes(shape)){
   const coords=pts.map(a=>a.join(',')).join(' ');
   if(shape==='area')plot+='<polygon points="'+pts[0][0]+','+(H-p)+' '+coords+' '+pts.at(-1)[0]+','+(H-p)+'" fill="#d4e9f6"/>';
-  plot+='<polyline points="'+coords+'" fill="none" stroke="#ed5b6e" stroke-width="3"/>';
+  plot+='<polyline points="'+coords+'" fill="none" stroke="'+seriesColor+'" stroke-width="3"/>';
  }
  if(shape==='barh')plot+=arr.map((a,i)=>'<text x="'+(p+3)+'" y="'+(18+i*Math.min(23,120/arr.length))+'" fill="#355875" font-size="9">'+esc(a.name.slice(0,25))+'</text>').join('');
  return '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+esc(card.title)+'" preserveAspectRatio="none">'+plot+'</svg>';
@@ -389,6 +390,8 @@ function renderPage(page){
   const tools=authorized()?'<button type="button" class="builder-card-edit">Editar</button><span class="builder-card-grip" title="Arrastrar libremente">⠿</span>':'';
   const html='<div class="builder-card-top"><strong>'+esc(card.title)+'</strong><span>'+tools+'</span></div><div class="builder-card-inner">'+cardBody(card,page)+'</div>'+(authorized()?'<div class="builder-card-resize" title="Redimensionar"></div>':'');
   const el=mk('article',{class:'builder-board-card'+(selectedCardId===card.id?' le-builder-selected':''), 'data-card-id':card.id},html);
+  if(card.background&&/^#[0-9a-f]{6}$/i.test(card.background))el.style.background=card.background;
+  if(card.textColor&&/^#[0-9a-f]{6}$/i.test(card.textColor))el.style.color=card.textColor;
   Object.assign(el.style,{left:card.x+'px',top:card.y+'px',width:card.w+'px',height:card.h+'px'});
   el.querySelector('.builder-card-edit')?.addEventListener('click',e=>{e.stopPropagation();editCard(page,card);});
   el.addEventListener('click',e=>{
@@ -604,6 +607,7 @@ window.CITROEN_BUILDER={render,loadPublished,publish,
   const valid={shape:['bar','barh','line','area','table','pie','donut','gauge'],metric:['spend','forms','messages','impressions','reach','clicks','ctr','cpl'],dimension:['date','week','month','quarter','model','territory','account']};
   for(const [k,v] of Object.entries(patch)){
    if(k==='title'&&typeof v==='string')c.title=v.slice(0,100);
+   else if(['color','background','textColor'].includes(k)&&typeof v==='string'&&/^#[0-9a-f]{6}$/i.test(v))c[k]=v;
    else if(k==='text'&&typeof v==='string')c.text=v.slice(0,7000);
    else if(k==='goal'&&Number.isFinite(Number(v)))c.goal=v===''?null:Math.max(0,Math.min(1e12,Number(v)));
    else if(k==='source'&&['meta','external'].includes(v))c.source=v;
