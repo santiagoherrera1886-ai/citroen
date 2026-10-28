@@ -9,7 +9,7 @@ const DATA='private/citroen-campaign-sync-data-v1.json';
 const digest=s=>createHash('sha256').update(s).digest('hex');
 async function read(path){const r=await get(path,{access:'private',useCache:false});if(!r||r.statusCode===404)return null;if(r.statusCode!==200)throw Error('No se pudo leer la conexión.');return {value:JSON.parse(await new Response(r.stream).text()),etag:r.blob?.etag};}
 async function write(path,value,previous){return put(path,JSON.stringify(value),{access:'private',contentType:'application/json',addRandomSuffix:false,allowOverwrite:!!previous, ...(previous?{ifMatch:previous.etag}:{})});}
-function status(record){const d=record?.value;return {ok:true,connected:!!d,revision:d?.revision||null,syncedAt:d?.syncedAt||null,dateMin:d?.daily.date_min||null,dateMax:d?.daily.date_max||null,rows:d?.daily.rows_source||0,scheduled:!!d?.scheduled,intervalMinutes:60,stale:!!d&&Date.now()-Date.parse(d.syncedAt)>3*3600000,source:'DATA CITROEN AÑO'};}
+function status(record){const d=record?.value;return {ok:true,connected:!!d,revision:d?.revision||null,syncedAt:d?.syncedAt||null,dateMin:d?.daily.date_min||null,dateMax:d?.daily.date_max||null,rows:d?.daily.rows_source||0,scheduled:!!d?.scheduled,intervalMinutes:60,stale:!!d&&Date.now()-Date.parse(d.syncedAt)>3*3600000,mediaVersion:d?.detail.media_version||0,images:d?.detail.creative_media?.length||0,source:'DATA CITROEN AÑO'};}
 
 export function createCampaignSyncHandler(deps={}){
  const storeRead=deps.read||read,storeWrite=deps.write||write,authenticate=deps.currentUser||currentUser,isReady=deps.ready||ready;

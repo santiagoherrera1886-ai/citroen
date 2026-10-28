@@ -689,8 +689,10 @@ function renderCreatives(){
  const actions=$('citroen-creativesActions');actions.replaceChildren();
  if(authorized())actions.appendChild(button('＋ Añadir creativo',()=>editCreative()));
  const root=$('citroen-creativesBody');
- if(!state.creatives.length){root.innerHTML='<div class="builder-empty-page">Todavía no hay creativos publicados. Desde Diseño podrás agregar imágenes de piezas y sus notas.</div>';return;}
- root.innerHTML='<div class="builder-creatives-grid">'+state.creatives.map(c=>'<article class="builder-creative"><div class="builder-creative-image">'+(c.image?'<img alt="'+esc(c.title)+'" src="'+esc(c.image)+'">':'<div class="builder-empty">Imagen pendiente</div>')+'</div><div class="builder-creative-caption"><strong>'+esc(c.title)+'</strong><small>'+esc(c.format||'Otro')+' · '+esc(c.campaign||'Sin campaña')+'</small><p>'+esc(c.notes||'')+'</p>'+(authorized()?'<button type="button" data-creative-edit="'+esc(c.id)+'">Editar creativo</button>':'')+'</div></article>').join('')+'</div>';
+ root.replaceChildren();
+ if(window.CITROEN_CAMPAIGN_CREATIVES){const live=mk('div',{id:'campaignCreativeLibrary'});root.append(live);window.CITROEN_CAMPAIGN_CREATIVES.mount(live);}
+ if(!state.creatives.length){if(!window.CITROEN_CAMPAIGN_CREATIVES)root.innerHTML='<div class="builder-empty-page">Todavía no hay creativos publicados. Desde Diseño podrás agregar imágenes de piezas y sus notas.</div>';return;}
+ root.insertAdjacentHTML('beforeend','<section class="campaign-team-creatives"><h3>Creativos del equipo</h3><div class="builder-creatives-grid">'+state.creatives.map(c=>'<article class="builder-creative"><div class="builder-creative-image">'+(c.image?'<img alt="'+esc(c.title)+'" src="'+esc(c.image)+'">':'<div class="builder-empty">Imagen pendiente</div>')+'</div><div class="builder-creative-caption"><strong>'+esc(c.title)+'</strong><small>'+esc(c.format||'Otro')+' · '+esc(c.campaign||'Sin campaña')+'</small><p>'+esc(c.notes||'')+'</p>'+(authorized()?'<button type="button" data-creative-edit="'+esc(c.id)+'">Editar creativo</button>':'')+'</div></article>').join('')+'</div></section>');
  root.querySelectorAll('[data-creative-edit]').forEach(b=>b.onclick=()=>editCreative(state.creatives.find(c=>c.id===b.dataset.creativeEdit)));
 }
 function editCreative(target){

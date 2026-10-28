@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
+import {readFileSync} from 'node:fs';
 import {aggregateCampaignRows,campaignColumns,validateCampaignData,CAMPAIGN_SOURCE} from '../lib/campaign-data.mjs';
 import {buildCampaignScript} from '../lib/campaign-apps-script.mjs';
 import {createCampaignSyncHandler} from '../api/campaign-sync.js';
@@ -8,7 +9,7 @@ import {createCampaignSyncHandler} from '../api/campaign-sync.js';
 const headers=['Account name','Date','Campaign name','Ad name','Ad set name','Cost','On-Facebook leads','Cost per on-Facebook lead','Impressions','Link clicks','Reach','CTR (all)','Frequency','CPM (cost per 1000 impressions)','Clicks (all)','Messaging conversations started'];
 const row=(date='2026-10-28',cost=100)=>['Cuenta',date,'2026_colombia_citroen_basalt-bogota','video','conjunto',cost,2,50,1000,30,700,3,1,100,50,4];
 const liveHeaders=[...headers.slice(0,5),'Promoted post thumbnail URL','Promoted post image URL',...headers.slice(5)];
-const liveRow=()=>[...row().slice(0,5),'https://example.test/thumb.jpg','https://example.test/image.jpg',...row().slice(5)];
+const liveRow=()=>[...row().slice(0,5),'https://scontent.xx.fbcdn.net/thumb.jpg','https://scontent.xx.fbcdn.net/image.jpg',...row().slice(5)];
 
 test('full source > 5000 rows reconciles all views; two outcome types stay separate',()=>{
  const rows=Array.from({length:6002},()=>row());rows.push(row('2025-12-31',999),Array(16).fill(''));
@@ -30,6 +31,22 @@ test('headers tolerate spacing and case, while missing or ambiguous metrics fail
  assert.deepEqual(aggregateCampaignRows(spaced,[liveRow()]).daily.totals,[100,2,4,1000,30,50,700]);
  assert.throws(()=>campaignColumns(liveHeaders.slice(0,16)),/Messaging conversations started, Clicks \(all\)/);
  assert.throws(()=>campaignColumns([...liveHeaders,' clicks (all) ']),/Columna duplicada/);
+});
+test('image sync keeps the latest exact ad identity and preserves all metric totals',()=>{
+ const newer=liveRow(),older=liveRow();newer[1]='2026-10-28';older[1]='2026-10-01';
+ newer[5]='https://scontent.xx.fbcdn.net/thumb-new.jpg';newer[6]='https://scontent.xx.fbcdn.net/new.jpg';
+ older[5]='https://scontent.xx.fbcdn.net/thumb-old.jpg';older[6]='https://scontent.xx.fbcdn.net/old.jpg';
+ const data=validateCampaignData(aggregateCampaignRows(liveHeaders,[newer,older]));
+ assert.deepEqual(data.daily.totals,[200,4,8,2000,60,100,1400]);
+ assert.equal(data.detail.media_version,1);assert.equal(data.detail.creative_media.length,1);
+ assert.deepEqual(data.detail.creative_media[0].slice(4),['2026-10-28',newer[6],newer[5]]);
+ const removed=[...newer];removed[5]='';removed[6]='';assert.equal(aggregateCampaignRows(liveHeaders,[older,removed]).detail.creative_media.length,0);
+ const unsafe=[...newer];unsafe[5]='javascript:alert(1)';unsafe[6]='https://fbcdn.net.evil.test/image.jpg';assert.equal(aggregateCampaignRows(liveHeaders,[unsafe]).detail.creative_media.length,0);
+ const bad=structuredClone(data);bad.detail.creative_media[0][0]=999;assert.throws(()=>validateCampaignData(bad),/no corresponde/);
+ const duplicate=structuredClone(data);duplicate.detail.creative_media.push([...duplicate.detail.creative_media[0]]);assert.throws(()=>validateCampaignData(duplicate),/único/);
+ const hostile=structuredClone(data);hostile.detail.creative_media[0][5]='https://evil.test/a.jpg';assert.throws(()=>validateCampaignData(hostile),/URL de imagen/);
+ const legacy=structuredClone(data);delete legacy.detail.creative_media;delete legacy.detail.media_version;assert.equal(validateCampaignData(legacy).detail.media_version,undefined);
+ assert.equal(readFileSync(new URL('../downloads/CitroenSync.gs',import.meta.url),'utf8'),buildCampaignScript(''),'Download must be the complete current script with no credential');
 });
 test('invalid or inconsistent payloads cannot replace a complete snapshot',()=>{
  const data=aggregateCampaignRows(headers,[row()]);data.detail.creatives[0][7]++;
@@ -74,7 +91,8 @@ for(const layout of [
  vm.createContext(context);vm.runInContext(script,context);vm.runInContext('instalarCitroenSync()',context);vm.runInContext('instalarCitroenSync()',context);
  assert.equal(triggers.length,1);assert.equal(sent.length,2);assert.equal(sent[0].daily.rows_source,6002);assert.equal(sent[0].scheduled,true);
  assert.deepEqual(sent[0].daily.totals,[600200,12004,24008,6002000,180060,300100,4201400]);
- assert.ok(!JSON.stringify(sent[0]).includes('https://example.test/'),'Image URLs must not be retained in the outgoing metrics');
+ assert.ok(!JSON.stringify(sent[0].daily).includes('fbcdn.net'),'Images are sent once in the creative catalog, not in every daily metric');
+ assert.equal(sent[0].detail.creative_media.length,layout.headers.length>16?1:0);
  // A later timer invocation has no open/active spreadsheet either.
  vm.runInContext('sincronizarCitroen()',context);assert.equal(sent.length,3);assert.equal(sent[2].daily.rows_source,6002);
  vm.runInContext('pausarCitroenSync()',context);assert.equal(triggers.length,0);
