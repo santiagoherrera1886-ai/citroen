@@ -41,6 +41,11 @@ jobs:
           node --check api/dashboard.js
           node --check api/data-connect.js
           node --check lib/sheets-connector.mjs
+          node --check api/campaign-sync.js
+          node --check lib/campaign-data.mjs
+          node --check lib/campaign-apps-script.mjs
+          node --check campaign-feed.js
+          node --check campaign-connection.js
           node --check data-sources.js
           node --check source-data.js
           node --check api/history.js
@@ -92,3 +97,8 @@ jobs:
         run: node --test scripts/test-sheets.mjs
       - name: Connected source editor and privacy regression
         run: node scripts/smoke-sources.cjs
+
+      - name: Full campaign sync, authorization and source reconciliation
+        run: node --test scripts/test-campaign-sync.mjs
+      - name: Shared campaign feed and connection activation UI
+        run: node scripts/smoke-campaign-sync.cjs

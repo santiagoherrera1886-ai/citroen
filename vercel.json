@@ -1,5 +1,6 @@
 {
   "functions": {
-    "api/data-connect.js": { "maxDuration": 60 }
+    "api/data-connect.js": { "maxDuration": 60 },
+    "api/campaign-sync.js": { "maxDuration": 60 }
   }
 }

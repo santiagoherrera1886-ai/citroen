@@ -32,7 +32,7 @@ async function request(body,controller){
 }
 async function checkCapabilities(){
  try{capabilities=await request();const el=$('sourceCapabilities');if(!el)return;
-  el.innerHTML=capabilities.googleServiceAccount?'<span class="source-pill success">Conexión privada disponible</span><p>Comparte la hoja como lector con <strong>'+safe(capabilities.serviceEmail||'la cuenta de servicio configurada')+'</strong>.</p>':'<span class="source-pill warning">Google privado pendiente</span><p>Los enlaces públicos están disponibles. Para una hoja privada, configura la cuenta de servicio de Google en Vercel. No necesitas hacer pública tu información.</p>';
+  el.innerHTML=capabilities.googleServiceAccount?'<span class="source-pill success">Conexión privada disponible</span><p>Comparte la hoja como lector con <strong>'+safe(capabilities.serviceEmail||'la cuenta de servicio configurada')+'</strong>.</p>':'<span class="source-pill warning">Otras hojas privadas</span><p>Para estas vistas previas privadas se requiere una cuenta de servicio. La fuente anual DATA CITROEN AÑO se activa arriba sin esa cuenta y conserva privada la hoja.</p>';
  }catch(e){const el=$('sourceCapabilities');if(el)el.textContent=e.message;}
 }
 async function connect(def,select=true){
@@ -101,6 +101,7 @@ function mount(root){
   connect({id:previous?.id||uid(),kind:'sheets',name:$('sourceName').value.trim(),numberFormat:$('sourceNumberFormat').value,settings:{url,headerRow,mode:$('sourceMode').value,...(previous?.settings.gid?{gid:previous.settings.gid}:{})}});
  };
  $('builderBqConnect').onclick=()=>{const settings={project:$('builderBqProject').value.trim(),dataset:$('builderBqDataset').value.trim(),table:$('builderBqTable').value.trim()},prior=definitions.find(d=>d.kind==='bigquery'&&JSON.stringify(d.settings)===JSON.stringify(settings));connect({id:prior?.id||uid(),kind:'bigquery',settings,numberFormat:'en-US'});};
+ const syncPanel=document.createElement('div');syncPanel.id='campaignSyncPanel';$('sourceWorkspace').querySelector('.source-intro').after(syncPanel);window.CITROEN_CAMPAIGN_CONNECTION?.mount(syncPanel);
  renderList();renderPreview();void checkCapabilities();
 }
 document.addEventListener('citroen:studio-layout',()=>{if(canRead())restore();else reset();});

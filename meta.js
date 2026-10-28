@@ -32,7 +32,7 @@
   }
   function isMonth(row,filter){return (!filter.month||row.month===filter.month)&&(!filter.model||row.model===filter.model)&&(!filter.account||row.account===filter.account)&&(!filter.territory||row.territory===filter.territory);}
   function filterValues(){return {month:$('metaMonth').value,model:$('metaModel').value,account:$('metaAccount').value,territory:$('metaTerritory').value,campaignSearch:$('metaCampaignSearch').value.trim().toLowerCase(),adSearch:$('metaAdSearch').value.trim().toLowerCase()};}
-  function selectOptions(id,values,placeholder){$(id).innerHTML=`<option value="">${escapeHtml(placeholder)}</option>`+values.map(v=>`<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');}
+  function selectOptions(id,values,placeholder){const previous=$(id).value;$(id).innerHTML=`<option value="">${escapeHtml(placeholder)}</option>`+values.map(v=>`<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');if(values.includes(previous))$(id).value=previous;}
   const noData=(why)=>`<div class="empty-state"><div class="empty-logo">ë</div><b>Sin resultados</b><span>${escapeHtml(why||'No existen filas para esta selección.')}</span></div>`;
   function bars(entries,hint,format=money){
     const a=entries.filter(x=>x.value>0).slice(0,9);if(!a.length)return noData();
@@ -56,11 +56,11 @@
   function timeline(rows,filter){
     const items=Object.keys(monthsLabels).filter(x=>!filter.month||filter.month===x).map(month=>({month,value:sum(rows.filter(r=>r.month===month),0)}));
     const max=Math.max(...items.map(x=>x.value),1);
-    $('metaTrend').innerHTML='<div class="meta-month-chart">'+items.map(x=>`<div class="meta-month ${x.month==='2026-10'?'partial':''}"><span class="value">${compact(x.value)}</span><div class="bar" style="height:${Math.max(4,Math.round(x.value/max*155))}px"></div><small>${monthsLabels[x.month].slice(0,3)}</small></div>`).join('')+'</div><div class="meta-hint">Octubre comprende únicamente del 1 al 20 de octubre. No es comparable con meses completos sin ajustar el período.</div>';
+    $('metaTrend').innerHTML='<div class="meta-month-chart">'+items.map(x=>`<div class="meta-month ${x.month==='2026-10'?'partial':''}"><span class="value">${compact(x.value)}</span><div class="bar" style="height:${Math.max(4,Math.round(x.value/max*155))}px"></div><small>${monthsLabels[x.month].slice(0,3)}</small></div>`).join('')+`</div><div class="meta-hint">Datos desde ${escapeHtml(dailyFile.date_min)} hasta ${escapeHtml(dailyFile.date_max)}. El último mes puede estar incompleto.</div>`;
   }
   function charts(dailyRows,creativeRows){
     $('metaModels').innerHTML=bars(addGroup(dailyRows,'model',0),'C3, C3 MAX, Aircross, Aircross MAX, Basalt y Berlingo se identifican mediante los nombres de campaña.');
-    $('metaAccounts').innerHTML=bars(addGroup(dailyRows,'account',0),'Tres cuentas incluidas en la exportación de Meta Ads.');
+    $('metaAccounts').innerHTML=bars(addGroup(dailyRows,'account',0),'Cuentas presentes en la fuente de Meta Ads.');
     $('metaTerritories').innerHTML=bars(addGroup(dailyRows,'territory',0),'Nombres inferidos de campañas y conjuntos, no representan un desglose oficial por geolocalización. “Cobertura Colombia” no equivale a una ciudad.');
     $('metaFormats').innerHTML=bars(addGroup(creativeRows,'format',0),'Clasificación automática a partir de los nombres reales de anuncio; no hay imágenes en el archivo.');
     const objective=addGroup(creativeRows,'objective',0);
@@ -80,10 +80,10 @@
   }
   function quality(){
     const vals=[
-      ['OK','Conciliación','Todos los 27.840 registros del archivo están representados en las agregaciones. Los costos y conversiones cuadran con los totales originales.'],
-      ['OK','Período','1 de enero a 20 de octubre de 2026. Octubre aún no tiene todos los días del mes.'],
-      ['ATENCIÓN','Leads vs conversaciones','On-Facebook leads (96.217) y Messaging conversations started (54.916) son eventos distintos. No se fusionan en leads únicos.'],
-      ['ATENCIÓN','Alcance no deduplicable','La suma de reach de filas diarias/anuncios no equivale a usuarios únicos. La fuente contiene un registro donde el alcance no es calculable.'],
+      ['OK','Conciliación','Las '+number(dailyFile.rows_source)+' filas de la fuente están representadas. Las métricas concilian entre las vistas.'],
+      ['OK','Período','Desde '+dailyFile.date_min+' hasta '+dailyFile.date_max+'. La fecha de sincronización no cambia la fecha de los datos.'],
+      ['ATENCIÓN','Leads vs conversaciones','On-Facebook leads ('+number(dailyFile.totals[1])+') y Messaging conversations started ('+number(dailyFile.totals[2])+') son eventos distintos. No se fusionan en leads únicos.'],
+      ['ATENCIÓN','Alcance no deduplicable','La suma de reach no equivale a usuarios únicos. Registros con alcance no numérico: '+number(dailyFile.warning_reach_nonnum||0)+'.'],
       ['ATENCIÓN','Geografía inferida','Territorios inferidos de nombres de campañas/conjuntos; no equivale a ubicación real del usuario ni a la distribución geográfica de Meta Ads.'],
       ['ATENCIÓN','Moneda','El archivo contiene valores de Cost con apariencia de pesos, pero no trae columna de moneda. Se presentan como COP según el contexto de las cuentas de Colombia; validar si todas las cuentas facturan en COP.'],
       ['ATENCIÓN','Proyectado vs real','Los planes anteriores son presupuestos del portafolio; esta fuente corresponde exclusivamente a Meta Ads. Una brecha respecto al plan completo no debe interpretarse como cumplimiento global.']
@@ -110,33 +110,39 @@
     const blob=new Blob(['\uFEFF'+[header,...lines].join('\r\n')],{type:'text/csv;charset=utf-8'});
     const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=file;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),800);
   }
-  function wire(){
-    if(!$('metaMonth'))return;
-    for(const id of ['metaMonth','metaModel','metaAccount','metaTerritory'])$(id).onchange=render;
-    for(const id of ['metaCampaignSearch','metaAdSearch'])$(id).oninput=render;
-    $('metaReset').onclick=()=>{for(const id of ['metaMonth','metaModel','metaAccount','metaTerritory','metaCampaignSearch','metaAdSearch'])$(id).value='';render();};
-    $('metaExportCampaigns').onclick=()=>downloadCsv(filteredCampaigns,{month:'Mes',account:'Cuenta',model:'Modelo',territory:'Territorio inferido',campaign:'Campaña',metric0:'Cost COP asumido',metric1:'Leads formulario',metric2:'Conversaciones iniciadas',metric3:'Impresiones',metric4:'Clicks enlace',metric5:'Clicks todos',metric6:'Alcance sumado no unico',cpl:'Gasto / formulario'},'citroen_meta_campanas_2026.csv');
-    $('metaExportAds').onclick=()=>downloadCsv(filteredAds,{month:'Mes',account:'Cuenta',model:'Modelo',territory:'Territorio inferido',campaign:'Campaña',adset:'Conjunto',ad:'Anuncio',format:'Formato inferido',metric0:'Cost COP asumido',metric1:'Leads formulario',metric2:'Conversaciones iniciadas',metric3:'Impresiones',metric4:'Clicks enlace',metric5:'Clicks todos',metric6:'Alcance sumado no unico'},'citroen_meta_anuncios_2026.csv');
-    Promise.all([fetch('./data/meta_2026_daily.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('No disponible meta daily');return r.json()}),fetch('./data/meta_2026_detail.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('No disponible meta detail');return r.json()})])
-    .then(([daily,detail])=>{
-      if(daily.schema!=='citroen-meta-actuals/2026-v1'||detail.schema!==daily.schema||daily.rows_source!==27840||detail.rows_source!==27840||daily.totals[0]!==909508844||daily.totals[1]!==96217||daily.totals[2]!==54916)throw Error('Integridad de fuente Meta no válida.');
+  function installData(daily,detail){
+      if(daily.schema!=='citroen-meta-actuals/2026-v1'||detail.schema!==daily.schema||!daily.rows_source||detail.rows_source!==daily.rows_source)throw Error('Integridad de fuente Meta no válida.');
       dailyFile=daily;detailFile=detail;
       const dd=daily.dictionaries,dt=detail.dictionaries;
       days=daily.daily.map(row=>({date:dd.dates[row[0]],month:dd.dates[row[0]].slice(0,7),model:dd.models[row[1]],territory:dd.territories[row[2]],account:dd.accounts[row[3]],metrics:row.slice(4)}));
       campaigns=detail.campaigns.map(row=>({month:dt.months[row[0]],campaign:dt.campaigns[row[1]],account:dt.accounts[row[2]],model:dt.models[row[3]],territory:dt.territories[row[4]],metrics:row.slice(5)}));
       ads=detail.creatives.map(row=>({month:dt.months[row[0]],campaign:dt.campaigns[row[1]],adset:dt.adsets[row[2]],ad:dt.ads[row[3]],account:dt.accounts[row[4]],model:dt.models[row[5]],territory:dt.territories[row[6]],metrics:row.slice(7)}));
       for(const r of ads){r.format=formatOf(r.ad);r.objective=objectiveOf(r.campaign);}
-      const validate=a=>a.reduce((t,r)=>t+r.metrics[0],0);
-      if(validate(days)!==909508844||validate(ads)!==909508844||validate(campaigns)!==909508844)throw Error('El total entre vistas no concilia.');
-      selectOptions('metaMonth',Object.keys(monthsLabels),'Enero a octubre');
+      const valid=a=>daily.totals.every((value,i)=>Math.abs(a.reduce((t,r)=>t+r.metrics[i],0)-value)<Math.max(.01,Math.abs(value)*1e-10));
+      if(!valid(days)||!valid(ads)||!valid(campaigns))throw Error('El total entre vistas no concilia.');
+      const names=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+      for(const row of days)monthsLabels[row.month]=names[Number(row.month.slice(5))-1]+' '+row.month.slice(0,4);
+      selectOptions('metaMonth',[...new Set(days.map(r=>r.month))].sort(),'Todos los meses con datos');
       for(const o of $('metaMonth').options)if(monthsLabels[o.value])o.textContent=monthsLabels[o.value];
       selectOptions('metaModel',[...new Set(days.map(r=>r.model))].sort(),'Todos los modelos');
       selectOptions('metaAccount',[...new Set(days.map(r=>r.account))].sort(),'Todas las cuentas');
       selectOptions('metaTerritory',[...new Set(days.map(r=>r.territory))].sort(),'Todos los territorios');
       fileReady=true;render();
       const mainRows=days.map(r=>({fecha:r.date,plataforma:'Meta Ads',modelo:r.model,ciudad:r.territory,concesionario:'No especificado',campana:'Consolidado diario Meta Ads (ver módulo Meta)',inversion:r.metrics[0],leads:r.metrics[1],impresiones:r.metrics[3],alcance:r.metrics[6],clics:r.metrics[4]}));
-      document.dispatchEvent(new CustomEvent('citroen:meta-import',{detail:{source:'Meta Ads · ejecución enero-octubre 2026 (27.840 registros originales)',rows:mainRows,partialScope:true}}));
-    }).catch(e=>{console.error('Meta data error',e);$('metaFilterContext').textContent='No se pudo cargar la fuente real de Meta Ads: '+e.message;for(const id of ['metaKpis','metaTrend','metaModels','metaAccounts','metaTerritories','metaFormats','metaOutcomes','metaCampaignRows','metaAdRows','metaQuality'])$(id).innerHTML=noData('Comprueba la publicación de los archivos Meta en GitHub/Vercel.');});
+      document.dispatchEvent(new CustomEvent('citroen:meta-import',{detail:{source:'Meta Ads · '+daily.source+' · '+daily.rows_source+' registros · hasta '+daily.date_max,rows:mainRows,partialScope:true}}));
+
+  }
+  function wire(){
+    if(!$('metaMonth'))return;
+    document.addEventListener('citroen:campaign-data',e=>{if(e.detail)installData(e.detail.daily,e.detail.detail);});
+    for(const id of ['metaMonth','metaModel','metaAccount','metaTerritory'])$(id).onchange=render;
+    for(const id of ['metaCampaignSearch','metaAdSearch'])$(id).oninput=render;
+    $('metaReset').onclick=()=>{for(const id of ['metaMonth','metaModel','metaAccount','metaTerritory','metaCampaignSearch','metaAdSearch'])$(id).value='';render();};
+    $('metaExportCampaigns').onclick=()=>downloadCsv(filteredCampaigns,{month:'Mes',account:'Cuenta',model:'Modelo',territory:'Territorio inferido',campaign:'Campaña',metric0:'Cost COP asumido',metric1:'Leads formulario',metric2:'Conversaciones iniciadas',metric3:'Impresiones',metric4:'Clicks enlace',metric5:'Clicks todos',metric6:'Alcance sumado no unico',cpl:'Gasto / formulario'},'citroen_meta_campanas_2026.csv');
+    $('metaExportAds').onclick=()=>downloadCsv(filteredAds,{month:'Mes',account:'Cuenta',model:'Modelo',territory:'Territorio inferido',campaign:'Campaña',adset:'Conjunto',ad:'Anuncio',format:'Formato inferido',metric0:'Cost COP asumido',metric1:'Leads formulario',metric2:'Conversaciones iniciadas',metric3:'Impresiones',metric4:'Clicks enlace',metric5:'Clicks todos',metric6:'Alcance sumado no unico'},'citroen_meta_anuncios_2026.csv');
+    (window.CITROEN_CAMPAIGN_FEED ? window.CITROEN_CAMPAIGN_FEED.load().then(d=>[d.daily,d.detail]) : Promise.all([fetch('./data/meta_2026_daily.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('No disponible meta daily');return r.json()}),fetch('./data/meta_2026_detail.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('No disponible meta detail');return r.json()})]))
+    .then(([daily,detail])=>installData(daily,detail))
+    .catch(e=>{console.error('Meta data error',e);$('metaFilterContext').textContent='No se pudo cargar la fuente real de Meta Ads: '+e.message;for(const id of ['metaKpis','metaTrend','metaModels','metaAccounts','metaTerritories','metaFormats','metaOutcomes','metaCampaignRows','metaAdRows','metaQuality'])$(id).innerHTML=noData('Comprueba la publicación de los archivos Meta en GitHub/Vercel.');});
   }
   document.addEventListener('DOMContentLoaded',wire);
 })();

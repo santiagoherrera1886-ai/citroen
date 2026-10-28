@@ -753,8 +753,7 @@ function renderSources(){
 }
 async function loadMeta(){
  try{
-  const r=await fetch('./data/meta_2026_daily.json');if(!r.ok)throw Error('Sin fuente');
-  const a=await r.json(),d=a.dictionaries;
+  const a=window.CITROEN_CAMPAIGN_FEED?(await window.CITROEN_CAMPAIGN_FEED.load()).daily:await fetch('./data/meta_2026_daily.json').then(r=>{if(!r.ok)throw Error('Sin fuente');return r.json();}),d=a.dictionaries;
   data=(a.daily||[]).map(row=>({date:String(d.dates[row[0]]),month:String(d.dates[row[0]]).slice(0,7),territory:String(d.territories[row[2]]),account:String(d.accounts[row[3]]),platform:'Meta Ads',model:String(d.models[row[1]]),spend:Number(row[4])||0,forms:Number(row[5])||0,messages:Number(row[6])||0,impressions:Number(row[7])||0,clicks:Number(row[8])||0,reach:Number(row[10])||0}));
   window.CITROEN_FILTER_ENGINE?.setRows(data);
   window.CITROEN_COMPARISON_LAB?.setRows(data);
@@ -762,6 +761,7 @@ async function loadMeta(){
   render();
  }catch{status('No se pudo cargar la fuente Meta Ads para páginas nuevas.');}
 }
+document.addEventListener('citroen:campaign-data',()=>void loadMeta());
 async function loadPublished(){
  pendingDraft=localDraft();
  try{

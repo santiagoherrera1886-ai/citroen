@@ -7,7 +7,7 @@ const norm=s=>String(s||'').trim().toUpperCase();
 const COP=x=>x==null?"—":new Intl.NumberFormat("es-CO",{style:"currency",currency:"COP",maximumFractionDigits:0}).format(x);
 const N=x=>x==null?"—":new Intl.NumberFormat("es-CO",{maximumFractionDigits:1}).format(x);
 const SHORT=x=>x==null?"—":Math.abs(x)>=1000000?N(x/1000000)+" M":Math.abs(x)>=1000?N(x/1000)+" mil":N(x);
-const monthNames=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct"];
+const monthNames=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
 const categories={month:"Mes",model:"Modelo"};
 const metricLabels={investment:'Inversión',leads:'Formularios',cpl:'Costo por formulario',impressions:'Impresiones',reach:'Alcance estimado*',clicks:'Clics enlace',all_clicks:'Clics totales',messages:'Conversaciones',ctr:'CTR enlace',cpm:'CPM',cost_message:'Costo/conversación'};
 const legacyDefaults=[
@@ -30,8 +30,8 @@ function opt(arr,current){return arr.map(x=>'<option value="'+html(x[0])+'"'+(x[
 let idCounter=0;
 function nextId(){return "c"+Date.now().toString(36)+(++idCounter).toString(36);}
 function rowsFor(card){
- const selectedMonths=plan.months.map(x=>x[0]).filter(m=>!state.month||state.month===m);
- const selectedModels=Array.from(new Set(plan.models.map(x=>x[1])));
+ const selectedMonths=[...new Set([...plan.months.map(x=>x[0]),...meta.map(r=>r.month)])].sort().filter(m=>!state.month||state.month===m);
+ const selectedModels=[...new Map([...plan.models.map(x=>x[1]),...meta.map(r=>r.model)].map(m=>[norm(m),m])).values()];
  const useModel=card.model||state.model;
  const groupVals=card.dimension==="month"?selectedMonths:selectedModels.filter(m=>!useModel||useModel===m);
  const rows=groupVals.map(key=>{
@@ -109,7 +109,7 @@ function cardHtml(card,index){
  '<button type="button" data-act="down" title="Mover abajo" aria-label="Mover panel a la derecha">→</button>'+
  '<label>Tamaño<select data-card-size>'+sizeOptions(state.sizes["c:"+card.id]||3)+'</select></label>'+
  '</div>':"";
- const notes=card.source==="compare"?"El plan incluye varios medios; la ejecución cubre solo Meta. No representa cumplimiento. Las metas de leads y los formularios no son equivalentes.":card.source==="meta"?"Resultados Meta Ads del export hasta el 20 de octubre. El alcance usa estimación Sainsbury solo cuando hay universo configurado.":"Plan de inversión o metas comerciales, no ejecución. Mayo tiene una diferencia pendiente de conciliación de $992.624.";
+ const notes=card.source==="compare"?"El plan incluye varios medios; la ejecución cubre solo Meta. No representa cumplimiento. Las metas de leads y los formularios no son equivalentes.":card.source==="meta"?"Resultados de la fuente Meta Ads; la fecha de corte aparece en el resumen. El alcance usa estimación Sainsbury solo cuando hay universo configurado.":"Plan de inversión o metas comerciales, no ejecución. Mayo tiene una diferencia pendiente de conciliación de $992.624.";
  return '<article class="studio-card" data-id="'+html(card.id)+'" role="group" aria-label="'+html(card.title)+'">'+
  '<div class="studio-card-head"><span class="studio-drag" title="Arrastrar tarjeta" draggable="'+state.edit+'">⠿</span><input class="studio-card-title" aria-label="Título de gráfico" value="'+html(card.title)+'" '+(state.edit?"":"readonly")+'><span class="studio-card-label">'+html(card.source==="compare"?"COMPARATIVO":card.source==="plan"?"PROYECCIÓN":"META REAL")+'</span>'+(state.edit?'<button type="button" class="studio-card-quick-remove" title="Eliminar gráfico creado" aria-label="Eliminar gráfico '+html(card.title)+'">×</button>':"")+'</div>'+
  controls+'<div class="studio-visual">'+(card.chart==="table"?table(data,card):chartSvg(data,card))+'</div>'+
@@ -397,6 +397,18 @@ function wire(){
   $(id).addEventListener("change",e=>{state[field]=e.target.value;$(field==="month"?"studioMonth":"studioModel").value=state[field];persist();draw();});
  }
 }
+function installMeta(raw){
+ const dict=raw.dictionaries;
+    meta=raw.daily.map(r=>({date:String(dict.dates[r[0]]),month:String(dict.dates[r[0]]).slice(0,7),model:String(dict.models[r[1]]),territory:String(dict.territories[r[2]]),account:String(dict.accounts[r[3]]),platform:'Meta Ads',spend:Number(r[4])||0,forms:Number(r[5])||0,messages:Number(r[6])||0,impressions:Number(r[7])||0,clicks:Number(r[8])||0,all_clicks:Number(r[9])||0,reach:Number(r[10])||0}));
+ if(ready){sourceFilters();draw();}
+}
+document.addEventListener("citroen:campaign-data",e=>{if(e.detail)installMeta(e.detail.daily);});
+function sourceFilters(){
+ const months=[...new Set([...plan.months.map(m=>m[0]),...meta.map(r=>r.month)])].sort();
+ $("studioMonth").innerHTML=opt([["","Todos los meses"],...months.map(m=>[m,monthNames[Number(m.slice(5))-1]+" 2026"])],state.month);
+ const models=[...new Map([...meta.map(r=>r.model),...plan.models.map(x=>x[1])].map(m=>[norm(m),m])).values()].sort();
+ $("studioModel").innerHTML=opt([["","Todos los modelos"],...models.map(m=>[m,m])],state.model);
+}
 async function start(){
  if(!$("studioCards"))return;
  try{
@@ -406,9 +418,9 @@ async function start(){
   plan=JSON.parse(await new Response(new Blob([binary]).stream().pipeThrough(new DecompressionStream("gzip"))).text());
   if(window.CITROEN_PATCH_PLAN)await window.CITROEN_PATCH_PLAN(plan);
   try{
-   const response=await fetch("./data/meta_2026_daily.json",{cache:"no-store"});
+   const response=window.CITROEN_CAMPAIGN_FEED?{ok:true,json:async()=>(await window.CITROEN_CAMPAIGN_FEED.load()).daily}:await fetch("./data/meta_2026_daily.json",{cache:"no-store"});
    if(response.ok){const raw=await response.json(),dict=raw.dictionaries;
-    meta=raw.daily.map(r=>({date:String(dict.dates[r[0]]),month:String(dict.dates[r[0]]).slice(0,7),model:String(dict.models[r[1]]),territory:String(dict.territories[r[2]]),account:String(dict.accounts[r[3]]),platform:'Meta Ads',spend:Number(r[4])||0,forms:Number(r[5])||0,messages:Number(r[6])||0,impressions:Number(r[7])||0,clicks:Number(r[8])||0,all_clicks:Number(r[9])||0,reach:Number(r[10])||0}));
+    installMeta(raw);
    }
   }catch(err){console.warn("Studio: ejecución Meta no disponible",err);}
   const store=saved();
@@ -422,11 +434,10 @@ async function start(){
   state.month=store&&typeof store.month==="string"?store.month:"";
   state.model=store&&typeof store.model==="string"?store.model:"";
   state.edit=false; // Never trust a prior localStorage edit flag without an authenticated session.
-  $("studioMonth").innerHTML=opt([["","Enero – Octubre"],...plan.months.map((m,i)=>[m[0],monthNames[i]+" 2026"])],state.month);
-  $("studioModel").innerHTML=opt([["","Todos los modelos"],...Array.from(new Set(plan.models.map(x=>x[1]))).sort().map(m=>[m,m])],state.model);
+  sourceFilters();
   ready=true;wire();draw();
   if(pendingPublishedSummary){const summary=pendingPublishedSummary;pendingPublishedSummary=null;appliedSummary(summary);}
-  alertStatus("Datos: 10 planes 2026 con correcciones de abril/mayo · Meta Ads hasta el 20/10 · mayo pendiente de conciliación.");
+  alertStatus("Datos: 10 planes 2026 con correcciones de abril/mayo · Meta Ads: fecha de corte indicada en el resumen · mayo pendiente de conciliación.");
  }catch(err){console.error("Studio",err);alertStatus("No fue posible iniciar el constructor: "+err.message);}
 }
 document.addEventListener("DOMContentLoaded",start);

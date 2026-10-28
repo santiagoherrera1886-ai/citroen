@@ -27,7 +27,7 @@ w.document.dispatchEvent(new w.Event('DOMContentLoaded',{bubbles:true}));
  for(const hidden of ['medios','creativos','datos'])assert.ok(!w.document.querySelector('.nav-link[data-target="'+hidden+'"]'),'Retired navigation '+hidden);
  assert.ok(id('studioStatus').textContent.includes('Datos: 10 planes'),'Sources did not load: '+id('studioStatus').textContent);
  assert.equal(id('studioMonth').options.length,11,'10 months filter');
- assert.equal(id('studioModel').options.length,7,'Six model filters');
+ assert.ok([...id('studioModel').options].some(o=>o.value==='Sin clasificar'),'Unclassified source records stay selectable');
  id('studioEdit').click();
  assert.equal(id('studioTools').hidden,false,'Edit mode expands controls in Resumen');
  assert.equal(id('studioCards').querySelectorAll('.studio-native-tools').length,5,'All native widgets editable');

@@ -45,7 +45,7 @@ function fmtMetric(v,key){return v==null?'—':metricMoney.has(key)?money(v):key
 const planRows=(month,model,includeBerlingo=true)=>state.plan.models.filter(r=>r[0]===months.indexOf(month)&&(!model||norm(r[1])===norm(model))&&(includeBerlingo||norm(r[1])!=='BERLINGO'));
 const planValue=(month,mode)=>{
  if(state.territory)return null;
- if(mode==='investment'){const r=planRows(month,state.model);return state.model?(r.length?r.reduce((a,x)=>a+x[2],0):null):state.plan.months[months.indexOf(month)][2];}
+ if(mode==='investment'){const r=planRows(month,state.model);return state.model?(r.length?r.reduce((a,x)=>a+x[2],0):null):(state.plan.months[months.indexOf(month)]?.[2]??null);}
  const r=planRows(month,state.model,!!state.model);if(!r.length||r.some(x=>x[3]==null))return null;
  const target=r.reduce((a,x)=>a+(x[3]||0),0),budget=r.reduce((a,x)=>a+x[2],0);
  return mode==='leads'?target:target>0?budget/target:null;
@@ -61,11 +61,11 @@ async function loadPlan(){
  return p;
 }
 function actualData(d,detail){
- if(d.schema!=='citroen-meta-actuals/2026-v1'||detail.schema!==d.schema||d.rows_source!==27840||detail.rows_source!==27840)throw Error('Fuente Meta no válida.');
+ if(d.schema!=='citroen-meta-actuals/2026-v1'||detail.schema!==d.schema||!d.rows_source||detail.rows_source!==d.rows_source)throw Error('Fuente Meta no válida.');
  const dd=d.dictionaries,dc=detail.dictionaries;
  const rows=d.daily.map(r=>({date:dd.dates[r[0]],month:dd.dates[r[0]].slice(0,7),model:dd.models[r[1]],territory:dd.territories[r[2]],account:dd.accounts[r[3]],platform:'Meta Ads',v:r.slice(4)}));
  const campaigns=detail.campaigns.map(r=>({month:dc.months[r[0]],campaign:dc.campaigns[r[1]],model:dc.models[r[3]],territory:dc.territories[r[4]],account:dc.accounts[r[2]],v:r.slice(5)}));
- if(add(rows,0)!==909508844||add(campaigns,0)!==909508844)throw Error('Los totales de Meta no concilian.');
+ if(!d.totals.every((v,i)=>Math.abs(add(rows,i)-v)<Math.max(.01,Math.abs(v)*1e-10)&&Math.abs(add(campaigns,i)-v)<Math.max(.01,Math.abs(v)*1e-10)))throw Error('Los totales de Meta no concilian.');
  return {rows,campaigns};
 }
 function setKpis(rows){
@@ -79,7 +79,7 @@ function setKpis(rows){
   const number=fmtMetric(value,key),compact=$('c3Dashboard')?.classList.contains('studio-edit-on')&&['planned','spend'].includes(key)&&typeof value==='number'&&Math.abs(value)>=1000000?'$ '+short(value):number;
   return '<article class="c3-kpi" data-metric-slot="'+i+'" tabindex="0" title="'+esc(number)+' · En Diseño, selecciona y arrastra para mover"><div class="c3-kpi-ico">'+icons[i]+'</div><div><h4>'+esc(title)+'</h4><strong title="'+esc(number)+'">'+esc(compact)+'</strong><small class="muted">'+esc(note)+'</small></div></article>';
  }).join('');
- $('c3Context').textContent=(state.month?labels[months.indexOf(state.month)]+' 2026':'Enero–octubre de 2026')+' · '+(state.model||'Todos los modelos')+' · '+(state.territory||'Cobertura completa')+' · octubre contiene resultados hasta el 20/10. Cifras reales, no las de la maqueta.';
+ $('c3Context').textContent=(state.month?labels[months.indexOf(state.month)]+' 2026':'2026 · todos los meses')+' · '+(state.model||'Todos los modelos')+' · '+(state.territory||'Cobertura completa')+' · Datos hasta '+(state.dateMax||'2026-10-20')+'.';
 }
 const hasDailyRange=()=>{
  const f=window.CITROEN_FILTER_ENGINE;if(!f)return false;
@@ -140,8 +140,8 @@ function comparison(rows){
  ctr:'CTR = clics enlace / impresiones; sin proyección equivalente.',
  cpm:'CPM = gasto Meta / impresiones × 1.000.',
  cost_message:'Gasto Meta / conversaciones; no representa CPL de negocio.',
- investment:state.territory?'El plan no se puede desagregar por esta geografía inferida. Se muestra ejecución Meta únicamente.':'Barras azules: plan general. Rojas: Meta ejecutado. Línea: proporción Meta/plan, NO cumplimiento total. *Octubre parcial.',
- leads:'Azul: metas comerciales del plan si son completas. Rojo: formularios de Meta. Las definiciones son distintas y no equivalen a cumplimiento. *Octubre parcial.',
+ investment:state.territory?'El plan no se puede desagregar por esta geografía inferida. Se muestra ejecución Meta únicamente.':'Barras azules: plan general. Rojas: Meta ejecutado. Línea: proporción Meta/plan, NO cumplimiento total. El último mes puede estar incompleto.',
+ leads:'Azul: metas comerciales del plan si son completas. Rojo: formularios de Meta. Las definiciones son distintas y no equivalen a cumplimiento. El último mes puede estar incompleto.',
  cpl:'Azul: CPL planificado (portafolio: cinco modelos sin Berlingo). Rojo: gasto total Meta / formularios; incluye WhatsApp y no es un CPL comercial comparable.'
  };
  $('c3CompareNote').textContent=state.metric==='reach'&&!window.CITROEN_REACH_MATH?.currentUniverse()
@@ -197,6 +197,17 @@ function render(){
  models(window.CITROEN_FILTER_ENGINE?.filter(rows,'resumen','n:c3ModelsPanel')||rows);
  campaigns();insights(window.CITROEN_FILTER_ENGINE?.filter(rows,'resumen','n:c3InsightsPanel')||rows);document.dispatchEvent(new Event('citroen:summary-rendered'));
 }
+function installActual(plan,daily,detail){
+ const actual=actualData(daily,detail);state.plan=plan;state.dateMax=daily.date_max;state.rows=actual.rows;state.campaigns=actual.campaigns;
+ const monthNames=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+ for(const m of [...new Set(state.rows.map(r=>r.month))].sort())if(!months.includes(m)){months.push(m);labels.push(monthNames[Number(m.slice(5))-1]);}
+ $('c3Month').innerHTML=opt('','2026 · todos los meses')+months.map((m,i)=>opt(m,labels[i]+' 2026')).join('');
+ $('c3Model').innerHTML=opt('','Todos los modelos')+[...new Set([...plan.models.map(r=>r[1]),...state.rows.map(r=>r.model)])].sort().map(m=>opt(m,m)).join('');
+ $('c3Territory').innerHTML=opt('','Todos los territorios')+[...new Set(state.rows.map(r=>r.territory))].sort().map(t=>opt(t,t)).join('');
+ for(const [id,key] of [['c3Month','month'],['c3Model','model'],['c3Territory','territory']]){if([...$(id).options].some(o=>o.value===state[key]))$(id).value=state[key];else state[key]='';}
+ const footnote=$('campaignSourceFootnote');if(footnote)footnote.textContent='FUENTES · Proyecciones enero–octubre 2026 de 10 libros Excel · '+daily.source+' · '+daily.date_min+' a '+daily.date_max+' · '+daily.rows_source+' registros. Territorios inferidos de los nombres; moneda asumida COP. Formularios y conversaciones son eventos distintos.';
+ state.ready=true;render();
+}
 function wire(){
  if(!$('c3Dashboard'))return;
  const hero=$('c3HeroCar');hero.src=cars[2].src;hero.onerror=()=>{if(!hero.dataset.tried){hero.dataset.tried='yes';hero.src=cars[2].backup;}else{hero.style.display='none';hero.parentElement.classList.add('no-photo');}};
@@ -207,17 +218,14 @@ function wire(){
  document.addEventListener('citroen:metric-settings',()=>{state.metric=configured('compareMetric','metric','investment');document.querySelectorAll('[data-c3-metric]').forEach(el=>el.classList.toggle('active',el.dataset.c3Metric===state.metric));render();});
  document.addEventListener('citroen:style-settings',()=>{if(state.ready)render();});
  document.addEventListener('citroen:studio-layout',()=>{if(state.ready)setKpis(filter(state.rows));});
+ document.addEventListener('citroen:campaign-data',e=>{if(state.plan&&e.detail)installActual(state.plan,e.detail.daily,e.detail.detail);});
  document.addEventListener('citroen:advanced-filter-changed',()=>{if(state.ready)render();});
  Promise.all([
  loadPlan(),
- fetch('./data/meta_2026_daily.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Reporte diario no disponible.');return r.json();}),
- fetch('./data/meta_2026_detail.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Detalle de campañas no disponible.');return r.json();})
+ (window.CITROEN_CAMPAIGN_FEED?window.CITROEN_CAMPAIGN_FEED.load().then(d=>({ok:true,json:async()=>d.daily})):fetch('./data/meta_2026_daily.json',{cache:'no-store'})).then(r=>{if(!r.ok)throw Error('Reporte diario no disponible.');return r.json();}),
+ (window.CITROEN_CAMPAIGN_FEED?window.CITROEN_CAMPAIGN_FEED.load().then(d=>({ok:true,json:async()=>d.detail})):fetch('./data/meta_2026_detail.json',{cache:'no-store'})).then(r=>{if(!r.ok)throw Error('Detalle de campañas no disponible.');return r.json();})
  ]).then(([plan,daily,detail])=>{
- const actual=actualData(daily,detail);state.plan=plan;state.rows=actual.rows;state.campaigns=actual.campaigns;
- $('c3Month').innerHTML=opt('','2026 · Ene–Oct')+months.map((m,i)=>opt(m,labels[i]+' 2026')).join('');
- $('c3Model').innerHTML=opt('','Todos los modelos')+[...new Set([...plan.models.map(r=>r[1]),...state.rows.map(r=>r.model)])].sort().map(m=>opt(m,m)).join('');
- $('c3Territory').innerHTML=opt('','Todos los territorios')+[...new Set(state.rows.map(r=>r.territory))].sort().map(t=>opt(t,t)).join('');
- state.ready=true;render();
+ installActual(plan,daily,detail);
  }).catch(e=>{console.error('Concept 3:',e);$('c3Context').textContent='No se pudieron cargar las fuentes: '+e.message;});
 }
 document.addEventListener('DOMContentLoaded',wire);
