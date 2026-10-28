@@ -69,7 +69,7 @@ function pageNav(id,label){const btn=mk('button',{type:'button',class:'nav-link 
 function initSections(){
  const nav=$('sidebar').querySelector('.nav'),main=document.querySelector('.content');
  for(const [id,label] of [['citroen-compare','Comparador avanzado'],['citroen-alerts','Centro de alertas'],['citroen-creatives','Creativos'],['citroen-insights','Insights'],['citroen-sources','Conexiones de datos']]){
-  if(!$(id))main.appendChild(make(id,label));
+  if(!$(id))main.insertBefore(make(id,label),main.querySelector(':scope > footer'));
   if(!nav.querySelector('[data-target="'+id+'"]'))nav.appendChild(pageNav(id,label));
  }
  const a=mk('div',{class:'builder-menu'},'<div class="builder-menu-title">MIS PÁGINAS</div><div id="builderPageLinks"></div>');
