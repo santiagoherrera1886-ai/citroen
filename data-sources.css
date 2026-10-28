@@ -1,0 +1,41 @@
+/* Sheets workspace — Montecarlo blue, clear source status and generous editing space. */
+#sourceWorkspace{color:#193e55;font-family:Manrope,Arial,sans-serif;max-width:1460px;margin:auto}
+.source-intro{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:15px 0 30px;border-bottom:1px solid #d8e5ed;margin-bottom:26px}
+.source-eyebrow{font-size:10px;letter-spacing:.13em;font-weight:850;color:#60869d}
+.source-intro h3{font-size:clamp(25px,2.6vw,36px);letter-spacing:-.045em;margin:9px 0;color:#153c54;font-weight:750}
+.source-intro p{font-size:13px;line-height:1.6;color:#6a8494;margin:0}
+.source-pill{display:inline-flex;align-items:center;gap:7px;white-space:nowrap;border:1px solid #cadfe9;border-radius:24px;padding:8px 12px;font-size:10px;font-weight:750;background:#edf6fb;color:#367697}
+.source-pill.success{background:#edf8f1;border-color:#c8e3d2;color:#357253}.source-pill.warning{background:#fff7e8;border-color:#efdcba;color:#886426}
+.source-workspace-grid{display:grid;grid-template-columns:minmax(260px,340px) minmax(0,1fr);gap:22px;align-items:start}
+.source-setup{display:grid;gap:17px}.source-card{padding:23px;border:1px solid #dbe5ec;border-radius:18px;background:white;box-shadow:0 5px 22px #23496704;min-width:0}
+.source-card-title{display:flex;align-items:center;gap:12px;margin-bottom:21px}.source-icon{display:inline-flex;flex-shrink:0;width:39px;height:42px;background:#eaf1f7;color:#4c7f9d;align-items:center;justify-content:center;border-radius:11px;font-size:23px}.source-icon.sheets{background:#edf6ef;color:#44805a}
+.source-card h3{font-size:16px;margin:0 0 5px;letter-spacing:-.025em;color:#21485f}.source-card p{font-size:11px;line-height:1.7;color:#718b9c;margin:4px 0 12px}
+#sourceWorkspace label{display:flex;flex-direction:column;gap:8px;font-size:11px;font-weight:750;color:#496a80;margin:16px 0}
+#sourceWorkspace label small{font-size:10px;font-weight:500;color:#94a7b3}
+#sourceWorkspace input,#sourceWorkspace select{width:100%;box-sizing:border-box;border:1px solid #cddfe9;border-radius:9px;background:#fbfdff;color:#264d66;font:500 12px Manrope,Arial,sans-serif;padding:11px;min-height:42px}
+#sourceWorkspace input:focus,#sourceWorkspace select:focus{outline:2px solid #85bad9;outline-offset:2px}
+#sourceWorkspace button{min-height:39px;padding:9px 14px;border:1px solid #cbdde8;border-radius:9px;background:#f5f9fc;color:#356783;font:750 11px Manrope,Arial,sans-serif;cursor:pointer;transition:background .15s,border-color .15s}
+#sourceWorkspace button:hover{background:#e9f3fa;border-color:#90b8d1}#sourceWorkspace button:disabled{opacity:.55;cursor:wait}#sourceWorkspace .source-primary{background:#244f6d;border-color:#244f6d;color:#fff}#sourceWorkspace .source-primary:hover{background:#183b54}
+#builderSheetConnect{width:100%;margin-top:18px}
+.source-options{border-top:1px solid #e8eef2;padding-top:15px;margin-top:20px}.source-options summary,.source-bq summary{cursor:pointer;font-size:11px;font-weight:750;color:#557c94}.source-capabilities{margin-top:20px;padding-top:17px;border-top:1px solid #e8eef2}.source-capabilities p{margin-top:11px;overflow-wrap:anywhere}.source-capabilities strong{color:#456b82}
+#sourceList{margin-top:13px}#sourceWorkspace .source-list-item{display:flex;align-items:center;gap:11px;border:1px solid transparent;background:transparent;width:100%;text-align:left;margin:4px 0;padding:10px 8px}.source-list-item>span:last-child{min-width:0}.source-list-item strong{font-size:11px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.source-list-item small{display:block;margin-top:6px;font-size:10px;color:#7c95a5;font-weight:500}#sourceWorkspace .source-list-item.active{border-color:#cadfeb;background:#edf5fa}.source-list-item .source-icon{width:30px;height:34px;font-size:18px;border-radius:7px}
+.source-empty{padding:17px 0 2px;color:#748f9f;font-size:12px}.source-empty b{font-weight:650}.source-empty p{margin-bottom:0}
+#sourceWorkspace #builderConnectionStatus{padding:12px 16px;margin:0 0 15px;border:1px solid #d6e4ee;border-radius:11px;background:#f0f6fa;color:#547b94;font-size:12px;line-height:1.6;min-height:44px;box-sizing:border-box}
+#sourceWorkspace #builderConnectionStatus[data-state=success]{background:#edf8f1;border-color:#c9e4d2;color:#3b7456}#sourceWorkspace #builderConnectionStatus[data-state=error]{background:#fff2f0;border-color:#efccc7;color:#a64b40}#sourceWorkspace #builderConnectionStatus[data-state=warning]{background:#fff8eb;border-color:#ead9b9;color:#8a692b}
+.source-preview-empty{min-height:370px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px}.source-preview-empty>span{font-size:46px;color:#95b7cc;margin-bottom:25px}.source-preview-empty h3{font-size:23px}.source-preview-empty p{max-width:340px;font-size:12px}.source-preview-empty>div{display:flex;gap:17px;font-size:10px;font-weight:700;margin-top:23px;color:#7d9caf}.source-preview-empty i{color:#b9cbd5;font-style:normal}
+.source-preview-heading{display:flex;align-items:center;justify-content:space-between;gap:14px;padding-bottom:14px}.source-preview-heading h3{font-size:22px;margin-top:9px}.source-preview-heading button{white-space:nowrap}.source-fields{display:flex;flex-wrap:wrap;gap:7px;max-height:130px;overflow:auto;padding:7px 0 18px}.source-fields>span{font-size:10px;color:#567d93;border:1px solid #dce7ee;border-radius:6px;padding:6px 9px}.source-fields b{font-size:8px;color:#639c79;margin-right:8px}
+.source-table{max-height:370px;border:1px solid #e1eaf0;border-radius:10px;overflow:auto}.source-table table{margin:0;min-width:100%}.source-table th{position:sticky;top:0;background:#edf4f8!important;font-size:10px}.source-table td{max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11px!important}.source-table tbody tr:nth-child(even){background:#f9fbfd}.source-fineprint{padding-top:12px}.source-notice{background:#fff8eb;padding:11px;border-radius:8px;color:#8a692b!important}
+.source-insert{border-top:1px solid #e5edf2;padding-top:10px;margin-top:22px;display:flex;align-items:end;gap:10px;flex-wrap:wrap}.source-insert label{flex:1;min-width:180px;margin-bottom:0!important}.source-insert button{min-height:42px!important;margin-bottom:1px}.source-tab-picker{max-width:340px}
+body.citroen-looker-edit.le-sources-page .le-fields-panel,body.citroen-looker-edit.le-sources-page #metricInspector,body.citroen-looker-edit.le-sources-page .le-rail,body.citroen-looker-edit.le-sources-page .le-canvas-tools{display:none!important}
+body.citroen-looker-edit.le-sources-page .main-content{margin-right:0!important}body.citroen-looker-edit.le-sources-page .concept3-shell .content{margin-right:0!important;padding-right:32px!important}body.citroen-looker-edit.le-sources-page #citroen-sources{zoom:1!important;background:#f5f8fb!important;max-width:none!important}
+body.citroen-looker-edit.le-sources-page .le-toolbar-info{right:0!important}
+.le-source{min-width:0}.le-source strong{overflow-wrap:anywhere}.le-fields-list button{overflow-wrap:anywhere}.le-session{max-width:180px;font-size:10px}
+@media(max-width:1100px){.source-workspace-grid{grid-template-columns:280px minmax(0,1fr)}.source-card{padding:18px}.source-intro>.source-pill{display:none}.source-insert button{flex:1}}
+@media(max-width:780px){.source-workspace-grid{grid-template-columns:1fr}.source-intro{padding-bottom:20px}.source-results{min-width:0}.source-preview-empty{min-height:240px}.source-card{border-radius:13px}body.citroen-looker-edit.le-sources-page .concept3-shell .content{padding-right:14px!important}.source-preview-heading{flex-wrap:wrap}}
+@media(prefers-reduced-motion:reduce){#sourceWorkspace button{transition:none}}
+
+body.citroen-looker-edit.le-sources-page .concept3-shell .content{right:0!important;top:154px!important;padding-top:22px!important}
+body.citroen-looker-edit.le-sources-page .content>#citroen-sources{width:auto!important;min-width:0!important;min-height:0!important;border:0!important;box-shadow:none!important;padding-top:0!important}
+body.citroen-looker-edit .content>footer{display:none!important}
+
+.source-chart text,.source-chart rect,.source-chart circle,.source-chart polygon{stroke:none}

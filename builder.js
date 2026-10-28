@@ -9,7 +9,7 @@ const authorized=()=>window.CITROEN_ACCESS?.canEdit()===true&&$('c3Dashboard')?.
 const CL={spend:'Inversión',forms:'Formularios',messages:'Conversaciones',impressions:'Impresiones',reach:'Alcance estimado',clicks:'Clics enlace',ctr:'CTR enlace',cpl:'Costo por formulario'};
 const mk=(tag,attrs={},content='')=>{const el=document.createElement(tag);for(const [k,v] of Object.entries(attrs))el.setAttribute(k,v);el.innerHTML=content;return el;};
 const button=(text,fn,cls='builder-btn')=>{const b=mk('button',{type:'button',class:cls});b.textContent=text;b.onclick=fn;return b;};
-let state=empty(),current='resumen',data=[],external=null,localFilter={month:'',model:''},busy=false,selectedCardId=null;
+let state=empty(),current='resumen',data=[],localFilter={month:'',model:''},busy=false,selectedCardId=null;
 let lastPublishedRevision='initial',baseRevision='initial',pendingDraft=null,dirty=false,summaryBaseline=null;
 function localDraft(){
  try{
@@ -20,6 +20,7 @@ function localDraft(){
  }catch{return null;}
 }
 function draftUI(){
+ document.dispatchEvent(new CustomEvent('citroen:draft-state',{detail:{dirty,pending:!!pendingDraft,busy}}));
  const banner=$('builderDraftBanner');if(!banner)return;
  banner.hidden=!authorized()||(!pendingDraft&&!dirty);
  if(banner.hidden)return;
@@ -37,7 +38,7 @@ function stash(){
  catch{status('No se pudo guardar el borrador; exporta el diseño antes de salir.');}
  draftUI();
 }
-function status(s){if($('builderStatus'))$('builderStatus').textContent=s;}
+function status(s){if($('builderStatus'))$('builderStatus').textContent=s;document.dispatchEvent(new CustomEvent('citroen:save-status',{detail:{message:s,busy,dirty}}));}
 function watchSummary(){
  const snapshot=window.CITROEN_STUDIO_ACTIONS?.exportPublished?.();
  if(!snapshot)return;
@@ -60,6 +61,7 @@ function navTo(id){
  history.replaceState(null,'','#'+id);
  $('sidebar').classList.remove('open');$('sidebarOverlay').classList.remove('show');
  window.scrollTo({top:0,behavior:'instant'});
+ const viewport=document.querySelector('.content');if(viewport){viewport.scrollTop=0;viewport.scrollLeft=0;}
  document.dispatchEvent(new CustomEvent('citroen:builder-page-changed',{detail:{id,title:id==='resumen'?'Resumen':$(id)?.querySelector('h2')?.textContent||id}}));
  render();
 }
@@ -278,7 +280,7 @@ function newCard(type,page,changes={}){
   ...abDefaults,abGroup:'model',abModel:'',abTerritory:'',
   x:24+(page.cards.length%3)*34,y:24+(page.cards.length%5)*36,
   w:['chart','ab'].includes(type)?520:330,h:type==='ab'?355:type==='note'?230:285};
- for(const field of ['title','metric','dimension','shape','text','source','image','aStart','aEnd','bStart','bEnd','abGroup','abModel','abTerritory'])if(Object.hasOwn(changes,field))card[field]=changes[field];
+ for(const field of ['title','metric','dimension','shape','text','source','sourceId','aggregation','image','aStart','aEnd','bStart','bEnd','abGroup','abModel','abTerritory'])if(Object.hasOwn(changes,field))card[field]=changes[field];
  page.cards.push(card);selectedCardId=card.id;stash();renderPage(page);
  document.dispatchEvent(new CustomEvent('citroen:builder-card-selected',{detail:{pageId:page.id,card:{...card}}}));
 }
@@ -460,7 +462,7 @@ function cardBody(card,page){
  if(card.type==='image')return card.image?'<img class="builder-card-img" loading="lazy" alt="'+esc(card.title)+'" src="'+esc(card.image)+'">':'<div class="builder-empty">Sube o enlaza una imagen desde Editar tarjeta.</div>';
  if(card.type==='filter')return '<label class="builder-card-filter">Filtrar '+(card.filter==='model'?'modelo':'mes')+' <select data-board-filter="'+esc(card.filter||'month')+'">'+(card.filter==='model'?modelOptions():monthOptions())+'</select></label>';
  if(card.source==='external'){
-  if(!external)return '<p class="builder-empty">Fuente externa privada: conecta Sheets o BigQuery desde Diseño para actualizar el gráfico.</p>';
+  if(!authorized()||!window.CITROEN_SOURCES?.get(card.sourceId))return '<p class="builder-empty">Fuente externa privada · entra a Diseño y actualiza la conexión para ver sus datos.</p>';
   return renderExternal(card);
  }
  if(card.type==='comparison')return renderComparison(card,page);
@@ -471,25 +473,32 @@ function cardBody(card,page){
 function monthOptions(){return '<option value="">Todos los meses</option>'+Array.from(new Set(data.map(r=>r.month))).sort().map(m=>'<option value="'+esc(m)+'" '+(localFilter.month===m?'selected':'')+'>'+esc(m)+'</option>').join('');}
 function modelOptions(){return '<option value="">Todos los modelos</option>'+Array.from(new Set(data.map(r=>r.model))).sort().map(m=>'<option value="'+esc(m)+'" '+(localFilter.model===m?'selected':'')+'>'+esc(m)+'</option>').join('');}
 function renderExternal(card){
- const cols=external?.columns||[],rows=external?.rows||[];
- if(!cols.length)return '<p class="builder-empty">Reconecta la fuente privada desde Conexiones de datos para actualizar el gráfico.</p>';
- const label='<small class="builder-ext-source">'+esc(external.source||'Fuente conectada')+' · Lectura privada (hasta 100 filas)</small>';
- if(card.shape==='table')return label+'<div class="builder-preview-scroll"><table class="builder-data-table"><thead><tr>'+cols.slice(0,6).map(c=>'<th>'+esc(c)+'</th>').join('')+'</tr></thead><tbody>'+rows.slice(0,100).map(r=>'<tr>'+cols.slice(0,6).map(c=>'<td>'+esc(r[c])+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
- const dim=cols.includes(card.dimension)?card.dimension:cols[0],valCol=cols.includes(card.metric)?card.metric:cols[1]||cols[0];
- const groups=new Map();
- for(const r of rows){const group=String(r[dim]??'Sin dato').slice(0,55),value=Number(String(r[valCol]??'0').replace(/,/g,''));groups.set(group,(groups.get(group)||0)+(Number.isFinite(value)?value:0));}
- const points=Array.from(groups,([name,value])=>({name,value})).slice(0,15);
- if(!points.length)return label+'<p class="builder-empty">Esta tabla no tiene valores numéricos para representar.</p>';
- const max=Math.max(1,...points.map(p=>p.value)),W=540,H=192,pad=28,step=(W-pad*2)/points.length,coords=[];
- let svg='';
- points.forEach((p,i)=>{const x=pad+step*(i+.5),y=H-pad-p.value/max*(H-2*pad);coords.push([x,y]);if(card.shape==='bar')svg+='<rect x="'+(x-step*.30)+'" y="'+y+'" width="'+step*.6+'" height="'+(H-pad-y)+'" fill="#86bcdc" rx="3"/>';svg+='<text x="'+x+'" y="'+(H-5)+'" text-anchor="middle" font-size="9" fill="#55748a">'+esc(p.name.slice(0,9))+'</text>';});
- if(card.shape!=='bar'){const curve=coords.map(x=>x.join(',')).join(' ');if(card.shape==='area')svg+='<polygon points="'+coords[0][0]+','+(H-pad)+' '+curve+' '+coords.at(-1)[0]+','+(H-pad)+'" fill="#c8e4f4"/>';svg+='<polyline points="'+curve+'" fill="none" stroke="#e95061" stroke-width="3"/>';}
- return label+'<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+esc(card.title)+'">'+svg+'</svg><small>Dimensión: '+esc(dim)+' · Métrica: '+esc(valCol)+'</small>';
+ const external=window.CITROEN_SOURCES?.get(card.sourceId),engine=window.CITROEN_SOURCE_DATA;
+ if(!external||!engine)return '<p class="builder-empty">Actualiza esta fuente desde Conexiones de datos.</p>';
+ const cols=external.columns||[],rows=external.rows||[],nf=n=>new Intl.NumberFormat('es-CO',{maximumFractionDigits:2}).format(n);
+ const label='<small class="builder-ext-source">'+esc(external.name||external.source)+' · '+rows.length+' filas'+(external.truncated?' · Lectura parcial':'')+(external.stale?' · Sin actualizar':'')+'</small>';
+ if(card.shape==='table'&&card.type!=='metric')return label+'<div class="builder-preview-scroll"><table class="builder-data-table"><thead><tr>'+cols.slice(0,8).map(c=>'<th>'+esc(c)+'</th>').join('')+'</tr></thead><tbody>'+rows.slice(0,100).map(r=>'<tr>'+cols.slice(0,8).map(c=>'<td>'+esc(r[c])+'</td>').join('')+'</tr>').join('')+'</tbody></table></div><small>Tabla: primeras '+Math.min(100,rows.length)+' filas. Los gráficos usan todas las filas cargadas.</small>';
+ if(!cols.includes(card.dimension)||!cols.includes(card.metric))return label+'<p class="builder-empty">La estructura de la hoja cambió. Selecciona una dimensión y una métrica disponibles en Configuración.</p>';
+ const result=engine.aggregate(external,card.type==='metric'?'':card.dimension,card.metric,card.aggregation||'sum'),points=result.points.slice(0,15);
+ const note='<small>'+esc(card.dimension)+' · '+esc(card.metric)+' · '+esc({sum:'Suma',avg:'Promedio',count:'Recuento',min:'Mínimo',max:'Máximo'}[card.aggregation||'sum'])+(result.invalid?' · '+result.invalid+' filas sin valor numérico':'')+(result.points.length>15?' · Primeros 15 grupos de '+result.points.length:'')+'</small>';
+ if(!points.length)return label+'<p class="builder-empty">No hay valores numéricos en esta métrica. Revisa el campo y el formato de números.</p>';
+ if(card.type==='metric')return label+'<div class="builder-big-number">'+nf(points[0].value)+'</div>'+note;
+ const W=540,H=220,pad=35,color=/^#[0-9a-f]{6}$/i.test(card.color||'')?card.color:'#297bb5';
+ const min=Math.min(0,...points.map(p=>p.value)),max=Math.max(0,...points.map(p=>p.value)),span=max-min||1;
+ const y=v=>H-pad-(v-min)/span*(H-pad*2),zero=y(0),step=(W-pad*2)/points.length,coords=[];
+ let plot='<line x1="'+pad+'" y1="'+zero+'" x2="'+(W-pad)+'" y2="'+zero+'" stroke="#d5e1ea"/><text x="2" y="'+(pad+4)+'" font-size="10" fill="#6c8799">'+nf(max)+'</text>';
+ points.forEach((p,i)=>{const x=pad+step*(i+.5),py=y(p.value);coords.push([x,py]);
+  if(card.shape==='bar')plot+='<rect x="'+(x-step*.3)+'" y="'+Math.min(py,zero)+'" width="'+step*.6+'" height="'+Math.max(0,Math.abs(zero-py))+'" rx="3" fill="'+color+'"><title>'+esc(p.name)+': '+nf(p.value)+'</title></rect>';
+  if(card.shape==='barh'){const bx=115+(0-min)/span*(W-135),vx=115+(p.value-min)/span*(W-135),sy=14+i*190/points.length;plot+='<text x="2" y="'+(sy+10)+'" font-size="9" fill="#55748a">'+esc(p.name.slice(0,19))+'</text><rect x="'+Math.min(bx,vx)+'" y="'+sy+'" width="'+Math.abs(vx-bx)+'" height="'+Math.min(16,160/points.length)+'" fill="'+color+'"><title>'+esc(p.name)+': '+nf(p.value)+'</title></rect>';}
+  else plot+='<text x="'+x+'" y="'+(H-12)+'" text-anchor="middle" font-size="9" fill="#55748a">'+esc(p.name.slice(0,9))+'</text>';
+ });
+ if(['line','area'].includes(card.shape)){const curve=coords.map(x=>x.join(',')).join(' ');if(card.shape==='area')plot+='<polygon points="'+coords[0][0]+','+zero+' '+curve+' '+coords.at(-1)[0]+','+zero+'" fill="'+color+'" opacity=".15"/>';plot+='<polyline points="'+curve+'" fill="none" stroke="'+color+'" stroke-width="3"/>'+coords.map((p,i)=>'<circle cx="'+p[0]+'" cy="'+p[1]+'" r="3" fill="'+color+'"><title>'+esc(points[i].name)+': '+nf(points[i].value)+'</title></circle>').join('');}
+ return label+'<svg class="source-chart" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+esc(card.title)+'">'+plot+'</svg>'+note;
 }
 function editCard(page,card){
  if(!authorized())return;
  const modal=$('builderCardEditor'),form=$('builderCardForm');
- const metricInput=form.elements.metric,dimensionInput=form.elements.dimension;
+ const metricInput=form.elements.metric,dimensionInput=form.elements.dimension,external=window.CITROEN_SOURCES?.get(card.sourceId);
  if(card.source==='external'&&external?.columns?.length){
   metricInput.innerHTML=external.columns.map(c=>'<option value="'+esc(c)+'">'+esc(c)+'</option>').join('');
   dimensionInput.innerHTML=external.columns.map(c=>'<option value="'+esc(c)+'">'+esc(c)+'</option>').join('');
@@ -739,28 +748,8 @@ function editInsight(item){
 function renderSources(){
  const actions=$('citroen-sourcesActions');actions.replaceChildren();
  const root=$('citroen-sourcesBody');
- if(!authorized()){root.innerHTML='<div class="builder-empty-page">Las conexiones externas se administran desde el modo Diseño. Los datos privados no se muestran a visitantes.</div>';return;}
- root.innerHTML='<div class="builder-connect-grid"><article><h3>Google Sheets</h3><p>Conecta un Sheet publicado como CSV. Para hojas privadas, configura una cuenta de servicio en Vercel.</p><label>Enlace de Google Sheets<input id="builderSheetUrl" type="url" placeholder="https://docs.google.com/spreadsheets/d/..."></label><button type="button" id="builderSheetConnect">Leer hoja</button></article><article><h3>BigQuery</h3><p>Lectura de hasta 100 filas, con límite de escaneo y credenciales privadas. No admite consultas libres ni escrituras.</p><label>Proyecto<input id="builderBqProject" placeholder="mi-proyecto-google"></label><label>Dataset<input id="builderBqDataset" placeholder="marketing"></label><label>Tabla<input id="builderBqTable" placeholder="campanas"></label><button type="button" id="builderBqConnect">Leer tabla</button></article></div><p class="builder-connection-status" id="builderConnectionStatus"></p><div id="builderExternalPreview"></div>';
- $('builderSheetConnect').onclick=()=>connect('sheets',{url:$('builderSheetUrl').value});
- $('builderBqConnect').onclick=()=>connect('bigquery',{project:$('builderBqProject').value,dataset:$('builderBqDataset').value,table:$('builderBqTable').value});
-}
-async function connect(kind,settings){
- if(!authorized())return;
- $('builderConnectionStatus').textContent='Conectando…';
- try{
-  const res=await fetch('/api/data-connect',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind,...settings})});
-  const data=await res.json();if(!res.ok)throw Error(data.error||'No se pudo leer la fuente');
-  external=data;$('builderConnectionStatus').textContent='Conectado: '+data.source+' · '+data.rows.length+' filas disponibles en vista previa.';
-  const preview=$('builderExternalPreview');
-  preview.innerHTML='<h3>Vista previa privada de '+esc(data.source)+'</h3><div class="builder-preview-scroll"><table class="builder-data-table"><thead><tr>'+data.columns.slice(0,7).map(c=>'<th>'+esc(c)+'</th>').join('')+'</tr></thead><tbody>'+data.rows.slice(0,12).map(r=>'<tr>'+data.columns.slice(0,7).map(c=>'<td>'+esc(r[c])+'</td>').join('')+'</tr>').join('')+'</tbody></table></div><p>Estos datos no se publicarán automáticamente. Solo se utilizarán en el navegador de edición durante esta sesión.</p>';
-  preview.appendChild(button('Insertar tabla en una página',()=>{
-   if(!state.pages.length){status('Crea una página antes de añadir una fuente.');return;}
-   const id=prompt('Escribe el nombre exacto de la página destino',state.pages[0].title);
-   const page=state.pages.find(p=>p.title===id);if(!page)return status('Página no encontrada.');
-   const c={id:uid(),type:'chart',source:'external',title:'Datos · '+data.source,text:'',x:40,y:40,w:640,h:350,metric:data.columns[1]||data.columns[0],dimension:data.columns[0],shape:'table'};
-   page.cards.push(c);stash();navTo('report-'+page.id);
-  }));
- }catch(e){$('builderConnectionStatus').textContent=e.message;}
+ if(!authorized()){root.innerHTML='<div class="builder-empty-page">Las conexiones se administran desde Diseño. Las filas privadas no se muestran a visitantes.</div>';return;}
+ window.CITROEN_SOURCES?.mount(root);
 }
 async function loadMeta(){
  try{
@@ -925,17 +914,30 @@ function wire(){
   if(!item)return;const id=item.dataset.target;
   if(!id||id===current)return;
   current=id;selectedCardId=null;
+  const viewport=document.querySelector('.content');if(viewport){viewport.scrollTop=0;viewport.scrollLeft=0;}
   document.dispatchEvent(new CustomEvent('citroen:builder-page-changed',{detail:{id,title:item.textContent.trim()}}));
   render();
  });
   document.addEventListener('citroen:studio-layout',()=>{watchSummary();render();});
  document.addEventListener('citroen:summary-rendered',watchSummary);
+ document.addEventListener('citroen:sources-changed',()=>{const p=state.pages.find(p=>'report-'+p.id===current);if(p)renderPage(p);});
  document.addEventListener('citroen:advanced-filter-changed',()=>{window.CITROEN_FILTER_ENGINE?.render('lkGlobalFilters','resumen');render();});
  document.addEventListener('hashchange',()=>{const id=locationHash();if($(id)&&id!==current)navTo(id);});
  loadPublished();loadMeta();
 }
 document.addEventListener('DOMContentLoaded',wire);
 window.CITROEN_BUILDER={render,loadPublished,publish,
+ saveDraft:()=>{if(!authorized())return false;stash();status('Borrador guardado en este navegador · Publicar comparte el diseño.');return true;},
+ getSource:cardId=>{const c=state.pages.flatMap(p=>p.cards).find(c=>c.id===cardId);return c?.source==='external'?window.CITROEN_SOURCES?.get(c.sourceId):null;},
+ insertSource(source,destination,shape='table'){
+  if(!authorized()||!source?.id)return false;
+  let p=state.pages.find(p=>p.id===destination);
+  if(destination==='new'){if(!canCreatePage())return false;p={id:uid(),title:('Informe · '+(source.name||source.source)).slice(0,70),cards:[]};installPage(p,'Página creada con tu fuente conectada.');}
+  if(!p||p.cards.length>=45)return false;
+  const fields=window.CITROEN_SOURCE_DATA.fields(source),metric=fields.find(f=>f.type==='metric')?.name||source.columns[0],dimension=fields.find(f=>f.type==='text')?.name||source.columns[0];
+  navTo('report-'+p.id);
+  newCard('chart',p,{source:'external',sourceId:source.id,title:source.name||source.source,shape,dimension,metric,aggregation:'sum'});return true;
+ },
  getFilterVisibility:(field)=>state.filters?.[field]!==false,
  getCurrentPage:()=>current,getPages:()=>state.pages.map(p=>({id:p.id,title:p.title,count:p.cards.length})),
  openTemplates:openTemplateGallery,
@@ -963,7 +965,10 @@ window.CITROEN_BUILDER={render,loadPublished,publish,
    else if(k==='text'&&typeof v==='string')c.text=v.slice(0,7000);
    else if(k==='goal'&&Number.isFinite(Number(v)))c.goal=v===''?null:Math.max(0,Math.min(1e12,Number(v)));
    else if(k==='source'&&['meta','external'].includes(v))c.source=v;
-   else if(valid[k]?.includes(v))c[k]=v;
+   else if(k==='sourceId'&&window.CITROEN_SOURCES?.get(v)){const src=window.CITROEN_SOURCES.get(v);c.source='external';c.sourceId=v;c.dimension=src.columns[0];c.metric=window.CITROEN_SOURCE_DATA.fields(src).find(f=>f.type==='metric')?.name||src.columns[0];c.shape='bar';}
+   else if(k==='aggregation'&&['sum','avg','count','min','max'].includes(v))c.aggregation=v;
+   else if(['metric','dimension'].includes(k)&&c.source==='external'&&window.CITROEN_SOURCES?.get(c.sourceId)?.columns.includes(v))c[k]=v;
+   else if(valid[k]?.includes(v)&&!(c.source==='external'&&['metric','dimension'].includes(k)))c[k]=v;
   }
   stash();renderPage(p);return {...c};
  },

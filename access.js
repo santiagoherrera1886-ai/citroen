@@ -8,6 +8,7 @@ function status(id,text,isError=false){const el=$(id);if(el){el.textContent=text
 function open(id){$(id).hidden=false;$(id).querySelector('input')?.focus();}
 function close(id){$(id).hidden=true;}
 function publicState(){
+ document.dispatchEvent(new Event('citroen:auth-changed'));
  $('citroenMasterOpen').hidden=!(user&&user.role==='owner'&&!user.mustChange);
  $('studioEdit').hidden=!(user&&!user.mustChange);
  const entry=$('citroenSidebarLogin');if(entry){entry.hidden=!!(user&&!user.mustChange);entry.textContent=user?.mustChange?'Completar seguridad':'Ingresar a Diseño';}
@@ -181,6 +182,6 @@ function wire(){
  window.setInterval(()=>checkSessionDuringEdit().catch(()=>{}),90000);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkSessionDuringEdit().catch(()=>{});});
 }
-window.CITROEN_ACCESS={requestEdit,canEdit:()=>Boolean(user&&!user.mustChange),isOwner:()=>Boolean(user&&!user.mustChange&&user.role==='owner'),logout,showMaster};
+window.CITROEN_ACCESS={identity:()=>user?.email||null,requestEdit,canEdit:()=>Boolean(user&&!user.mustChange),isOwner:()=>Boolean(user&&!user.mustChange&&user.role==='owner'),logout,showMaster};
 document.addEventListener('DOMContentLoaded',wire);
 })();

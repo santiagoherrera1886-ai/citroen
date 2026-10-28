@@ -40,6 +40,9 @@ jobs:
           node --check alert-center.js
           node --check api/dashboard.js
           node --check api/data-connect.js
+          node --check lib/sheets-connector.mjs
+          node --check data-sources.js
+          node --check source-data.js
           node --check api/history.js
           node --check api/media.js
           node --check data/revision_2026.js
@@ -84,3 +87,8 @@ jobs:
         run: node scripts/smoke-direct-layout.cjs
       - name: Shared image references and protected history UI
         run: node scripts/smoke-media-version.cjs
+
+      - name: Sheets connector URLs, access, CSV and bounded reads
+        run: node --test scripts/test-sheets.mjs
+      - name: Connected source editor and privacy regression
+        run: node scripts/smoke-sources.cjs

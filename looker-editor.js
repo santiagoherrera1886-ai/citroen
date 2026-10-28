@@ -38,8 +38,8 @@ function act(action){
  compareMonths:()=>{if(!window.CITROEN_BUILDER?.addOnCurrent('comparison',{metric:'forms',title:'Comparativo de formularios'}))mark('Abre una página personalizable para insertar el comparativo');},
  insight:()=>{if(window.CITROEN_BUILDER?.addOnCurrent('note'))return;if(go('citroen-insights'))$('citroen-insightsActions')?.querySelector('button')?.click();},
  free:()=>click('studioFreeLayout'),grid:()=>{if($('studioFreeLayout')?.getAttribute('aria-pressed')==='true')click('studioFreeLayout');},
- save:()=>{click('studioSave');mark('Guardado localmente · Publicar comparte páginas e insights');},
- publish:()=>{click('builderPublish');mark('Publicación solicitada · comprueba el estado en el menú');},
+ save:()=>{click('studioSave');window.CITROEN_BUILDER?.saveDraft?.();},
+ publish:()=>{click('builderPublish');},
  history:()=>{if(window.CITROEN_ACCESS?.isOwner?.())click('builderHistory');else mark('El historial solo está disponible para el administrador maestro');},
  export:()=>click('studioExport'),import:()=>click('studioImport'),csv:()=>click('studioCsv'),reset:()=>click('studioReset'),
  duplicate:()=>{if(window.CITROEN_LOOKER_PROPERTIES?.duplicateSelection?.())return;if(selection?.startsWith('c:'))window.CITROEN_STUDIO_ACTIONS?.duplicate?.(selection);else mark('Selecciona un gráfico personalizado para duplicarlo');},
@@ -61,7 +61,7 @@ function act(action){
  const controlTypes={datecontrol:'relative',selectcontrol:'select',multicontrol:'multi',numbercontrol:'number',searchcontrol:'search'};
  if(controlTypes[action]){click('builderNewFilter');const field=$('builderFilterEditorForm')?.elements?.type;if(field){field.value=controlTypes[action];
  const active=window.CITROEN_BUILDER?.getCurrentPage?.();
- if(active?.startsWith('report-')){field.scope.value='page';field.pageId.value=active;field.pageId.dispatchEvent(new Event('change'));}}
+ if(active?.startsWith('report-')){const form=$('builderFilterEditorForm');form.elements.scope.value='page';form.elements.pageId.value=active;form.elements.pageId.dispatchEvent(new Event('change'));}}
  mark('Configura el campo, período y alcance del filtro');}
 }
 function show(name,button){
@@ -101,7 +101,12 @@ function pages(){
 function fields(){
  const query=($('leFieldSearch')?.value||'').toLocaleLowerCase('es-CO');
  const root=$('leFieldsList');if(!root)return;
- const matches=metrics.filter(row=>(row[0]+' '+row[1]).toLocaleLowerCase('es-CO').includes(query));
+ const api=window.CITROEN_BUILDER,page=api?.getCurrentPage?.(),chosen=page?.startsWith('report-')?api?.getCard?.(page.slice(7),api?.getSelectedCardId?.()):null;
+ const source=chosen?.source==='external'?window.CITROEN_SOURCES?.get(chosen.sourceId):null;
+ const catalog=chosen?.source==='external'?(window.CITROEN_SOURCE_DATA?.fields(source)||[]).map(f=>[f.name,f.name,f.type]):metrics;
+ if($('leSourceTitle'))$('leSourceTitle').textContent=chosen?.source==='external'?(source?.name||'Fuente privada'):'Meta Ads · 2026';
+ if($('leSourceSubtitle'))$('leSourceSubtitle').textContent=chosen?.source==='external'?(source?source.rows.length+' filas conectadas':'Reconecta para cargar campos'):'Datos reales + planeación';
+ const matches=catalog.filter(row=>(row[0]+' '+row[1]).toLocaleLowerCase('es-CO').includes(query));
  root.innerHTML=['date','text','metric'].map(type=>{
   const subset=matches.filter(r=>r[2]===type);
   if(!subset.length)return '';
@@ -137,13 +142,13 @@ function start(){
  root.innerHTML=[
  '<div class="le-head"><div class="le-brand"><span class="le-logo">⌃</span><div><strong>CITROËN <em>STUDIO</em></strong><small>PERFORMANCE INTELLIGENCE</small></div></div><div class="le-title-area"><div class="le-name">Marketing &amp; movilidad <span>· Informe 2026</span></div>',
  '<div class="le-menus" id="leMenus"><button data-menu="archivo">Archivo</button><button data-menu="editar">Editar</button><button data-menu="insertar">Insertar</button><button data-menu="pagina">Página</button><button data-menu="organizar">Organizar</button><button data-menu="recurso">Recurso</button></div></div>',
- '<div class="le-head-actions"><span class="le-session"><i></i> Diseño privado</span><button type="button" id="leView" class="le-view">◉ &nbsp;Ver informe</button></div></div>',
+ '<div class="le-head-actions"><span class="le-session" id="leSaveState"><i></i> Diseño privado</span><button type="button" id="leView" class="le-view">◉ &nbsp;Ver informe</button></div></div>',
  '<div class="le-toolbar" role="toolbar" aria-label="Herramientas del editor"><div class="le-tool-set compact"><button type="button" data-do="undo" title="Deshacer">↶</button><button type="button" data-do="redo" title="Rehacer">↷</button></div>',
  '<div class="le-tool-set"><button type="button" data-do="select" class="chosen"><b>↖</b><span>Seleccionar</span></button><button type="button" data-do="page"><b>▤</b><span>Añadir página</span></button><button type="button" data-do="datasource"><b>▣</b><span>Añadir datos</span></button><button type="button" data-menu="chart"><b>▥</b><span>Añadir gráfico ▾</span></button><button type="button" data-menu="controls"><b>☷</b><span>Añadir control ▾</span></button><button type="button" data-do="insight"><b>T</b><span>Texto / insight</span></button><button type="button" data-do="photo"><b>▧</b><span>Imágenes</span></button><button type="button" data-menu="theme"><b>◉</b><span>Tema y diseño ▾</span></button></div>',
  '<div class="le-tool-set le-tools-end"><button type="button" data-do="free"><b>✥</b><span>Mover libre</span></button><button type="button" data-do="save"><b>✓</b><span>Guardar</span></button><button type="button" class="publish" data-do="publish"><b>↑</b><span>Publicar</span></button></div></div>',
  '<div class="le-toolbar-info" id="leToolbarStatus" role="status">Selecciona una tarjeta para editarla</div><div id="leDropdown" class="le-dropdown" hidden></div>',
  '<aside class="le-pages-panel"><div class="le-pages-heading"><span>PÁGINAS</span><button type="button" data-do="page" title="Crear página">＋</button></div><div id="lePageList" class="le-pages"></div><div class="le-pages-foot">▦ Informe Citroën <small>Editor</small></div></aside>',
- '<aside class="le-fields-panel"><div class="le-fields-header"><strong>Datos</strong><span>▤</span></div><div class="le-source"><span>▣</span><div><strong>Meta Ads · 2026</strong><small>Datos reales + planeación</small></div></div>',
+ '<aside class="le-fields-panel"><div class="le-fields-header"><strong>Datos</strong><span>▤</span></div><div class="le-source"><span>▣</span><div><strong id="leSourceTitle">Meta Ads · 2026</strong><small id="leSourceSubtitle">Datos reales + planeación</small></div></div>',
  '<label class="le-search"><span>⌕</span><input id="leFieldSearch" type="search" placeholder="Buscar campos..." aria-label="Buscar campos"></label><div id="leFieldsList" class="le-fields-list"></div><div class="le-fields-bottom"><button type="button" data-do="datasource">⊕ Conectar datos</button><button type="button" data-do="control">⊕ Crear filtro</button></div></aside>',
  '<div class="le-rail"><button type="button" data-do="focusproperties" class="active"><b>✎</b><span>Propiedades</span></button><button type="button" data-do="focusdata"><b>▤</b><span>Datos</span></button></div>',
  '<div class="le-canvas-caption"><span>INFORME</span><strong id="leCanvasTitle">Resumen · Colombia</strong><small>100% · Lienzo</small></div>'
@@ -160,11 +165,16 @@ function start(){
   e.dataTransfer.effectAllowed='copy';
  });
  document.addEventListener('citroen:studio-layout',()=>{setEdit($('c3Dashboard')?.classList.contains('studio-edit-on')===true);if(editing)pages();});
- document.addEventListener('citroen:builder-page-changed',()=>{if(editing)pages();});
+ document.addEventListener('citroen:builder-page-changed',e=>{document.body.classList.toggle('le-sources-page',e.detail?.id==='citroen-sources');if(editing){pages();fields();}});
+ document.addEventListener('citroen:builder-card-selected',()=>{if(editing)fields();});
+ document.addEventListener('citroen:sources-changed',()=>{if(editing)fields();});
+ document.addEventListener('citroen:source-selection-changed',()=>{if(editing)fields();});
+ document.addEventListener('citroen:save-status',e=>{if(editing)mark(e.detail?.message);});
+ document.addEventListener('citroen:draft-state',e=>{const state=$('leSaveState');if(state)state.textContent=e.detail?.busy?'Publicando…':e.detail?.pending?'Borrador por recuperar':e.detail?.dirty?'Borrador sin publicar':'Diseño privado';});
  document.addEventListener('citroen:builder-page-order',()=>{if(editing)pages();});
  document.addEventListener('citroen:selection-changed',e=>{selection=e.detail?.key||null;mark(selection?'Editando: '+($('metricCurrent')?.textContent||'gráfico'):'Selecciona un gráfico para editarlo');});
  document.addEventListener('click',e=>{if(editing&&!e.target.closest('#leDropdown,[data-menu]'))close();});
- document.addEventListener('keydown',e=>{if(e.key==='Escape')close();});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape')close();if(editing&&(e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){e.preventDefault();act('save');}});
  const navroot=$('sidebar')?.querySelector('.nav');
  if(navroot&&typeof MutationObserver!=='undefined')new MutationObserver(()=>{if(editing)pages();}).observe(navroot,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
  setEdit($('c3Dashboard')?.classList.contains('studio-edit-on')===true);

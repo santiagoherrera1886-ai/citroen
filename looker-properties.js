@@ -6,7 +6,7 @@ const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'
 const dims=[['date','Día'],['week','Semana'],['month','Mes'],['quarter','Trimestre'],['model','Modelo'],['territory','Territorio'],['account','Cuenta Meta']];
 const mets=[['spend','Inversión'],['forms','Formularios'],['messages','Conversaciones'],['impressions','Impresiones'],['reach','Alcance estimado'],['clicks','Clics'],['ctr','CTR'],['cpl','CPL']];
 const types=[['bar','Barras'],['barh','Barras horizontales'],['line','Líneas'],['area','Área'],['table','Tabla'],['pie','Circular'],['donut','Anillo'],['gauge','Medidor']];
-const options=(array,current)=>array.map(pair=>'<option value="'+pair[0]+'" '+(pair[0]===current?'selected':'')+'>'+safe(pair[1])+'</option>').join('');
+const options=(array,current)=>array.map(pair=>'<option value="'+safe(pair[0])+'" '+(pair[0]===current?'selected':'')+'>'+safe(pair[1])+'</option>').join('');
 let selected=null,page='resumen',tab='data',started=false,zoom=100,grid=true;
 const mode=()=>document.body.classList.contains('citroen-looker-edit');
 const builder=()=>window.CITROEN_BUILDER;
@@ -36,14 +36,20 @@ function render(){
  const head='<div class="lep-header"><small>ELEMENTO SELECCIONADO</small><strong>'+safe(c.title)+'</strong><span>'+safe(c.type.toUpperCase())+'</span></div>'+
  '<div class="lep-tabs"><button type="button" data-le-tab="data" class="'+(tab==='data'?'active':'')+'">Configuración</button>'+
  '<button type="button" data-le-tab="style" class="'+(tab==='style'?'active':'')+'">Estilo</button></div>';
+ const external=c.source==='external',source=external?window.CITROEN_SOURCES?.get(c.sourceId):null;
+ const schema=window.CITROEN_SOURCE_DATA?.fields(source)||[],externalFields=schema.map(f=>[f.name,f.name]);
+ const cardDims=external?externalFields:dims,cardMets=external?externalFields:mets,cardTypes=external?types.filter(t=>['bar','barh','line','area','table'].includes(t[0])):types;
  let html='';
  if(tab==='data'){
-  html='<div class="lep-heading">Fuente de datos</div><div class="lep-dataset">▣ &nbsp; Meta Ads · 2026 <small>Datos diarios reales</small></div>'+
+  html='<div class="lep-heading">Fuente de datos</div>';
+  if(c.type==='chart'||c.type==='metric')html+='<label>Conexión<select data-le-property="sourceId"><option value="meta" '+(!external?'selected':'')+'>Meta Ads · 2026</option>'+ (window.CITROEN_SOURCES?.list()||[]).map(d=>'<option value="'+safe(d.id)+'" '+(c.sourceId===d.id?'selected':'')+' '+(!d.connected?'disabled':'')+'>'+safe(d.name)+(d.connected?'':' · reconectar')+'</option>').join('')+'</select></label>';
+  html+='<div class="lep-dataset">▣ &nbsp; '+safe(external?(source?.name||'Fuente privada · reconectar'):'Meta Ads · 2026')+'<small>'+safe(external?(source?source.rows.length+' filas · Solo en Diseño':'Abre Añadir datos para actualizar la fuente'):'Datos diarios reales')+'</small></div>'+
   '<label>Nombre del elemento<input data-le-property="title" maxlength="100" value="'+safe(c.title)+'"></label>';
   if(c.type==='chart'||c.type==='metric'){
-   html+='<div class="lep-heading">Dimensión</div><label class="lep-dropzone" data-le-dropzone="dimension"><small>Arrastra aquí un campo de dimensión</small><select data-le-property="dimension">'+options(dims,c.dimension)+'</select></label>'+
-   '<div class="lep-heading">Métrica</div><label class="lep-dropzone" data-le-dropzone="metric"><small>Arrastra aquí un campo de métrica</small><select data-le-property="metric">'+options(mets,c.metric)+'</select></label>';
-   if(c.type==='chart')html+='<div class="lep-heading">Visualización</div><label><select data-le-property="shape">'+options(types,c.shape)+'</select></label>';
+   html+='<div class="lep-heading">Dimensión</div><label class="lep-dropzone" data-le-dropzone="dimension"><small>Arrastra aquí un campo de dimensión</small><select data-le-property="dimension">'+options(cardDims,c.dimension)+'</select></label>'+
+   '<div class="lep-heading">Métrica</div><label class="lep-dropzone" data-le-dropzone="metric"><small>Arrastra aquí un campo de métrica</small><select data-le-property="metric">'+options(cardMets,c.metric)+'</select></label>';
+   if(c.type==='chart')html+='<div class="lep-heading">Visualización</div><label><select data-le-property="shape">'+options(cardTypes,c.shape)+'</select></label>';
+   if(external)html+='<label>Agregación<select data-le-property="aggregation">'+options([['sum','Suma'],['avg','Promedio'],['count','Recuento de filas'],['min','Mínimo'],['max','Máximo']],c.aggregation||'sum')+'</select></label><p class="lep-muted">Los filtros de Meta no se aplican a esta fuente. Los datos privados solo se muestran al editar.</p>';
    if(c.shape==='gauge')html+='<label>Objetivo numérico<input data-le-property="goal" type="number" min="1" value="'+safe(c.goal||'')+'"></label>';
   }
   if(c.type==='note')html+='<div class="lep-heading">Texto o insight</div><label><textarea data-le-property="text" rows="10">'+safe(c.text)+'</textarea></label>';
@@ -61,11 +67,14 @@ function render(){
 }
 function update(prop,v){
  if(!card())return;
- const result=builder()?.updateCard(pageId(),selected,{[prop]:v});
+ const patch=prop==='sourceId'&&v==='meta'?{source:'meta',metric:'spend',dimension:'month'}:{[prop]:v};
+ const result=builder()?.updateCard(pageId(),selected,patch);
+ if(result)document.dispatchEvent(new Event('citroen:source-selection-changed'));
  if(result&&(!['color','background','textColor'].includes(prop)))render();
 }
 function assignField(field){
  if(!mode()||!card())return false;
+ if(card().source==='external'){const src=window.CITROEN_SOURCES?.get(card().sourceId),f=window.CITROEN_SOURCE_DATA?.fields(src).find(f=>f.name===field);if(!f)return false;update(f.type==='metric'?'metric':'dimension',field);return true;}
  if(mets.some(x=>x[0]===field)){update('metric',field);return true;}
  if(dims.some(x=>x[0]===field)){update('dimension',field);return true;}
  return false;
@@ -108,6 +117,7 @@ function wire(){
   const zone=e.target.closest('[data-le-dropzone]');if(!zone||!mode()||!card())return;
   e.preventDefault();zone.classList.remove('lep-dragover');
   const key=e.dataTransfer?.getData('text/plain'),prop=zone.dataset.leDropzone;
+  if(card().source==='external'&&['metric','dimension'].includes(prop)&&window.CITROEN_SOURCES?.get(card().sourceId)?.columns.includes(key)){update(prop,key);return;}
   if(prop==='metric'&&mets.some(x=>x[0]===key))update('metric',key);
   else if(prop==='dimension'&&dims.some(x=>x[0]===key))update('dimension',key);
  });
@@ -116,6 +126,7 @@ function wire(){
  document.addEventListener('citroen:builder-page-changed',e=>{page=e.detail?.id||'resumen';selected=null;tab='data';refresh();});
  document.addEventListener('citroen:studio-layout',()=>{if(!mode())selected=null;refresh();showGrid(grid);});
  document.addEventListener('citroen:builder-page-order',refresh);
+ document.addEventListener('citroen:sources-changed',refresh);
  document.addEventListener('click',e=>{if(mode()&&e.target.closest('.le-page-item'))queueMicrotask(refresh);});
  setZoom(100);refresh();
 }
