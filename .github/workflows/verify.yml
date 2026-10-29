@@ -44,6 +44,7 @@ jobs:
           node --check api/campaign-sync.js
           node --check lib/campaign-data.mjs
           node --check lib/campaign-apps-script.mjs
+          node --check lib/campaign-store.mjs
           node --check campaign-feed.js
           node --check campaign-connection.js
           node --check campaign-creatives.js
@@ -100,7 +101,7 @@ jobs:
         run: node scripts/smoke-sources.cjs
 
       - name: Full campaign sync, authorization and source reconciliation
-        run: node --test scripts/test-campaign-sync.mjs
+        run: node --test scripts/test-campaign-sync.mjs scripts/test-campaign-store.mjs
       - name: Shared campaign feed and connection activation UI
         run: node scripts/smoke-campaign-sync.cjs
       - name: Connected ad images, filters and metric identity

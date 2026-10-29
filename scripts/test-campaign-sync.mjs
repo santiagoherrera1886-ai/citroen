@@ -5,6 +5,7 @@ import {readFileSync} from 'node:fs';
 import {aggregateCampaignRows,campaignColumns,validateCampaignData,CAMPAIGN_SOURCE} from '../lib/campaign-data.mjs';
 import {buildCampaignScript} from '../lib/campaign-apps-script.mjs';
 import {createCampaignSyncHandler} from '../api/campaign-sync.js';
+import {BlobPreconditionFailedError} from '@vercel/blob';
 
 const headers=['Account name','Date','Campaign name','Ad name','Ad set name','Cost','On-Facebook leads','Cost per on-Facebook lead','Impressions','Link clicks','Reach','CTR (all)','Frequency','CPM (cost per 1000 impressions)','Clicks (all)','Messaging conversations started'];
 const row=(date='2026-10-28',cost=100)=>['Cuenta',date,'2026_colombia_citroen_basalt-bogota','video','conjunto',cost,2,50,1000,30,700,3,1,100,50,4];
@@ -55,9 +56,9 @@ test('invalid or inconsistent payloads cannot replace a complete snapshot',()=>{
  assert.throws(()=>validateCampaignData(other),/Referencia/);
 });
 
-function harness(){
+function harness({beforeWrite=()=>{}}={}){
  const blobs=new Map();let editor=null,version=0;
- const handler=createCampaignSyncHandler({ready:()=>true,currentUser:async()=>editor,read:async p=>blobs.get(p)||null,write:async(p,value,previous)=>{const current=blobs.get(p);assert.equal(previous?.etag,current?.etag);blobs.set(p,{value,etag:String(++version)});}});
+ const handler=createCampaignSyncHandler({ready:()=>true,currentUser:async()=>editor,read:async p=>blobs.get(p)||null,write:async(p,value,previous)=>{await beforeWrite(p,value,previous,blobs);const current=blobs.get(p);assert.equal(previous?.etag,current?.etag);blobs.set(p,{value,etag:String(++version)});}});
  const call=async(body,token,method='POST',query={})=>{const res={headers:{},setHeader(k,v){this.headers[k]=v;},status(n){this.code=n;return this;},json(data){this.body=data;return this;}};await handler({method,query,body,headers:{host:'citroen.example',origin:'https://citroen.example','content-type':'application/json',...(token?{authorization:'Bearer '+token}:{})}},res);return res;};
  return {call,setUser:u=>editor=u,blobs};
 }
@@ -78,6 +79,44 @@ test('setup requires owner; ingestion needs scoped key; failed writes preserve p
  assert.equal((await h.call(bad,token)).code,400);
  assert.equal((await h.call(null,null,'GET',{action:'data'})).body.revision,saved.revision);
  await h.call({action:'setup'});assert.equal((await h.call(payload,token)).code,401,'Replacing setup revokes the old ingest key');
+});
+
+for(const mode of ['older concurrent update','newer concurrent update','persistent conflict'])test('storage conflict: '+mode,async()=>{
+ let collide=false,writes=0;
+ const now=Date.now(),initialTime=new Date(now-6000).toISOString(),incomingTime=new Date(now-2000).toISOString();
+ const h=harness({beforeWrite:(path,value,previous,blobs)=>{
+  if(!collide||!path.endsWith('-data-v1.json'))return;
+  writes++;
+  if(mode==='persistent conflict')throw new BlobPreconditionFailedError();
+  if(writes===1){
+   const current=blobs.get(path),concurrent=structuredClone(current.value);
+   concurrent.startedAt=new Date(now+(mode==='newer concurrent update'?-1000:-4000)).toISOString();
+   concurrent.revision='concurrent';
+   blobs.set(path,{value:concurrent,etag:'concurrent-etag'});
+   throw new BlobPreconditionFailedError();
+  }
+  assert.equal(previous.etag,'concurrent-etag','Retry must use the freshly read validator');
+ }});
+ h.setUser({role:'owner'});const setup=await h.call({action:'setup'});
+ const token=setup.body.script.match(/"token": "([a-f0-9]{64})"/)[1];
+ const payload={...aggregateCampaignRows(liveHeaders,[liveRow()]),sourceId:CAMPAIGN_SOURCE.spreadsheetId,tabId:CAMPAIGN_SOURCE.sheetId,startedAt:initialTime,scheduled:true};
+ assert.equal((await h.call(payload,token)).code,200);
+ const original=(await h.call(null,null,'GET',{action:'data'})).body;
+ collide=true;
+ const result=await h.call({...payload,startedAt:incomingTime},token);
+ const saved=(await h.call(null,null,'GET',{action:'data'})).body;
+ if(mode==='older concurrent update'){
+  assert.equal(result.code,200);assert.equal(writes,2);assert.notEqual(saved.revision,'concurrent');
+  assert.equal(saved.images,1);assert.equal(saved.mediaVersion,1);assert.equal(saved.scheduled,true);
+ }else if(mode==='newer concurrent update'){
+  assert.equal(result.code,409);assert.equal(writes,1);assert.equal(saved.revision,'concurrent');
+ }else{
+  assert.equal(result.code,409);assert.equal(writes,3);assert.equal(saved.revision,original.revision);
+  assert.match(result.body.error,/vuelve a ejecutar sincronizarCitroen/);
+  assert.ok(!result.body.error.includes('ETag'),'User gets actionable error, not SDK internals');
+ }
+ assert.deepEqual(saved.daily.totals,original.daily.totals,'Conflicts never add or erase metrics');
+ assert.equal((await h.call({...payload,startedAt:new Date(now).toISOString()},'b'.repeat(64))).code,401,'Retries do not bypass key validation');
 });
 for(const layout of [
  {name:'original 16 columns',headers,row},
