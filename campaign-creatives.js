@@ -8,7 +8,7 @@ const imageURL=value=>typeof value==='string'&&value.length<=4096&&/^https:\/\/(
 const keyOf=values=>JSON.stringify(values);
 const filters={month:'',model:'',search:'',sort:'spend',images:false};
 let root=null,snapshot=null,seed=null,seedPromise=null,page=1,visible=[],returnFocus=null;
-const pageSize=24;
+let pageSize=24;
 function seedCatalog(){
  if(seedPromise)return seedPromise;
  seedPromise=fetch('./data/campaign-media.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Catálogo no disponible');return r.json();}).then(data=>{seed=data;return data;}).catch(()=>({items:[]}));
@@ -86,12 +86,13 @@ function render(){
  root.querySelector('.campaign-media-reset').onclick=()=>{Object.assign(filters,{month:'',model:'',search:'',sort:'spend',images:false});page=1;render();};
  drawResults();
 }
-async function mount(target){
+async function mount(target,options={}){
+ pageSize=options.pageSize===6?6:24;
  root=target;
  if(snapshot){if(snapshot.detail.media_version!==1&&!seed)await seedCatalog();render();return;}
  target.innerHTML='<p class="builder-empty" role="status">Cargando anuncios e imágenes…</p>';
  try{const [data]=await Promise.all([window.CITROEN_CAMPAIGN_FEED.load(),seedCatalog()]);snapshot=data;render();}
- catch{if(root?.isConnected)root.innerHTML='<p class="builder-empty">No se pudo cargar la biblioteca. Vuelve a abrir Creativos para reintentar.</p>';}
+ catch{if(root?.isConnected)root.innerHTML='<p class="builder-empty">No se pudo cargar la biblioteca. Recarga el Resumen para reintentar.</p>';}
 }
 document.addEventListener('citroen:campaign-data',event=>{if(event.detail){snapshot=event.detail;render();}});
 window.CITROEN_CAMPAIGN_CREATIVES={mount};

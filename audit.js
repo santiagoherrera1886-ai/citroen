@@ -120,7 +120,7 @@
     $('auditReset').onclick=()=>{$('auditMonth').value='';$('auditSeverity').value='';$('auditView').value='months';renderAll();};
     $('auditToPlan').onclick=()=>go('planeacion');
     $('auditGoDetail').onclick=()=>go('planeacion');
-    $('auditOpenFromPlanning').onclick=()=>go('auditoria');
+    $('auditOpenFromPlanning')?.addEventListener('click',()=>go('auditoria'));
     loadPacked().then(value=>{packed=value;stats();renderAll();}).catch(e=>{
       $('auditStatus').textContent='Error de conciliación: '+e.message;
       console.error('Citroën Excel audit validation:',e);

@@ -18,7 +18,7 @@
 <link rel="stylesheet" href="./looker-properties.css?v=20261027-studio2">
 <link rel="stylesheet" href="./looker-direct.css?v=20261027-direct1">
 <link rel="stylesheet" href="./data-sources.css?v=20261028-sync1">
-<link rel="stylesheet" href="./campaign-creatives.css?v=20261028-media1">
+<link rel="stylesheet" href="./campaign-creatives.css?v=20261028-summary1">
 </head>
 <body>
 <svg xmlns="http://www.w3.org/2000/svg" class="symbols" aria-hidden="true">
@@ -53,8 +53,6 @@
     <nav class="nav" aria-label="Secciones del dashboard">
       <button class="nav-link active" data-target="resumen"><svg><use href="#i-dashboard"/></svg> Resumen <span>01</span></button>
       <button class="nav-link" data-target="planeacion"><svg><use href="#i-chart"/></svg> Planeación 2026 <span>02</span></button>
-      <button class="nav-link" data-target="auditoria"><svg><use href="#i-db"/></svg> Auditoría Excel <span>03</span></button>
-      <button class="nav-link" data-target="meta"><svg><use href="#i-chart"/></svg> Meta Ads · Real <span>03</span></button>
       <button class="nav-link" data-target="modelos"><svg><use href="#i-car"/></svg> Modelos <span>04</span></button>
 
       <button class="nav-link" data-target="territorios"><svg><use href="#i-pin"/></svg> Geografía <span>06</span></button>
@@ -217,7 +215,7 @@
     <article class="c3-panel c3-models-panel" id="c3ModelsPanel"><div class="c3-panel-heading"><h3>Desempeño por modelo</h3><button class="c3-text-link" data-c3-jump="modelos">Ver todos los modelos →</button></div>
       <div class="c3-models-grid" id="c3Models"></div>
     </article>
-    <article class="c3-panel c3-campaign-panel" id="c3CampaignPanel"><div class="c3-panel-heading"><h3>Campañas principales</h3><button class="c3-text-link" data-c3-jump="meta">Ver todas →</button></div>
+    <article class="c3-panel c3-campaign-panel" id="c3CampaignPanel"><div class="c3-panel-heading"><h3>Campañas principales</h3><button class="c3-text-link" data-c3-jump="campanas">Ver todas →</button></div>
       <div class="c3-campaign-table-wrap"><table class="c3-campaign-table"><thead><tr><th>Campaña</th><th>Modelo</th><th>Inversión</th><th>Form.</th><th>Costo/form.</th></tr></thead><tbody id="c3Campaigns"></tbody></table></div>
     </article>
     <article class="c3-panel c3-insight-panel" id="c3InsightsPanel"><div class="c3-panel-heading"><h3><span class="c3-bulb">✳</span> Hallazgos clave</h3></div><div id="c3Insights" class="c3-insights"></div></article>
@@ -253,7 +251,6 @@
     <label>REGIÓN DECLARADA <select id="planRegion"><option value="">Todas las regiones</option></select></label>
     <label>TIPO DEL PLAN <select id="planType"><option value="">Todos los tipos</option></select></label>
     <button id="planReset" class="quiet-button"><svg><use href="#i-refresh"/></svg> Limpiar</button>
-    <button type="button" class="audit-go-button" id="auditOpenFromPlanning">Ver auditoría Excel ↗</button>
   </div>
   <div class="audit-rules">
   <div><span>ENERO · VERSIÓN</span><strong>Escenario ampliado</strong><small>117 M + 13 M Berlingo; existe una versión previa por 92,5 M</small></div>
@@ -284,7 +281,7 @@
 </section>
 
 
-<section id="auditoria" class="page-section cit-audit-page" aria-labelledby="auditTitle">
+<section id="auditoria" class="page-section cit-audit-page" aria-labelledby="auditTitle" data-retired-page hidden aria-hidden="true" inert>
   <div class="section-header">
     <div><div class="section-overline">AUDITORÍA FORENSE · 10 EXCEL ORIGINALES · 2026</div>
       <h2 id="auditTitle">Plan actualizado, con diferencias visibles</h2>
@@ -334,7 +331,7 @@
   </article>
 </section>
 
-<section id="meta" class="page-section meta-page">
+<section id="meta" class="page-section meta-page" data-retired-page hidden aria-hidden="true" inert>
   <div class="section-header"><div><div class="section-overline">META ADS / REAL PERFORMANCE / 2026</div><h2>Resultados reales de campañas Meta</h2><p>Datos diarios de tres cuentas · 1 ene – 20 oct 2026 · formularios y conversaciones por separado.</p></div><span class="mini-pill">FUENTE: EXPORTACIÓN META · NO API EN VIVO</span></div>
   <div class="meta-notice"><svg><use href="#i-info"/></svg><span><b>Resultados reales, no proyectados.</b> El archivo contiene anuncios de Meta Ads. Los leads en Facebook y las conversaciones de WhatsApp no son equivalentes ni deben interpretarse como personas únicas. El alcance de varias filas tampoco se puede desduplicar.</span></div>
   <div class="meta-filters">
@@ -423,7 +420,7 @@
 <script src="./data/revision_2026.js?v=20261026" defer></script>
 <script src="./planning.js?v=20261021-audit-v2" defer></script>
 <script src="./data/auditoria_2026.js" defer></script>
-<script src="./audit.js" defer></script>
+<script src="./audit.js?v=20261028-summary1" defer></script>
 <script src="./campaign-feed.js?v=20261028-media1" defer></script>
 <script src="./meta.js?v=20261028-sync1" defer></script>
 <script src="./reach-math.js?v=20261026b" defer></script>
@@ -509,9 +506,9 @@
 <script src="./alert-center.js?v=20261027-alert1" defer></script>
 <script src="./source-data.js?v=20261028" defer></script>
 <script src="./campaign-connection.js?v=20261028-media1" defer></script>
-<script src="./campaign-creatives.js?v=20261028-media1" defer></script>
+<script src="./campaign-creatives.js?v=20261028-summary1" defer></script>
 <script src="./data-sources.js?v=20261028-sync1" defer></script>
-<script src="./builder.js?v=20261028-media2" defer></script>
+<script src="./builder.js?v=20261028-summary1" defer></script>
 <script src="./looker-editor.js?v=20261028-sheets1" defer></script>
 <script src="./looker-properties.js?v=20261028-sheets1" defer></script>
 </body></html>
