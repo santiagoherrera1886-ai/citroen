@@ -1,0 +1,25 @@
+/* Citroën V3 — polished editorial treatment with no data/DOM logic changes */
+body:has(.concept3-shell){background:#f5f7fa;color:#172e42}
+.concept3-shell .sidebar{background:linear-gradient(170deg,#112f48,#0a263f 60%,#061b2d)!important;border-right:1px solid #ffffff1b}
+.concept3-shell .logo-wrap{padding-top:32px}
+.concept3-shell .nav-link{border-radius:13px;margin:1px 3px;transition:transform .25s,background .25s}
+.concept3-shell .nav-link:hover{transform:translateX(3px)}
+.concept3-shell .nav-link.active{background:linear-gradient(100deg,#ffffff1c,#ffffff09)!important}
+.concept3-shell .topbar{background:#ffffffed;box-shadow:0 8px 28px #153d5310;border-bottom:1px solid #e4eaef}
+.concept3-shell .c3-header h1{font-size:clamp(34px,3.6vw,57px);letter-spacing:-.065em;line-height:1.07}
+.concept3-shell .c3-kicker{letter-spacing:2.5px;font-size:10px}
+.concept3-shell .c3-hero{border-radius:25px!important;box-shadow:0 31px 70px #16374c24,0 0 0 1px #fff2 inset;isolation:isolate;position:relative}
+.concept3-shell .c3-hero:before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 76% 40%,#ffccd128,transparent 55%);pointer-events:none;z-index:1}
+.concept3-shell .c3-hero-copy{position:relative;z-index:4}
+.concept3-shell .c3-hero h2{letter-spacing:-.06em;line-height:1.08}
+.concept3-shell .c3-kpi,.concept3-shell .c3-panel,.concept3-shell .panel,.concept3-shell .model-card,.concept3-shell .table-panel{border-radius:19px!important;border:1px solid #e0e8ef!important;box-shadow:0 12px 33px #173a5010!important;transition:box-shadow .35s,transform .35s,border-color .35s}
+.concept3-shell .c3-kpi:hover,.concept3-shell .c3-panel:hover,.concept3-shell .panel:hover,.concept3-shell .model-card:hover{transform:translateY(-3px);box-shadow:0 20px 48px #173a501a!important;border-color:#cadce7!important}
+.concept3-shell .c3-kpi{overflow:hidden;position:relative}
+.concept3-shell .c3-kpi:after{content:"";position:absolute;inset:auto 0 0;height:3px;background:linear-gradient(90deg,#ef8792,#94c8df,transparent);opacity:.55}
+.concept3-shell .section-header{padding-top:13px}
+.concept3-shell .section-header h2{font-size:clamp(25px,2.7vw,39px);letter-spacing:-.045em}
+.concept3-shell .c3-header-controls select,.concept3-shell select,.concept3-shell .button{border-radius:11px}
+.concept3-shell .studio-header-edit,.concept3-shell .citroen-sidebar-access-button{transition:filter .25s,transform .25s}
+.concept3-shell .studio-header-edit:hover,.concept3-shell .citroen-sidebar-access-button:hover{transform:translateY(-2px);filter:brightness(1.08)}
+@media(max-width:800px){.concept3-shell .c3-header h1{font-size:32px}.concept3-shell .c3-hero{border-radius:18px!important}}
+@media(prefers-reduced-motion:reduce){.concept3-shell *{transition:none!important}}
