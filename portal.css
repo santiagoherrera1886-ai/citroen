@@ -1,0 +1,68 @@
+:root{--ink:#061d3e;--cyan:#10b5dc;--muted:#66788b;--line:#dbe5ed;--font:"Manrope",sans-serif}
+*{box-sizing:border-box}
+html{color-scheme:light;scroll-behavior:smooth}
+body{margin:0;color:var(--ink);font-family:var(--font);background:#f7fafc;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.portal-home{position:relative;min-height:100vh;background:radial-gradient(ellipse at 50% 5%,#fff 0,transparent 60%),#f4f8fb}
+.portal-home:before{content:"";position:absolute;inset:0;z-index:-1;background-image:linear-gradient(#92bbd30c 1px,transparent 1px),linear-gradient(90deg,#92bbd30c 1px,transparent 1px);background-size:64px 64px;pointer-events:none}
+.portal-glow{position:absolute;top:80px;left:50%;width:min(920px,90vw);height:410px;transform:translateX(-50%);border-radius:50%;background:radial-gradient(ellipse,#b6eefa55,transparent 69%);pointer-events:none;z-index:-1}
+.portal-wrap{max-width:1240px;margin:auto;padding:0 46px;position:relative}
+.portal-topbar{height:78px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #dce6ed9c}
+.portal-signature{display:flex;align-items:center;gap:11px;font-size:11px;letter-spacing:2px;font-weight:800}
+.hub-symbol{display:flex;align-items:flex-end;gap:3px;height:19px}
+.hub-symbol i{width:4px;border-radius:3px;background:var(--cyan)}
+.hub-symbol i:nth-child(1){height:8px}.hub-symbol i:nth-child(2){height:13px}.hub-symbol i:nth-child(3){height:19px}
+.portal-market{display:flex;align-items:center;gap:9px;font-size:10px;font-weight:700;letter-spacing:2px;color:#67798b}
+.portal-market>span{width:7px;height:7px;border-radius:50%;background:#0db5dc;box-shadow:0 0 0 4px #0db5dc12}
+.portal-intro{text-align:center;padding-top:30px;animation:portal-reveal .6s ease both}
+.inchcape-logo{display:block;width:286px;height:auto;max-width:75%;margin:0 auto 20px}
+.portal-eyebrow{font-size:9px;letter-spacing:2.8px;font-weight:800;color:#6a879b;margin:0 0 9px}
+h1{font-size:clamp(33px,4vw,49px);line-height:1.16;letter-spacing:-2px;font-weight:800;margin:0}
+h1 span{color:#008db8}
+.portal-description{font-family:"DM Sans",sans-serif;color:var(--muted);font-size:14px;line-height:1.65;margin:14px 0 0}
+.brand-connector{height:56px;position:relative;max-width:calc(50% + 12px);margin:0 auto}
+.connector-root{position:absolute;left:50%;top:8px;width:1px;height:20px;background:#93c5d7}
+.connector-branch{position:absolute;left:0;right:0;top:28px;height:28px;border:1px solid #a6cedc;border-bottom:0;border-radius:13px 13px 0 0}
+.connector-node{position:absolute;width:7px;height:7px;background:#0db4d9;border-radius:50%;bottom:-3px;z-index:2;box-shadow:0 0 0 5px #e4f5fa}
+.connector-node-left{left:-3px}.connector-node-right{right:-3px}
+.brand-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+.brand-card{background:#fff;border:1px solid #dce5eb;border-radius:22px;overflow:hidden;text-decoration:none;box-shadow:0 15px 40px -25px #123a6860,0 3px 8px #132a4103;transition:transform .3s,box-shadow .3s,border-color .3s;animation:portal-reveal .7s .1s ease both;position:relative;min-width:0}
+.brand-card-citroen{animation-delay:.2s}
+.brand-card:hover{transform:translateY(-7px);box-shadow:0 26px 50px -27px #163d6c80;border-color:#9acada}
+.brand-card:focus-visible{outline:3px solid #009ac0;outline-offset:6px}
+.brand-card-heading{height:89px;display:flex;align-items:center;justify-content:space-between;padding:15px 25px;background:#fff}
+.suzuki-logo{width:177px;height:auto;max-width:55%;object-fit:contain}
+.citroen-logo{width:102px;height:auto;max-height:69px;object-fit:contain}
+.dashboard-label{display:flex;align-items:center;gap:9px;font-size:8px;letter-spacing:1.8px;color:#7990a2;font-weight:700}
+.dashboard-label b{display:grid;place-items:center;width:28px;height:28px;border:1px solid #e4edf3;border-radius:50%;font-size:10px;color:#3b657f;letter-spacing:0}
+.brand-card-visual{position:relative;height:207px;overflow:hidden;background:#0d2943}
+.brand-card-visual:after{content:"";position:absolute;inset:45% 0 0;background:linear-gradient(transparent,#00152bb3);pointer-events:none}
+.brand-card-visual>img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .65s cubic-bezier(.2,.6,.2,1)}
+.brand-card-suzuki .brand-card-visual>img{object-position:35% 56%}
+.brand-card-citroen .brand-card-visual>img{object-position:68% 50%}
+.brand-card:hover .brand-card-visual>img{transform:scale(1.055)}
+.brand-photo-caption{position:absolute;left:25px;bottom:20px;color:#fff;font-size:9px;letter-spacing:2px;font-weight:700;z-index:1;text-shadow:0 1px 5px #0009}
+.photo-corner{position:absolute;right:22px;bottom:17px;color:#fff;font-size:20px;z-index:1;opacity:.8}
+.brand-card-body{padding:22px 25px 24px;display:flex;align-items:center;justify-content:space-between;gap:15px}
+.brand-card h2{font-size:26px;letter-spacing:-.8px;margin:0 0 5px;line-height:1.1}
+.brand-card p{font-family:"DM Sans",sans-serif;font-size:12px;color:#738294;line-height:1.5;margin:0 0 12px}
+.brand-topics{display:flex;gap:7px;font-size:9px;color:#48647a;font-weight:600;flex-wrap:wrap}
+.brand-topics i{font-style:normal;color:#a5b6c3}
+.brand-open{display:flex;align-items:center;gap:11px;flex-shrink:0;font-size:10px;font-weight:800}
+.brand-open svg{width:38px;height:38px;padding:10px;border-radius:50%;background:#edf7fc;stroke:#035b92;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;fill:none;transition:background .25s,stroke .25s}
+.brand-card-citroen .brand-open svg{background:#fbeded;stroke:#d7434f}
+.brand-card:hover .brand-open svg{background:#063977;stroke:#fff}.brand-card-citroen:hover .brand-open svg{background:#dc4051}
+.portal-footer{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:29px 0 25px;color:#8a9aab;font-size:9px;letter-spacing:1px}
+.portal-footer>span:first-child{font-weight:700}.portal-footer i{font-style:normal;margin:0 10px;color:#c4d2dc}.portal-footer>span:last-child{letter-spacing:0;font-size:11px}.portal-footer>span:last-child>span{margin-left:7px;color:#13afd3}
+.skip-link{position:fixed;left:12px;top:12px;z-index:20;padding:12px 20px;background:#061d3e;color:#fff;border-radius:8px;transform:translateY(-150%)}.skip-link:focus{transform:translateY(0)}
+@keyframes portal-reveal{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+/* Suzuki keeps its own source and filters, within a shared navigation shell. */
+.brand-view{height:100vh;height:100dvh;overflow:hidden;display:flex;flex-direction:column;background:#fff}
+.brand-view-header{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:12px 25px;min-height:64px;border-bottom:1px solid #dde6ed;flex-shrink:0;background:#fff}
+.brand-view-home{display:flex;align-items:center;gap:22px;text-decoration:none;min-width:0}.brand-view-home>img{width:132px;height:auto}.brand-view-divider{height:29px;width:1px;background:#e2e8ed}.brand-view-name{font-size:12px;font-weight:800;color:#213e5b;letter-spacing:.2px}
+.brand-view-actions{display:flex;align-items:center;gap:12px}.brand-view-actions a{display:flex;align-items:center;gap:8px;text-decoration:none;font-size:11px;font-weight:700;border-radius:9px;padding:10px 13px}.brand-view-change{background:#eaf6fa;color:#0a688a}.brand-view-full{color:#63788b}.brand-view-actions a:hover{background:#dff1f7}.brand-view-actions a:focus-visible,.brand-view-home:focus-visible{outline:3px solid #10b5dc;outline-offset:3px}
+.brand-view-main{position:relative;flex:1;min-height:0}.brand-view-main iframe{width:100%;height:100%;border:0;display:block;background:#f5f7fa}
+@media(max-width:1000px){.portal-wrap{padding:0 26px}.brand-card-body{padding:22px;align-items:flex-end}.brand-open>span{display:none}.brand-card-heading{padding:16px 22px}.brand-photo-caption{left:22px}.brand-card-visual{height:215px}.brand-card h2{font-size:25px}}
+@media(max-width:640px){.portal-wrap{padding:0 20px}.portal-topbar{height:64px}.portal-signature{font-size:9px;letter-spacing:1.4px}.portal-market{font-size:8px;letter-spacing:1.5px}.portal-intro{padding-top:32px}.inchcape-logo{width:245px;margin-bottom:24px}.portal-eyebrow{font-size:8px;letter-spacing:2.4px}h1{font-size:35px;letter-spacing:-1.4px}.portal-description{font-size:12px;margin-top:13px}.brand-connector{height:35px;max-width:1px}.connector-root{height:27px;top:8px}.connector-branch,.connector-node{display:none}.brand-grid{grid-template-columns:minmax(0,1fr);gap:22px}.brand-card-heading{height:80px}.citroen-logo{width:94px;max-height:63px}.suzuki-logo{width:159px}.brand-card-visual{height:210px}.brand-card-body{padding:22px}.brand-open>span{display:block;font-size:9px}.brand-open{gap:8px}.brand-topics{font-size:8px;gap:5px}.brand-card p{font-size:11px}.portal-footer{flex-direction:column;align-items:flex-start;gap:10px;padding:25px 0}.brand-view-header{padding:11px 12px;gap:10px;flex-wrap:wrap}.brand-view-home{gap:12px}.brand-view-home>img{width:100px}.brand-view-name{font-size:10px}.brand-view-actions{gap:2px}.brand-view-actions a{font-size:10px;padding:9px}.brand-view-full{display:none!important}}
+@media(max-width:380px){.brand-open>span{display:none}.portal-wrap{padding:0 15px}.brand-card-visual{height:190px}h1{font-size:31px}.brand-view-divider,.brand-view-name{display:none}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{animation:none!important;transition:none!important}}
