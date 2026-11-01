@@ -71,7 +71,7 @@
   animation:hub-shimmer 3.2s 1.45s ease-in-out 1;
 }
 .portal-home .inchcape-crop {
-  width:260px;height:48px;overflow:hidden;display:block;position:relative;flex:none;
+  width:260px;height:52px;overflow:hidden;display:block;position:relative;flex:none;
 }
 .portal-home .inchcape-crop img {display:block;width:260px;max-width:none;height:auto;max-height:none}
 .portal-home .portal-eyebrow {
@@ -112,7 +112,7 @@
   display:block;color:#fff;border:1px solid rgba(211,237,255,.18);
   background:#0b233b;border-radius:22px;overflow:hidden;
   box-shadow:0 16px 45px rgba(0,4,16,.22);min-width:0;
-  animation:hub-card-rise .9s 1.57s cubic-bezier(.16,1,.3,1) both;
+  animation:hub-card-rise .9s 1.57s cubic-bezier(.16,1,.3,1) backwards;
   transition:transform .55s cubic-bezier(.2,.75,.2,1),border-color .35s,box-shadow .45s;
   isolation:isolate;
 }
@@ -217,7 +217,7 @@
  .portal-home .portal-intro {padding-top:36px}
  .portal-home .logo-stage {margin-bottom:25px}
  .portal-home .logo-shell {height:65px;min-width:275px;padding:12px 20px}
- .portal-home .inchcape-crop {width:236px;height:44px}
+ .portal-home .inchcape-crop {width:236px;height:48px}
  .portal-home .inchcape-crop img {width:236px}
  .portal-home .portal-eyebrow {font-size:8px;letter-spacing:2.8px}
  .portal-home h1 {font-size:clamp(33px,8vw,45px);letter-spacing:-1.7px}
