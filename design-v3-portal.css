@@ -1,0 +1,27 @@
+/* Inchcape visual V3 — editorial automotive brand world */
+.portal-home{background:#041326!important}
+.portal-home .portal-wrap{max-width:1500px}
+.portal-home .portal-topbar{border-bottom:1px solid #bfeaff21}
+.portal-home .portal-signature{font-weight:800;letter-spacing:2.4px}
+.portal-home .portal-intro{position:relative}
+.portal-home .portal-intro:before{content:"";position:absolute;top:1%;left:50%;width:min(900px,98vw);height:360px;transform:translateX(-50%);background:radial-gradient(ellipse,#36cced1c 0%,transparent 67%);filter:blur(17px);pointer-events:none}
+.portal-home h1{font-size:clamp(46px,5.8vw,86px);letter-spacing:-.07em;line-height:1.02;text-wrap:balance;max-width:1050px;margin:0 auto}
+.portal-home .portal-description{font-size:clamp(12px,1.2vw,16px);line-height:1.8;letter-spacing:.01em}
+.portal-home .portal-eyebrow{font-size:10px;letter-spacing:3.6px}
+.portal-home .brand-grid{gap:25px;perspective:1800px}
+.portal-home .brand-card{border:1px solid #b5ebff29!important;border-radius:26px!important;background:linear-gradient(160deg,#10354c,#061c32)!important;box-shadow:0 24px 78px #010c19a6,0 0 0 1px #fff1 inset;isolation:isolate;transition:transform .48s cubic-bezier(.18,.8,.18,1),box-shadow .48s,border-color .48s}
+.portal-home .brand-card:hover{border-color:#7bd6e875!important;box-shadow:0 35px 95px #000b,0 0 36px #2ac7ec1c}
+.portal-home .brand-card-visual{overflow:hidden}
+.portal-home .brand-card-visual img{object-fit:cover;object-position:center}
+.portal-home .brand-card-visual:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,#06182b6b,transparent 52%);pointer-events:none}
+.portal-home .brand-card-heading{background:linear-gradient(110deg,#0d2538,#122c40);border-bottom:1px solid #ffffff1c}
+.portal-home .brand-card-body{background:linear-gradient(115deg,#0d273c,#0b1f35);border-top:1px solid #ffffff18}
+.portal-home .brand-card h2{letter-spacing:-1.25px}
+.portal-home .brand-open{background:#ffffff13;border:1px solid #ffffff24;border-radius:999px;padding:11px 15px;transition:background .3s,transform .3s}
+.portal-home .brand-card:hover .brand-open{background:#65d7eb28;transform:translateX(4px)}
+.portal-home .portal-footer{opacity:.9}
+.portal-home .logo-shell{border-radius:20px;box-shadow:0 15px 70px #2bb3df1b}
+.portal-home .portal-selector{font-weight:800}
+.portal-home .portal-glow{pointer-events:none}
+@media(max-width:700px){.portal-home .brand-grid{gap:18px}.portal-home h1{font-size:clamp(37px,8.7vw,54px)}.portal-home .brand-card{border-radius:20px!important}.portal-home .brand-open{padding:7px 10px}}
+@media(prefers-reduced-motion:reduce){.portal-home .brand-card{transition:none!important}}
