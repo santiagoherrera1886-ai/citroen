@@ -3,44 +3,106 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#051b3b">
-  <meta name="description" content="Inchcape Performance Hub. Accede a los dashboards de Suzuki y Citroën desde un mismo lugar.">
+  <meta name="theme-color" content="#06172d">
+  <meta name="description" content="Inchcape Performance Hub: dos marcas, una visión. Explora la inteligencia de medios de Suzuki y Citroën.">
   <title>Inchcape · Performance Hub</title>
+  <link rel="icon" href="./assets/portal/inchcape.png" type="image/png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./portal.css?v=20261031">
+  <link rel="stylesheet" href="./portal-motion.css?v=20261031-2">
 </head>
 <body class="portal-home">
-  <a class="skip-link" href="#marcas">Ir a los dashboards</a>
+  <a class="skip-link" href="#marcas">Ir directamente a las marcas</a>
+
+  <!-- Apertura breve y no bloqueante; se desactiva para quienes prefieren movimiento reducido. -->
+  <div class="portal-opening" aria-hidden="true">
+    <span class="portal-opening-mark">INCHCAPE</span>
+    <span class="portal-opening-line"></span>
+    <span class="portal-opening-sub">PERFORMANCE HUB</span>
+  </div>
+
   <div class="portal-glow" aria-hidden="true"></div>
   <div class="portal-wrap">
     <header class="portal-topbar">
-      <div class="portal-signature"><span class="hub-symbol" aria-hidden="true"><i></i><i></i><i></i></span>PERFORMANCE HUB</div>
+      <div class="portal-signature">
+        <span class="hub-symbol" aria-hidden="true"><i></i><i></i><i></i></span>
+        PERFORMANCE HUB
+      </div>
       <span class="portal-market"><span aria-hidden="true"></span> COLOMBIA</span>
     </header>
+
     <main>
       <section class="portal-intro" aria-labelledby="portal-title">
-        <img class="inchcape-logo" src="./assets/portal/inchcape.png" width="2027" height="575" alt="Inchcape Repuestos" fetchpriority="high">
-        <p class="portal-eyebrow">MARKETING &amp; MOVILIDAD</p>
-        <h1 id="portal-title">Dos marcas. <span>Una visión.</span></h1>
-        <p class="portal-description">El desempeño de tus marcas, en un mismo lugar.<br>Elige el dashboard que quieres explorar.</p>
+        <div class="intro-orbit" aria-hidden="true"></div>
+        <div class="logo-stage">
+          <!-- El archivo original contiene 'Repuestos'; solo mostramos el isotipo y la marca matriz. -->
+          <div class="logo-shell" role="img" aria-label="Inchcape">
+            <span class="inchcape-crop" aria-hidden="true">
+              <img src="./assets/portal/inchcape.png" width="2027" height="575" alt="" fetchpriority="high">
+            </span>
+          </div>
+        </div>
+        <p class="portal-eyebrow">INTELIGENCIA DE MEDIOS &amp; MOVILIDAD</p>
+        <h1 id="portal-title">Dos marcas. <span>Una misma visión.</span></h1>
+        <p class="portal-description">Un solo lugar para transformar los datos en decisiones.<br>Descubre el desempeño de cada marca.</p>
+        <div class="portal-selector"><span aria-hidden="true"></span> ELIGE TU EXPERIENCIA <span aria-hidden="true"></span></div>
       </section>
-      <div class="brand-connector" aria-hidden="true"><i class="connector-root"></i><i class="connector-branch"></i><i class="connector-node connector-node-left"></i><i class="connector-node connector-node-right"></i></div>
+
       <nav id="marcas" class="brand-grid" aria-label="Seleccionar dashboard por marca">
-        <a class="brand-card brand-card-suzuki" href="./suzuki.html" aria-label="Abrir dashboard de Suzuki">
-          <div class="brand-card-heading"><img class="suzuki-logo" src="./assets/portal/suzuki-logo.svg" width="453" height="87" alt="Suzuki"><span class="dashboard-label">DASHBOARD <b>01</b></span></div>
-          <div class="brand-card-visual"><img src="./assets/portal/suzuki-jimny.jpg" width="2048" height="1152" alt="Suzuki Jimny frente a un paisaje de montaña" fetchpriority="high"><span class="brand-photo-caption">EL PODER DE CADA CAMINO</span><span class="photo-corner" aria-hidden="true">↗</span></div>
-          <div class="brand-card-body"><div><h2>Suzuki</h2><p>Performance que mueve tu marca.</p><span class="brand-topics">Inversión <i>·</i> Leads <i>·</i> Creativos</span></div><span class="brand-open"><span>Explorar dashboard</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span></div>
+        <a class="brand-card brand-card-suzuki" href="./suzuki.html" aria-label="Explorar el dashboard de Suzuki">
+          <div class="brand-card-heading">
+            <img class="suzuki-logo" src="./assets/portal/suzuki-logo.svg" width="453" height="87" alt="Suzuki">
+            <span class="dashboard-label">DASHBOARD <b>01</b></span>
+          </div>
+          <div class="brand-card-visual">
+            <img src="./assets/portal/suzuki-jimny.jpg" width="2048" height="1152" alt="Suzuki Jimny en un paisaje de montaña" fetchpriority="high">
+            <span class="brand-photo-caption">EL PODER DE CADA CAMINO</span>
+            <span class="photo-corner" aria-hidden="true">↗</span>
+          </div>
+          <div class="brand-card-body">
+            <div>
+              <h2>Suzuki</h2>
+              <p>Performance que mueve tu marca.</p>
+              <span class="brand-topics">Inversión <i>·</i> Leads <i>·</i> Creativos</span>
+            </div>
+            <span class="brand-open">
+              <span>Explorar dashboard</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>
+            </span>
+          </div>
         </a>
-        <a class="brand-card brand-card-citroen" href="./#resumen" aria-label="Abrir dashboard de Citroën">
-          <div class="brand-card-heading"><img class="citroen-logo" src="./assets/portal/citroen-logo.png" width="858" height="558" alt="Citroën"><span class="dashboard-label">DASHBOARD <b>02</b></span></div>
-          <div class="brand-card-visual"><img src="./assets/portal/citroen-basalt.webp" width="2048" height="1184" alt="Citroën Basalt rojo en movimiento" fetchpriority="high"><span class="brand-photo-caption">INSPIRADO EN TI</span><span class="photo-corner" aria-hidden="true">↗</span></div>
-          <div class="brand-card-body"><div><h2>Citroën</h2><p>Más historias. Mejores decisiones.</p><span class="brand-topics">Planeación <i>·</i> Resultados <i>·</i> Creativos</span></div><span class="brand-open"><span>Explorar dashboard</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span></div>
+
+        <a class="brand-card brand-card-citroen" href="./#resumen" aria-label="Explorar el dashboard de Citroën">
+          <div class="brand-card-heading">
+            <img class="citroen-logo" src="./assets/portal/citroen-logo.png" width="858" height="558" alt="Citroën">
+            <span class="dashboard-label">DASHBOARD <b>02</b></span>
+          </div>
+          <div class="brand-card-visual">
+            <img src="./assets/portal/citroen-basalt.webp" width="2048" height="1184" alt="Citroën Basalt rojo en movimiento" fetchpriority="high">
+            <span class="brand-photo-caption">INSPIRADO EN TI</span>
+            <span class="photo-corner" aria-hidden="true">↗</span>
+          </div>
+          <div class="brand-card-body">
+            <div>
+              <h2>Citroën</h2>
+              <p>Más historias. Mejores decisiones.</p>
+              <span class="brand-topics">Planeación <i>·</i> Resultados <i>·</i> Creativos</span>
+            </div>
+            <span class="brand-open">
+              <span>Explorar dashboard</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>
+            </span>
+          </div>
         </a>
       </nav>
     </main>
-    <footer class="portal-footer"><span>INCHCAPE <i>/</i> INTELIGENCIA DE MEDIOS</span><span>Una entrada. Todas las perspectivas. <span aria-hidden="true">↗</span></span></footer>
+
+    <footer class="portal-footer">
+      <span>INCHCAPE <i>/</i> INTELIGENCIA DE MEDIOS</span>
+      <span>Una entrada. Todas las perspectivas. <span aria-hidden="true">↗</span></span>
+    </footer>
   </div>
 </body>
 </html>
