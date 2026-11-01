@@ -1,0 +1,32 @@
+/* Brand transition shared by the Inchcape portal and Citroën dashboard. */
+.portal-home .brand-card {--mouse-x:50%;--mouse-y:50%;--tilt-x:0deg;--tilt-y:0deg;transform-style:preserve-3d}
+.portal-home .brand-card::before{content:"";position:absolute;inset:0;z-index:4;pointer-events:none;opacity:0;transition:opacity .4s;background:radial-gradient(340px circle at var(--mouse-x) var(--mouse-y),rgba(126,227,246,.16),transparent 70%)}
+.portal-home .brand-card:hover::before,.portal-home .brand-card:focus-visible::before{opacity:1}
+.portal-home .brand-card:hover{transform:perspective(1100px) translateY(-10px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y))}
+.portal-home .brand-card-heading img {transition:transform .55s cubic-bezier(.18,.75,.3,1)}
+.portal-home .brand-card:hover .brand-card-heading img{transform:scale(1.06)}
+.portal-home .brand-card-visual::before{content:"";position:absolute;inset:0;z-index:3;background:linear-gradient(90deg,#0c3157,#143e5f);animation:hub-reveal-photo 1.15s 1.7s cubic-bezier(.72,.02,.17,1) both;pointer-events:none}
+.portal-home .brand-card-citroen .brand-card-visual::before{background:linear-gradient(90deg,#3a2137,#5f3448);animation-delay:1.9s}
+.portal-home .brand-card-visual>img{animation:hub-image-intro 1.4s 1.65s cubic-bezier(.18,.8,.2,1) both}
+.portal-home .brand-card-citroen .brand-card-visual>img{animation-delay:1.85s}
+.portal-home .brand-card.journey-selected{z-index:5;border-color:rgba(127,217,239,.9)}
+@keyframes hub-reveal-photo{from{transform:translateX(0)}to{transform:translateX(102%)}}
+@keyframes hub-image-intro{from{transform:scale(1.22);filter:blur(7px) saturate(.5)}to{transform:scale(1.045);filter:blur(0) saturate(1)}}
+.experience-transition{--journey-accent:#37cbeb;position:fixed;z-index:99999;inset:0;display:grid;place-items:center;overflow:hidden;isolation:isolate;background:#06172d;color:#fff;font-family:Manrope,Arial,sans-serif}
+.experience-transition--citroen{--journey-accent:#f37884}
+.experience-transition--suzuki{--journey-accent:#48d2ed}
+.experience-transition::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 65%,color-mix(in srgb,var(--journey-accent) 24%,transparent),transparent 57%),linear-gradient(130deg,#04132a,#0c2942)}
+.experience-transition::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 49.96%,rgba(166,215,247,.09) 50%,transparent 50.04%),linear-gradient(transparent 49.96%,rgba(166,215,247,.09) 50%,transparent 50.04%);background-size:120px 120px;opacity:.3}
+.experience-transition.is-leaving{animation:journey-wipe-in .74s cubic-bezier(.75,0,.2,1) both}
+.experience-transition.is-arriving{animation:journey-wipe-out 1s .34s cubic-bezier(.74,0,.23,1) forwards}
+.experience-center{position:relative;z-index:2;display:grid;justify-items:center;gap:15px;padding:25px;text-align:center}
+.experience-center small{font-size:10px;letter-spacing:3.7px;color:#91bccd;font-weight:800}
+.experience-center strong{font-size:clamp(48px,9vw,104px);line-height:1;letter-spacing:-4px;font-weight:800}
+.experience-center p{font-size:13px;color:#bfccd7;margin:0}
+.experience-progress{width:min(300px,60vw);height:2px;background:#fff2;overflow:hidden;border-radius:3px;margin-top:14px}
+.experience-progress span{display:block;width:100%;height:100%;background:var(--journey-accent);transform-origin:left;animation:journey-progress .8s ease-out both}
+@keyframes journey-wipe-in{from{clip-path:inset(100% 0 0 0)}to{clip-path:inset(0 0 0 0)}}
+@keyframes journey-wipe-out{0%{clip-path:inset(0 0 0 0)}100%{clip-path:inset(0 0 100% 0);visibility:hidden}}
+@keyframes journey-progress{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@media(pointer:coarse){.portal-home .brand-card:hover{transform:translateY(-3px)}}
+@media(prefers-reduced-motion:reduce){.portal-home .brand-card-visual::before{display:none}.portal-home .brand-card-visual>img{animation:none!important}.experience-transition{display:none!important}}
