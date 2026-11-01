@@ -1,0 +1,248 @@
+/* Inchcape Performance Hub — animated landing 2026.
+   Scoped to .portal-home: Suzuki and Citroën dashboard styles remain untouched. */
+.portal-home {
+  --night:#06172d; --night-2:#0a2440; --ice:#e7f8fc; --aqua:#31c7e5;
+  --muted-on-dark:#a9bacb; --line-on-dark:rgba(200,230,247,.17);
+  min-height:100vh; min-height:100dvh;
+  background:var(--night); color:#fff; overflow-x:hidden;
+  isolation:isolate;
+}
+.portal-home::before {
+  content:"";position:absolute;inset:0 0 auto;min-height:100vh;z-index:-2;pointer-events:none;
+  background:
+    radial-gradient(ellipse 48% 35% at 50% 27%,rgba(22,152,204,.24),transparent 75%),
+    radial-gradient(ellipse 35% 50% at 6% 93%,rgba(14,80,140,.28),transparent 80%),
+    radial-gradient(ellipse 38% 48% at 96% 88%,rgba(12,100,140,.22),transparent 80%),
+    linear-gradient(155deg,#081c36 0%,#051428 56%,#091e34 100%);
+}
+.portal-home::after {
+  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.32;
+  background-image:linear-gradient(rgba(148,188,220,.07) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(148,188,220,.07) 1px,transparent 1px);
+  background-size:76px 76px;mask-image:linear-gradient(to bottom,transparent,#000 30%,#000 72%,transparent);
+}
+.portal-home .portal-glow {
+  left:50%;top:3%;width:min(80vw,900px);height:540px;opacity:.85;z-index:-1;
+  background:radial-gradient(ellipse,rgba(31,183,235,.12),transparent 65%);
+  animation:hub-breathe 9s ease-in-out infinite alternate;
+}
+.portal-home .portal-wrap {max-width:1380px;padding:0 clamp(22px,4.5vw,72px)}
+.portal-home .portal-topbar {
+  height:88px;border-color:rgba(235,247,255,.13);
+  position:relative;z-index:3;animation:hub-fade .7s .15s both;
+}
+.portal-home .portal-signature {color:#f3faff;letter-spacing:2.5px;font-size:10px;gap:13px}
+.portal-home .hub-symbol {height:20px}
+.portal-home .hub-symbol i {width:4px;background:#28c6e5;box-shadow:0 0 15px rgba(40,198,229,.35);transform-origin:bottom}
+.portal-home .hub-symbol i:nth-child(1) {animation:hub-bar .9s .15s ease both}
+.portal-home .hub-symbol i:nth-child(2) {animation:hub-bar .9s .25s ease both}
+.portal-home .hub-symbol i:nth-child(3) {animation:hub-bar .9s .35s ease both}
+.portal-home .portal-market {color:#d5e6f1;letter-spacing:2px;font-size:10px}
+.portal-home .portal-market > span {background:#42d0e4;box-shadow:0 0 0 5px rgba(24,189,221,.12),0 0 15px rgba(24,189,221,.65)}
+.portal-home .portal-intro {
+  position:relative;padding:37px 0 0;text-align:center;
+  animation:none;isolation:isolate;
+}
+.portal-home .intro-orbit {
+  position:absolute;left:50%;top:3px;transform:translateX(-50%);pointer-events:none;
+  width:min(700px,85vw);height:310px;z-index:-1;
+  border:1px solid rgba(107,194,234,.075);border-radius:50%;
+  box-shadow:0 0 0 49px rgba(107,194,234,.025),0 0 0 100px rgba(107,194,234,.013);
+  animation:hub-orbit 12s ease-in-out infinite alternate;
+}
+.portal-home .logo-stage {
+  width:fit-content;margin:0 auto 23px;position:relative;
+  animation:hub-logo-enter .9s .55s cubic-bezier(.16,1,.3,1) both;
+}
+.portal-home .logo-stage::before {
+  content:"";position:absolute;inset:-13px;border-radius:20px;border:1px solid rgba(95,204,232,.22);
+  transform:scale(.92);animation:hub-halo 5s 2s ease-in-out infinite;
+}
+.portal-home .logo-shell {
+  position:relative;display:flex;align-items:center;justify-content:center;
+  height:74px;min-width:316px;padding:14px 27px;border-radius:15px;
+  background:#fff;box-shadow:0 18px 60px rgba(0,10,24,.32),inset 0 0 0 1px rgba(255,255,255,.85);
+  overflow:hidden;
+}
+.portal-home .logo-shell::after {
+  content:"";position:absolute;inset:-70% auto -70% -25%;width:30%;
+  transform:rotate(22deg) translateX(-250%);pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.9),transparent);
+  animation:hub-shimmer 3.2s 1.45s ease-in-out 1;
+}
+.portal-home .inchcape-crop {
+  width:260px;height:48px;overflow:hidden;display:block;position:relative;flex:none;
+}
+.portal-home .inchcape-crop img {display:block;width:260px;max-width:none;height:auto;max-height:none}
+.portal-home .portal-eyebrow {
+  color:#83d6eb;font-size:10px;letter-spacing:3.7px;font-weight:800;
+  margin:0 0 13px;animation:hub-rise .8s .85s both;
+}
+.portal-home h1 {
+  color:#fff;font-weight:800;letter-spacing:-2.8px;line-height:1.12;
+  font-size:clamp(35px,4.7vw,62px);margin:0 auto;max-width:1000px;
+  animation:hub-rise .85s 1s cubic-bezier(.2,.75,.3,1) both;
+}
+.portal-home h1 span {
+  display:block;color:#6adef2;
+  background:linear-gradient(95deg,#9ce7f9 8%,#38bfe4 49%,#a2e8fb 94%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+.portal-home .portal-description {
+  color:#b6c9db;font-size:13px;line-height:1.8;margin:17px 0 0;
+  letter-spacing:.1px;animation:hub-rise .85s 1.16s both;
+}
+.portal-home .portal-selector {
+  display:flex;align-items:center;justify-content:center;gap:20px;
+  margin:26px auto 20px;color:#cce9f3;font-size:9px;font-weight:800;letter-spacing:2.7px;
+  animation:hub-fade .75s 1.38s both;
+}
+.portal-home .portal-selector::before,.portal-home .portal-selector::after {
+  content:"";height:1px;width:min(135px,18vw);
+  background:linear-gradient(90deg,transparent,rgba(120,212,235,.43));
+}
+.portal-home .portal-selector::after {transform:rotate(180deg)}
+.portal-home .portal-selector span {display:inline-block;width:5px;height:5px;border-radius:50%;background:#49d4ec;box-shadow:0 0 14px #49d4ec}
+.portal-home .brand-connector {display:none}
+.portal-home .brand-grid {
+  position:relative;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;
+  max-width:1160px;margin:0 auto;perspective:1200px;
+}
+.portal-home .brand-card {
+  display:block;color:#fff;border:1px solid rgba(211,237,255,.18);
+  background:#0b233b;border-radius:22px;overflow:hidden;
+  box-shadow:0 16px 45px rgba(0,4,16,.22);min-width:0;
+  animation:hub-card-rise .9s 1.57s cubic-bezier(.16,1,.3,1) both;
+  transition:transform .55s cubic-bezier(.2,.75,.2,1),border-color .35s,box-shadow .45s;
+  isolation:isolate;
+}
+.portal-home .brand-card-citroen {animation-delay:1.73s}
+.portal-home .brand-card:hover {
+  transform:translateY(-9px);border-color:rgba(122,217,242,.7);
+  box-shadow:0 28px 70px rgba(0,4,16,.4),0 0 0 1px rgba(89,201,235,.14);
+}
+.portal-home .brand-card:focus-visible {outline:3px solid #78e5f9;outline-offset:5px}
+.portal-home .brand-card-heading {
+  height:78px;position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;
+  background:#fff;padding:14px 25px;
+}
+.portal-home .suzuki-logo {width:170px;max-height:52px}
+.portal-home .citroen-logo {width:88px;max-height:64px}
+.portal-home .dashboard-label {color:#71889d;font-size:9px;letter-spacing:1.8px}
+.portal-home .dashboard-label b {border-color:#dce6ed}
+.portal-home .brand-card-visual {
+  height:225px;background:#081c30;overflow:hidden;position:relative;
+}
+.portal-home .brand-card-visual::after {
+  inset:20% 0 0;background:linear-gradient(180deg,transparent 7%,rgba(2,12,25,.15) 35%,rgba(1,15,30,.85) 100%);
+}
+.portal-home .brand-card-visual>img {
+  width:100%;height:100%;object-fit:cover;
+  transform:scale(1.045);
+  transition:transform 1s cubic-bezier(.2,.7,.2,1),filter .7s;
+}
+.portal-home .brand-card-suzuki .brand-card-visual>img {object-position:50% 52%}
+.portal-home .brand-card-citroen .brand-card-visual>img {object-position:65% 50%}
+.portal-home .brand-card:hover .brand-card-visual>img {transform:scale(1.115);filter:saturate(1.13)}
+.portal-home .brand-photo-caption {
+  left:25px;bottom:23px;letter-spacing:2.25px;font-size:10px;z-index:2;
+}
+.portal-home .photo-corner {
+  bottom:19px;right:23px;font-size:21px;z-index:2;
+  transform:rotate(-45deg);transition:transform .4s;opacity:1;
+}
+.portal-home .brand-card:hover .photo-corner {transform:rotate(0deg) translate(3px,-3px)}
+.portal-home .brand-card-body {
+  position:relative;display:flex;align-items:center;justify-content:space-between;
+  min-height:118px;padding:20px 25px 22px;gap:16px;
+  background:linear-gradient(110deg,#0c263f,#092039);
+}
+.portal-home .brand-card h2 {color:#fff;font-size:23px;letter-spacing:-.6px;margin:0 0 4px}
+.portal-home .brand-card p {color:#bbccda;margin:0 0 10px;font-size:11px}
+.portal-home .brand-topics {color:#88abc4;font-size:9px;letter-spacing:.25px}
+.portal-home .brand-topics i {color:#5c88a6}
+.portal-home .brand-open {font-size:10px;color:#d1edf5;gap:11px;white-space:nowrap}
+.portal-home .brand-open svg,.portal-home .brand-card-citroen .brand-open svg {
+  background:rgba(47,187,220,.13);stroke:#73dbf1;width:42px;height:42px;
+  transition:transform .4s,background .4s,stroke .4s;
+}
+.portal-home .brand-card-citroen .brand-open svg {background:rgba(240,90,100,.13);stroke:#ff9ba1}
+.portal-home .brand-card:hover .brand-open svg {transform:translateX(3px);background:#35bbdc;stroke:#05223b}
+.portal-home .brand-card-citroen:hover .brand-open svg {background:#f06871;stroke:#fff}
+.portal-home .portal-footer {
+  max-width:1160px;margin:auto;min-height:70px;padding:23px 0 22px;
+  color:#6f95b1;font-size:9px;letter-spacing:1.2px;
+  animation:hub-fade .8s 2s both;
+}
+.portal-home .portal-footer i {color:#47708e}
+.portal-home .portal-footer>span:last-child {color:#7f9db4}
+.portal-home .skip-link {z-index:60;background:#fff;color:#061d3e}
+.portal-opening {
+  position:fixed;inset:0;z-index:40;pointer-events:none;
+  display:grid;place-content:center;text-align:center;gap:16px;
+  background:#06172d;
+  animation:hub-opening-out .9s 1.18s cubic-bezier(.7,0,.28,1) forwards;
+}
+.portal-opening::after {
+  content:"";position:absolute;top:50%;left:50%;width:250px;height:250px;
+  transform:translate(-50%,-50%);border:1px solid rgba(91,219,244,.19);border-radius:50%;
+  box-shadow:0 0 0 70px rgba(63,192,220,.04),0 0 110px 35px rgba(32,160,210,.12);
+  animation:hub-opening-ring 1.4s ease-out both;
+}
+.portal-opening-mark {color:#fff;font-size:24px;font-weight:800;letter-spacing:7px;z-index:1;animation:hub-rise .7s both}
+.portal-opening-sub {color:#5acde8;font-size:9px;font-weight:700;letter-spacing:4.2px;z-index:1;animation:hub-fade .9s .15s both}
+.portal-opening-line {width:90px;height:2px;margin:auto;background:linear-gradient(90deg,transparent,#5ad7ec,transparent);animation:hub-line 1s .15s both}
+@keyframes hub-opening-out {0%{opacity:1;visibility:visible}99%{opacity:0;visibility:visible}100%{opacity:0;visibility:hidden}}
+@keyframes hub-opening-ring {from{opacity:0;transform:translate(-50%,-50%) scale(.65)}to{opacity:1;transform:translate(-50%,-50%) scale(1.3)}}
+@keyframes hub-logo-enter {from{opacity:0;transform:translateY(28px) scale(.88);filter:blur(5px)}to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
+@keyframes hub-rise {from{opacity:0;transform:translateY(22px);filter:blur(3px)}to{opacity:1;transform:translateY(0);filter:blur(0)}}
+@keyframes hub-card-rise {from{opacity:0;transform:translateY(50px) rotateX(7deg)}to{opacity:1;transform:translateY(0) rotateX(0)}}
+@keyframes hub-fade {from{opacity:0}to{opacity:1}}
+@keyframes hub-shimmer {from{transform:rotate(22deg) translateX(-350%)}to{transform:rotate(22deg) translateX(1600%)}}
+@keyframes hub-halo {0%,100%{opacity:.3;transform:scale(.97)}50%{opacity:.9;transform:scale(1.03)}}
+@keyframes hub-orbit {from{opacity:.38;transform:translateX(-50%) scale(.98)}to{opacity:.75;transform:translateX(-50%) scale(1.08)}}
+@keyframes hub-breathe {from{opacity:.5;transform:translateX(-50%) scale(.9)}to{opacity:1;transform:translateX(-50%) scale(1.14)}}
+@keyframes hub-bar {from{transform:scaleY(.05)}to{transform:scaleY(1)}}
+@keyframes hub-line {from{opacity:0;transform:scaleX(0)}to{opacity:1;transform:scaleX(1)}}
+@media(max-width:1000px) {
+ .portal-home .brand-card-body {padding:20px}
+ .portal-home .brand-open>span {display:none}
+ .portal-home .portal-footer {padding-top:24px}
+}
+@media(max-width:680px) {
+ .portal-home .portal-wrap {padding:0 19px}
+ .portal-home .portal-topbar {height:68px}
+ .portal-home .portal-signature {letter-spacing:1.7px;font-size:9px}
+ .portal-home .portal-market {font-size:8px;letter-spacing:1.4px}
+ .portal-home .portal-intro {padding-top:36px}
+ .portal-home .logo-stage {margin-bottom:25px}
+ .portal-home .logo-shell {height:65px;min-width:275px;padding:12px 20px}
+ .portal-home .inchcape-crop {width:236px;height:44px}
+ .portal-home .inchcape-crop img {width:236px}
+ .portal-home .portal-eyebrow {font-size:8px;letter-spacing:2.8px}
+ .portal-home h1 {font-size:clamp(33px,8vw,45px);letter-spacing:-1.7px}
+ .portal-home .portal-description {font-size:12px;margin-top:13px}
+ .portal-home .portal-selector {margin:25px auto 20px;font-size:8px;letter-spacing:2px;gap:10px}
+ .portal-home .brand-grid {grid-template-columns:minmax(0,1fr);gap:17px}
+ .portal-home .brand-card-heading {height:71px;padding:10px 20px}
+ .portal-home .suzuki-logo {width:148px}
+ .portal-home .citroen-logo {width:80px;max-height:55px}
+ .portal-home .brand-card-visual {height:200px}
+ .portal-home .brand-photo-caption {left:21px;bottom:19px;font-size:9px}
+ .portal-home .brand-card-body {min-height:107px;padding:18px 21px}
+ .portal-home .brand-card h2 {font-size:21px}
+ .portal-home .brand-card p {font-size:11px}
+ .portal-home .brand-open>span {display:block;font-size:9px}
+ .portal-home .portal-footer {gap:10px;padding:23px 0 25px}
+ .portal-opening-mark {font-size:18px;letter-spacing:5px}
+}
+@media(max-width:380px) {
+ .portal-home .portal-market {font-size:7px}
+ .portal-home .brand-card-visual {height:172px}
+ .portal-home .brand-open>span {display:none}
+ .portal-home h1 {font-size:31px}
+}
+@media(prefers-reduced-motion:reduce) {
+ .portal-opening {display:none}
+ .portal-home *,.portal-home *::before,.portal-home *::after {animation:none!important;transition:none!important}
+}
