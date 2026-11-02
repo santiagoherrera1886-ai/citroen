@@ -93,7 +93,7 @@
       <label class="c3-select"><span class="sr-only">Período</span><select id="c3Month"><option value="">2026 · Ene–Oct</option></select></label>
       <label class="c3-select"><span class="sr-only">Territorio</span><select id="c3Territory"><option value="">Todos los territorios</option></select></label>
       <label class="c3-select"><span class="sr-only">Modelo</span><select id="c3Model"><option value="">Todos los modelos</option></select></label>
-      <div class="citroen-refresh-controls"><button type="button" id="citroenManualRefresh" title="Consultar la última versión enviada desde Sheets"><svg><use href="#i-refresh"/></svg><span class="sync-label">Actualizar datos</span></button><span id="citroenSourceLastSync" aria-live="polite">Sheets · Verificando…</span></div>
+      
       <span class="c3-source-pill"><span class="c3-live-dot"></span> META REAL + PLAN 2026</span>
       <button type="button" id="studioEdit" class="studio-header-edit" aria-pressed="false" hidden><span aria-hidden="true">✎</span> Editar resumen</button>
       <button type="button" id="citroenMasterOpen" class="citroen-auth-master-link" hidden>♛ Control maestro</button>
@@ -110,6 +110,7 @@
     <div class="c3-hero-model"><b>C3 AIRCROSS</b><span>Espacio para<br>todas tus historias.</span></div>
   </div>
   <div class="c3-context-line" id="c3Context">Conciliando presupuesto planeado y ejecución Meta Ads del período...</div>
+  <div class="citroen-summary-sync" aria-label="Actualización de datos en el resumen"><div class="citroen-summary-sync-copy"><strong>Datos de Google Sheets</strong><span>Actualiza los resultados del resumen con la última sincronización recibida.</span></div><div class="citroen-refresh-controls"><button type="button" id="citroenManualRefresh" title="Consultar la última versión enviada desde Sheets"><svg><use href="#i-refresh"/></svg><span class="sync-label">Actualizar datos</span></button><span id="citroenSourceLastSync" aria-live="polite">Sheets · Verificando…</span></div></div>
   <div class="lk-summary-host" id="lkGlobalFilters" aria-label="Controles interactivos del informe"></div>
   <div class="c3-kpi-grid" id="c3Kpis" aria-live="polite"></div>
 
