@@ -78,7 +78,7 @@
     <header class="topbar">
       <div class="topbar-left"><button class="mobile-menu icon-only" id="openMenu" aria-label="Abrir menú"><svg><use href="#i-menu"/></svg></button><div class="breadcrumb">CITROËN <span>/</span> <b id="breadcrumb">Visión general</b></div></div>
       <div class="topbar-right">
-        <div class="citroen-refresh-controls"><button type="button" id="citroenManualRefresh" title="Consultar la última versión enviada desde Sheets"><svg><use href="#i-refresh"/></svg><span class="sync-label">Actualizar datos</span></button><span id="citroenSourceLastSync" aria-live="polite">Sheets · Verificando…</span></div><span class="topbar-date" id="todayLabel"></span>
+        <span class="topbar-date" id="todayLabel"></span>
         <button class="topbar-source" id="jumpToData"><span class="status-dot"></span><span id="topDataStatus">Sin datos cargados</span><svg><use href="#i-arrow"/></svg></button>
         <div class="avatar">C<span>.</span></div>
       </div>
@@ -93,6 +93,7 @@
       <label class="c3-select"><span class="sr-only">Período</span><select id="c3Month"><option value="">2026 · Ene–Oct</option></select></label>
       <label class="c3-select"><span class="sr-only">Territorio</span><select id="c3Territory"><option value="">Todos los territorios</option></select></label>
       <label class="c3-select"><span class="sr-only">Modelo</span><select id="c3Model"><option value="">Todos los modelos</option></select></label>
+      <div class="citroen-refresh-controls"><button type="button" id="citroenManualRefresh" title="Consultar la última versión enviada desde Sheets"><svg><use href="#i-refresh"/></svg><span class="sync-label">Actualizar datos</span></button><span id="citroenSourceLastSync" aria-live="polite">Sheets · Verificando…</span></div>
       <span class="c3-source-pill"><span class="c3-live-dot"></span> META REAL + PLAN 2026</span>
       <button type="button" id="studioEdit" class="studio-header-edit" aria-pressed="false" hidden><span aria-hidden="true">✎</span> Editar resumen</button>
       <button type="button" id="citroenMasterOpen" class="citroen-auth-master-link" hidden>♛ Control maestro</button>
