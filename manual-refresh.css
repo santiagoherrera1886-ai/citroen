@@ -12,3 +12,10 @@
 @keyframes citroen-refresh-spin{to{transform:rotate(360deg)}}
 @media(max-width:760px){#citroenManualRefresh{padding:10px;font-size:10px}#citroenSourceLastSync{display:none}.citroen-refresh-controls{gap:4px}#citroenRefreshResult{right:12px;bottom:12px}}
 @media(prefers-reduced-motion:reduce){#citroenManualRefresh[aria-busy=true] svg{animation:none}}
+
+/* Place the control inside the actually visible strategic dashboard header. */
+.c3-header-controls .citroen-refresh-controls{order:-2;display:flex!important;align-items:center;gap:7px}
+.c3-header-controls #citroenManualRefresh{display:inline-flex!important;background:#0f3a54;color:#fff;border-color:#0f3a54;box-shadow:0 8px 18px #103a542b}
+.c3-header-controls #citroenManualRefresh svg{stroke:#fff}
+.c3-header-controls #citroenSourceLastSync{font-size:9px;max-width:155px;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:1000px){.c3-header-controls #citroenSourceLastSync{display:none}}
