@@ -19,3 +19,14 @@
 .c3-header-controls #citroenManualRefresh svg{stroke:#fff}
 .c3-header-controls #citroenSourceLastSync{font-size:9px;max-width:155px;overflow:hidden;text-overflow:ellipsis}
 @media(max-width:1000px){.c3-header-controls #citroenSourceLastSync{display:none}}
+
+/* Prominent, permanently visible in Resumen above filters and KPI cards. */
+#resumen .citroen-summary-sync{display:flex!important;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:16px 19px;margin:17px 0 16px;background:linear-gradient(115deg,#e6f4fa,#f8fcff 70%);border:1px solid #c8e1ed;border-radius:17px;box-shadow:0 8px 23px #163e5710}
+#resumen .citroen-summary-sync-copy{display:grid;gap:4px}
+#resumen .citroen-summary-sync-copy strong{color:#113a54;font:800 14px Manrope,sans-serif}
+#resumen .citroen-summary-sync-copy span{font-size:11px;color:#68869a}
+#resumen .citroen-summary-sync .citroen-refresh-controls{display:flex!important;align-items:center;gap:11px}
+#resumen #citroenManualRefresh{display:inline-flex!important;visibility:visible!important;opacity:1!important;background:#103a54!important;color:white!important;border:1px solid #103a54!important;min-height:42px;padding:11px 18px}
+#resumen #citroenManualRefresh svg{stroke:#fff!important}
+#resumen #citroenSourceLastSync{display:block;color:#517187;max-width:190px;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:750px){#resumen .citroen-summary-sync{align-items:flex-start;padding:14px}#resumen .citroen-summary-sync .citroen-refresh-controls{width:100%;justify-content:space-between}#resumen #citroenSourceLastSync{font-size:9px}}
