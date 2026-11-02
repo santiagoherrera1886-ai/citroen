@@ -1,0 +1,14 @@
+/* Manual refresh is visible in normal dashboard mode, no editor login required. */
+#citroenManualRefresh{display:inline-flex;align-items:center;gap:9px;border:1px solid #cbdde8;border-radius:12px;background:linear-gradient(180deg,#fff,#f3f9fc);color:#123950;padding:11px 14px;font:800 11px Manrope,sans-serif;cursor:pointer;white-space:nowrap;box-shadow:0 6px 20px #0c3d5812;transition:transform .2s,box-shadow .2s}
+#citroenManualRefresh:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 13px 26px #0c3d5822}
+#citroenManualRefresh:disabled{opacity:.68;cursor:progress}
+#citroenManualRefresh svg{width:17px;height:17px;stroke:#176f8a;fill:none;stroke-width:2}
+#citroenManualRefresh[aria-busy=true] svg{animation:citroen-refresh-spin .9s linear infinite}
+#citroenSourceLastSync{font:600 10px DM Sans,sans-serif;color:#6a8495;white-space:nowrap}
+.citroen-refresh-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+#citroenRefreshResult{position:fixed;right:22px;bottom:22px;z-index:1100;max-width:min(435px,calc(100vw - 30px));padding:16px 19px;border:1px solid #bdd5e2;border-radius:15px;background:#fff;color:#194159;box-shadow:0 18px 70px #04213533;font-size:12px;line-height:1.6}
+#citroenRefreshResult[data-type=success]{border-color:#8fd9bb}#citroenRefreshResult[data-type=error]{border-color:#efafb8}#citroenRefreshResult[data-type=warning]{border-color:#e7d1a2}
+#citroenRefreshResult[hidden]{display:none!important}
+@keyframes citroen-refresh-spin{to{transform:rotate(360deg)}}
+@media(max-width:760px){#citroenManualRefresh{padding:10px;font-size:10px}#citroenSourceLastSync{display:none}.citroen-refresh-controls{gap:4px}#citroenRefreshResult{right:12px;bottom:12px}}
+@media(prefers-reduced-motion:reduce){#citroenManualRefresh[aria-busy=true] svg{animation:none}}
