@@ -18,7 +18,7 @@ async function readPrivate(name){
  }catch(e){if(e instanceof BlobNotFoundError||e?.name==='BlobNotFoundError')return null;throw e}
 }
 function verify(name,raw){
- if(name==='imagenes-recuperadas.zip')return createHash('sha256').update(raw).digest('hex')===archiveCatalog.zipSha;
+ if(name==='imagenes-recuperadas.zip')return createHash('sha256').update(raw).digest('hex')==='43fd05c586d3d3bd55ab87bac7d1e48d2db35e20f814c678dcd11ef25510c48d';
  if(!allowed.has(name)||!filenamePattern.test(name))return false;
  return createHash('sha256').update(raw).digest('hex').startsWith(name.slice(0,20));
 }
