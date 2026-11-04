@@ -147,3 +147,38 @@
   .campaign-gallery-page .campaign-media-view{aspect-ratio:1.1;min-height:0}
 }
 @media(prefers-reduced-motion:reduce){.campaign-gallery-page *{transition:none!important}}
+
+/* Safari/iPad: don't display an unexplained empty rectangle while Meta downloads. */
+.campaign-gallery-page .campaign-media-view[data-image-state="loading"]::after{
+ content:"Cargando imagen de Meta…";
+ position:absolute;
+ z-index:2;
+ left:50%;top:50%;
+ transform:translate(-50%,-50%);
+ min-width:170px;
+ max-width:calc(100% - 32px);
+ text-align:center;
+ background:#ffffffed;
+ color:#55768b;
+ border:1px solid #dce8ee;
+ box-shadow:0 6px 24px #1b456019;
+ border-radius:10px;
+ padding:12px 15px;
+ font:700 11px/1.5 Manrope,'DM Sans',sans-serif;
+ pointer-events:none;
+}
+.campaign-gallery-page .campaign-media-view[data-image-state="loaded"]::after,
+.campaign-gallery-page .campaign-media-view[data-image-state="missing"]::after{
+ content:none;
+}
+.campaign-media-stage[data-image-state="loading"]{
+ background-image:linear-gradient(110deg,#eaf1f5 8%,#f7fbfd 23%,#eaf1f5 40%);
+ background-size:220% 100%;
+ animation:cit-creative-skeleton 1.5s linear infinite;
+}
+@keyframes cit-creative-skeleton{
+ to{background-position-x:-200%}
+}
+@media(prefers-reduced-motion:reduce){
+ .campaign-media-stage[data-image-state="loading"]{animation:none}
+}
