@@ -1,0 +1,149 @@
+/* CITROËN | Accessible Real Ads gallery, directly from synced Google Sheet */
+.campaign-gallery-page{
+  width:100%;
+  min-width:0;
+  padding:26px 28px 48px;
+  background:transparent;
+}
+.campaign-gallery-page .builder-section-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin:0 0 22px;
+  padding:0 2px;
+  gap:16px;
+}
+.campaign-gallery-page .builder-section-head h2{
+  font:800 clamp(27px,3vw,39px)/1.15 Manrope,'DM Sans',sans-serif;
+  color:#153a53;
+  letter-spacing:-1.2px;
+  margin:9px 0 0;
+}
+.campaign-gallery-page .builder-eyebrow{
+  color:#e74b5d;
+  font:900 9px Manrope,sans-serif;
+  letter-spacing:2px;
+}
+.campaign-gallery-page #citroen-creativesBody,
+.campaign-gallery-page #campaignCreativeLibrary{
+  width:100%;
+  min-width:0;
+}
+.campaign-gallery-page .campaign-media-heading{
+  border-radius:21px;
+  padding:23px 25px;
+  background:linear-gradient(120deg,#0e334e,#18516d);
+  margin:0 0 20px;
+  min-height:115px;
+  color:#fff;
+  box-shadow:0 13px 36px #0c36561f;
+}
+.campaign-gallery-page .campaign-media-heading h3,
+.campaign-gallery-page .campaign-media-heading p,
+.campaign-gallery-page .campaign-media-eyebrow{
+  color:#fff;
+}
+.campaign-gallery-page .campaign-media-heading h3{
+  font-size:clamp(24px,2.5vw,33px);
+  margin:8px 0 5px;
+}
+.campaign-gallery-page .campaign-media-heading p{
+  opacity:.8;
+  font-size:12px;
+}
+.campaign-gallery-page .campaign-media-eyebrow{
+  opacity:.75;
+}
+.campaign-gallery-page .campaign-media-source{
+  background:#ffffff17;
+  border:1px solid #ffffff35;
+  color:#e5f9ff;
+}
+.campaign-gallery-page .campaign-media-card{
+  border-color:#d9e7ee;
+  border-radius:16px;
+  box-shadow:0 12px 28px #1b445c0d;
+  transition:transform .18s,box-shadow .18s;
+}
+.campaign-gallery-page .campaign-media-card:hover{
+  transform:translateY(-3px);
+  box-shadow:0 18px 38px #1b445c1c;
+}
+.campaign-gallery-page .campaign-media-view{
+  aspect-ratio:1 / 1.04;
+  background:linear-gradient(155deg,#eaf2f7,#f4f8fb);
+  min-height:200px;
+}
+.campaign-gallery-page .campaign-media-view img{
+  object-fit:contain;
+  inset:9px;
+  width:calc(100% - 18px);
+  height:calc(100% - 18px);
+}
+.campaign-gallery-page .campaign-media-summary strong{
+  font-size:clamp(15px,1.3vw,23px);
+}
+.campaign-gallery-page .campaign-media-summary>div{
+  padding:14px 15px;
+}
+.campaign-gallery-page .campaign-media-grid{
+  gap:17px;
+}
+.campaign-gallery-entry{
+  border:1px solid #e54d5f;
+  background:#ec4c5e;
+  border-radius:11px;
+  color:#fff;
+  padding:12px 15px;
+  font:800 11px Manrope,'DM Sans',sans-serif;
+  white-space:nowrap;
+  cursor:pointer;
+  box-shadow:0 8px 19px #dd506023;
+}
+.campaign-gallery-entry:hover,.campaign-gallery-entry:focus-visible{
+  background:#d84054;
+  color:#fff;
+}
+.campaign-header-actions{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:9px;
+}
+.campaign-gallery-page .campaign-image-failed{
+  color:#5c7c90;
+  font-size:12px;
+  line-height:1.5;
+  font-weight:700;
+}
+.campaign-gallery-page .campaign-media-caption{
+  padding:14px 16px;
+}
+.campaign-gallery-page .campaign-media-caption h3{
+  font-size:12px;
+  min-height:37px;
+}
+.campaign-gallery-page .campaign-media-caption .campaign-media-metrics strong{
+  font-size:12px;
+}
+.campaign-gallery-page .campaign-media-note{
+  font-size:11px;
+  color:#7b91a2;
+  margin:13px 0 17px;
+}
+@media(max-width:1100px){
+  .campaign-gallery-page .campaign-media-summary{grid-template-columns:repeat(3,minmax(0,1fr));}
+  .campaign-gallery-page .campaign-media-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+@media(max-width:690px){
+  .campaign-gallery-page{padding:16px 13px 42px;}
+  .campaign-gallery-page .campaign-media-heading{padding:21px 18px;align-items:flex-start;flex-direction:column;gap:10px;}
+  .campaign-gallery-page .campaign-media-summary{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .campaign-gallery-page .campaign-media-summary>div{padding:12px;}
+  .campaign-gallery-page .campaign-media-grid{grid-template-columns:1fr;gap:12px}
+  .campaign-gallery-page .campaign-media-filters{padding:12px}
+  .campaign-header-actions{width:100%;}
+  .campaign-header-actions button{flex:1 1 150px;}
+  .campaign-gallery-page .campaign-media-view{aspect-ratio:1.1;min-height:0}
+}
+@media(prefers-reduced-motion:reduce){.campaign-gallery-page *{transition:none!important}}
