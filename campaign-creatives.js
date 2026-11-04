@@ -8,6 +8,15 @@ const imageURL=value=>typeof value==='string'&&value.length<=4096&&/^https:\/\/(
 const keyOf=values=>JSON.stringify(values);
 const filters={month:'',model:'',search:'',sort:'spend',images:false};
 let root=null,snapshot=null,seed=null,seedPromise=null,page=1,visible=[],returnFocus=null;
+let archivedKeys=new Set(),archivePromise=null;
+function fetchArchivedKeys(){
+ if(archivePromise)return archivePromise;
+ archivePromise=fetch('/api/creative-archive?catalog=1',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{
+  if(d?.ok&&d.year===2026)archivedKeys=new Set(d.keys||[]);
+  return archivedKeys;
+ }).catch(()=>archivedKeys);
+ return archivePromise;
+}
 let pageSize=24;
 function seedCatalog(){
  if(seedPromise)return seedPromise;
@@ -29,7 +38,9 @@ function rows(){
   if(filters.month&&month!==filters.month||filters.model&&model!==filters.model)continue;
   if(query&&![ad,adset,campaign,account,model].join(' ').toLocaleLowerCase('es').includes(query))continue;
   const identity=[values[4],values[1],values[2],values[3]],key=keyOf(identity);
-  const asset=media.get(detail.media_version===1?key:keyOf([account,campaign,adset,ad]))||{};
+  const mediaAsset=media.get(detail.media_version===1?key:keyOf([account,campaign,adset,ad]))||{};
+  const archived=archivedKeys.has(identity.join('.'));
+  const asset=archived?{...mediaAsset,image:'/api/creative-archive?key='+identity.join('.'),archived:true}:mediaAsset;
   if(filters.images&&!asset.image&&!asset.thumbnail)continue;
   let row=groups.get(key);
   if(!row){row={key,ad,adset,campaign,account,model,...asset,spend:0,forms:0,messages:0,impressions:0,clicks:0};groups.set(key,row);}
@@ -98,7 +109,7 @@ function render(){
  if(!root?.isConnected||!snapshot)return;
  const d=snapshot.detail.dictionaries;
  const option=(value,label)=>'<option value="'+esc(value)+'">'+esc(label)+'</option>';
- root.innerHTML='<div class="campaign-media-heading"><div><span class="campaign-media-eyebrow">META ADS · DATA CITROEN AÑO</span><h3>Biblioteca de anuncios</h3><p>Las piezas de tus campañas, junto a sus resultados.</p></div><span class="campaign-media-source">'+(snapshot.detail.media_version===1?'Enlaces Meta sincronizados':'Enlaces del Sheet · 28 oct. 2026')+'</span></div><div class="campaign-media-summary"></div><div class="campaign-media-filters"><label class="campaign-media-search">Buscar anuncio o campaña<input type="search" data-filter="search" placeholder="Nombre, campaña, conjunto…" value="'+esc(filters.search)+'"></label><label>Período<select data-filter="month">'+option('','Todo 2026')+[...d.months].sort().reverse().map(value=>option(value,new Date(value+'-02T12:00:00Z').toLocaleDateString('es-CO',{month:'long',year:'numeric',timeZone:'UTC'}))).join('')+'</select></label><label>Modelo<select data-filter="model">'+option('','Todos los modelos')+[...d.models].sort().map(value=>option(value,value)).join('')+'</select></label><label>Ordenar por<select data-filter="sort">'+[['spend','Mayor inversión'],['forms','Más formularios'],['messages','Más conversaciones'],['recent','Imagen más reciente']].map(([value,label])=>option(value,label)).join('')+'</select></label><label class="campaign-media-toggle"><input type="checkbox" data-filter="images"> Solo con imagen</label><button type="button" class="campaign-media-reset">Limpiar</button></div><p class="campaign-media-note">Formularios y conversaciones son resultados separados. Las imágenes proceden de los enlaces de Meta Ads en Google Sheets. Si un enlace caduca, la ficha conserva los resultados y permite abrir sus detalles.</p><div class="campaign-media-grid"></div><div class="campaign-media-pagination"></div>';
+ root.innerHTML='<div class="campaign-media-heading"><div><span class="campaign-media-eyebrow">META ADS · DATA CITROEN AÑO</span><h3>Biblioteca de anuncios</h3><p>Las piezas de tus campañas, junto a sus resultados.</p></div><span class="campaign-media-source">'+(snapshot.detail.media_version===1?'Enlaces Meta sincronizados':'Enlaces del Sheet · 28 oct. 2026')+'</span></div><p class="campaign-archive-banner">Archivo de creativos 2026 · '+archivedKeys.size+' anuncios con imágenes archivadas · <a href="/api/creative-archive?zip=1" download>Descargar imágenes recuperadas</a></p><div class="campaign-media-summary"></div><div class="campaign-media-filters"><label class="campaign-media-search">Buscar anuncio o campaña<input type="search" data-filter="search" placeholder="Nombre, campaña, conjunto…" value="'+esc(filters.search)+'"></label><label>Período<select data-filter="month">'+option('','Todo 2026')+[...d.months].sort().reverse().map(value=>option(value,new Date(value+'-02T12:00:00Z').toLocaleDateString('es-CO',{month:'long',year:'numeric',timeZone:'UTC'}))).join('')+'</select></label><label>Modelo<select data-filter="model">'+option('','Todos los modelos')+[...d.models].sort().map(value=>option(value,value)).join('')+'</select></label><label>Ordenar por<select data-filter="sort">'+[['spend','Mayor inversión'],['forms','Más formularios'],['messages','Más conversaciones'],['recent','Imagen más reciente']].map(([value,label])=>option(value,label)).join('')+'</select></label><label class="campaign-media-toggle"><input type="checkbox" data-filter="images"> Solo con imagen</label><button type="button" class="campaign-media-reset">Limpiar</button></div><p class="campaign-media-note">Formularios y conversaciones son resultados separados. Las imágenes proceden de los enlaces de Meta Ads en Google Sheets. Los anuncios archivados usan copias de 2026 y no dependen del enlace temporal de Meta. En los demás conservamos el detalle aunque la imagen caduque.</p><div class="campaign-media-grid"></div><div class="campaign-media-pagination"></div>';
  root.querySelectorAll('[data-filter]').forEach(control=>{
   const field=control.dataset.filter;if(field==='images')control.checked=filters.images;else control.value=filters[field];
   control.addEventListener(field==='search'?'input':'change',()=>{filters[field]=field==='images'?control.checked:control.value;page=1;drawResults();});
@@ -109,10 +120,10 @@ function render(){
 async function mount(target,options={}){
  pageSize=options.pageSize===6?6:24;
  root=target;
- if(snapshot){if(snapshot.detail.media_version!==1&&!seed)await seedCatalog();render();return;}
+ if(snapshot){await fetchArchivedKeys();if(snapshot.detail.media_version!==1&&!seed)await seedCatalog();render();return;}
  target.innerHTML='<p class="builder-empty" role="status">Cargando anuncios e imágenes…</p>';
  try{
-  const data=await window.CITROEN_CAMPAIGN_FEED.load();
+  const [data]=await Promise.all([window.CITROEN_CAMPAIGN_FEED.load(),fetchArchivedKeys()]);
   snapshot=data;
   if(data?.detail?.media_version!==1)await seedCatalog();
   render();
