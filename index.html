@@ -21,6 +21,7 @@
 <link rel="stylesheet" href="./looker-direct.css?v=20261027-direct1">
 <link rel="stylesheet" href="./data-sources.css?v=20261028-sync1">
 <link rel="stylesheet" href="./campaign-creatives.css?v=20261028-summary1">
+<link rel="stylesheet" href="./campaign-gallery-page.css?v=20261104-v1">
 <link rel="stylesheet" href="./portal-switcher.css?v=20261031">
 <link rel="stylesheet" href="./portal-journey.css?v=20261031-v1">
 <link rel="stylesheet" href="./design-v3-citroen.css?v=20261031">
@@ -454,7 +455,7 @@
         <div class="dual-grid territory-grid"><article class="panel"><div class="panel-head"><h3>Oportunidades por ciudad</h3><span class="mini-pill">LEADS</span></div><div id="cityChart"></div></article><article class="panel"><div class="panel-head"><h3>Detalle por concesionario</h3><span class="mini-pill">DATOS REALES</span></div><div id="dealerChart"></div></article></div>
       </section>
       <section id="campanas" class="page-section">
-        <div class="section-header"><div><div class="section-overline">CAMPAIGN EXPLORER</div><h2>De la campaña al resultado.</h2><p>Explora las inversiones y oportunidades con detalle por campaña.</p></div><button id="exportCsv" class="secondary-button"><svg><use href="#i-download"/></svg> Exportar CSV</button></div>
+        <div class="section-header"><div><div class="section-overline">CAMPAIGN EXPLORER</div><h2>De la campaña al resultado.</h2><p>Explora inversión, oportunidades y las piezas reales de Meta Ads.</p></div><div class="campaign-header-actions"><button type="button" id="openCreativeLibrary" class="campaign-gallery-entry">▧ Ver anuncios con imágenes</button><button id="exportCsv" class="secondary-button"><svg><use href="#i-download"/></svg> Exportar CSV</button></div></div>
         <div class="table-panel"><div class="table-toolbar"><label class="table-search"><svg><use href="#i-search"/></svg><input id="campaignSearch" placeholder="Buscar campaña, modelo o plataforma" aria-label="Buscar campañas"></label><span id="campaignCount">0 campañas</span></div><div class="table-scroll"><table><thead><tr><th>CAMPAÑA</th><th>MODELO</th><th>PLATAFORMA</th><th>CIUDAD</th><th>INVERSIÓN</th><th>LEADS</th><th>CPL</th><th>CTR</th></tr></thead><tbody id="campaignRows"></tbody></table></div></div>
       </section>
       <section id="creativos" class="page-section legacy-hidden-section" hidden aria-hidden="true">
@@ -571,9 +572,9 @@
 <script src="./alert-center.js?v=20261027-alert1" defer></script>
 <script src="./source-data.js?v=20261028" defer></script>
 <script src="./campaign-connection.js?v=20261028-media1" defer></script>
-<script src="./campaign-creatives.js?v=20261028-summary1" defer></script>
+<script src="./campaign-creatives.js?v=20261104-gallery1" defer></script>
 <script src="./data-sources.js?v=20261028-sync1" defer></script>
-<script src="./builder.js?v=20261028-summary1" defer></script>
+<script src="./builder.js?v=20261104-gallery1" defer></script>
 <script src="./looker-editor.js?v=20261028-sheets1" defer></script>
 <script src="./looker-properties.js?v=20261028-sheets1" defer></script>
 <script src="./studio-selection-bridge.js?v=20261104-a1" defer></script>
