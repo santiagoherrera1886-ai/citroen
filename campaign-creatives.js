@@ -39,10 +39,21 @@ function rows(){
 }
 function previewImage(image,item,failure){
  const primary=item.image||item.thumbnail;
- image.referrerPolicy='no-referrer';image.decoding='async';
+ image.referrerPolicy='no-referrer';
+ image.decoding='async';
+ if(!primary){
+  image.hidden=true;
+  if(failure)failure.hidden=false;
+  return;
+ }
+ image.onload=()=>{image.hidden=false;if(failure)failure.hidden=true};
  image.onerror=()=>{
-  if(item.thumbnail&&image.getAttribute('src')!==item.thumbnail){image.src=item.thumbnail;return;}
-  image.hidden=true;failure.hidden=false;
+  if(item.thumbnail&&image.getAttribute('src')!==item.thumbnail){
+   image.src=item.thumbnail;
+   return;
+  }
+  image.hidden=true;
+  if(failure)failure.hidden=false;
  };
  image.src=primary;
 }
@@ -66,10 +77,12 @@ function drawResults(){
  if(!root?.isConnected||!snapshot)return;
  const all=rows();page=Math.max(1,Math.min(page,Math.ceil(all.length/pageSize)||1));
  const sums=all.reduce((s,r)=>({spend:s.spend+r.spend,forms:s.forms+r.forms,messages:s.messages+r.messages,images:s.images+Number(!!(r.image||r.thumbnail))}),{spend:0,forms:0,messages:0,images:0});
- root.querySelector('.campaign-media-summary').innerHTML=[['Anuncios',number(all.length)],['Con imagen',number(sums.images)],['Inversión Meta',money(sums.spend)],['Formularios',number(sums.forms)],['Conversaciones',number(sums.messages)]].map(([label,value])=>'<div><span>'+label+'</span><strong>'+value+'</strong></div>').join('');
+ root.querySelector('.campaign-media-summary').innerHTML=[['Anuncios',number(all.length)],['Con enlace de imagen',number(sums.images)],['Inversión Meta',money(sums.spend)],['Formularios',number(sums.forms)],['Conversaciones',number(sums.messages)]].map(([label,value])=>'<div><span>'+label+'</span><strong>'+value+'</strong></div>').join('');
  visible=all.slice((page-1)*pageSize,page*pageSize);
  const grid=root.querySelector('.campaign-media-grid');
- grid.innerHTML=visible.length?visible.map((item,index)=>'<article class="campaign-media-card"><button type="button" class="campaign-media-view" data-preview="'+index+'" aria-label="Ver anuncio '+esc(item.ad)+'" '+(!item.image&&!item.thumbnail?'disabled':'')+'>'+(item.image||item.thumbnail?'<img loading="lazy" alt="'+esc(item.ad)+'"><span class="campaign-media-enlarge">Ampliar ↗</span>':'')+'<span class="campaign-image-failed" '+(item.image||item.thumbnail?'hidden':'')+'>Imagen no disponible</span></button><div class="campaign-media-caption"><span class="campaign-media-model">'+esc(item.model)+'</span><h3 title="'+esc(item.ad)+'">'+esc(item.ad||'Anuncio sin nombre')+'</h3><p title="'+esc(item.campaign)+'">'+esc(item.campaign)+'</p><div class="campaign-media-metrics"><span>Inversión<strong>'+money(item.spend)+'</strong></span><span>Formularios<strong>'+number(item.forms)+'</strong></span><span>Conversaciones<strong>'+number(item.messages)+'</strong></span></div><small>'+esc(item.account)+' · '+esc(item.date||'Sin imagen en la fuente')+'</small></div></article>').join(''):'<div class="builder-empty">No hay anuncios con estos filtros. Prueba otro período o búsqueda.</div>';
+ grid.innerHTML=visible.length?visible.map((item,index)=>'<article class="campaign-media-card"><button type="button" class="campaign-media-view" data-preview="'+index+'" aria-label="Ver anuncio '+esc(item.ad)+'">' +
+ (item.image||item.thumbnail?'<img loading="'+(index<6?'eager':'lazy')+'" alt="'+esc(item.ad)+'"><span class="campaign-media-enlarge">Ampliar ↗</span>':'<span class="campaign-media-enlarge">Ver métricas ↗</span>')+
+ '<span class="campaign-image-failed" '+(item.image||item.thumbnail?'hidden':'')+'>Imagen original no disponible. Ver resultados del anuncio.</span></button><div class="campaign-media-caption"><span class="campaign-media-model">'+esc(item.model)+'</span><h3 title="'+esc(item.ad)+'">'+esc(item.ad||'Anuncio sin nombre')+'</h3><p title="'+esc(item.campaign)+'">'+esc(item.campaign)+'</p><div class="campaign-media-metrics"><span>Inversión<strong>'+money(item.spend)+'</strong></span><span>Formularios<strong>'+number(item.forms)+'</strong></span><span>Conversaciones<strong>'+number(item.messages)+'</strong></span></div><small>'+esc(item.account)+' · '+esc(item.date||'Sin imagen en la fuente')+'</small></div></article>').join(''):'<div class="builder-empty">No hay anuncios con estos filtros. Prueba otro período o búsqueda.</div>';
  grid.querySelectorAll('[data-preview]').forEach(button=>{const item=visible[Number(button.dataset.preview)],image=button.querySelector('img');if(image)previewImage(image,item,button.querySelector('.campaign-image-failed'));button.onclick=()=>openPreview(item,button);});
  root.querySelector('.campaign-media-pagination').innerHTML='<button type="button" data-page="previous" '+(page===1?'disabled':'')+'>← Anterior</button><span role="status">'+(all.length?((page-1)*pageSize+1)+'–'+Math.min(page*pageSize,all.length):'0')+' de '+number(all.length)+' anuncios</span><button type="button" data-page="next" '+(page*pageSize>=all.length?'disabled':'')+'>Siguiente →</button>';
  root.querySelectorAll('[data-page]').forEach(button=>button.onclick=()=>{page+=button.dataset.page==='next'?1:-1;drawResults();root.querySelector('.campaign-media-filters').scrollIntoView({block:'start'});});
@@ -78,7 +91,7 @@ function render(){
  if(!root?.isConnected||!snapshot)return;
  const d=snapshot.detail.dictionaries;
  const option=(value,label)=>'<option value="'+esc(value)+'">'+esc(label)+'</option>';
- root.innerHTML='<div class="campaign-media-heading"><div><span class="campaign-media-eyebrow">META ADS · DATA CITROEN AÑO</span><h3>Biblioteca de anuncios</h3><p>Las piezas de tus campañas, junto a sus resultados.</p></div><span class="campaign-media-source">'+(snapshot.detail.media_version===1?'Imágenes sincronizadas':'Imágenes del Sheet · 28 oct. 2026')+'</span></div><div class="campaign-media-summary"></div><div class="campaign-media-filters"><label class="campaign-media-search">Buscar anuncio o campaña<input type="search" data-filter="search" placeholder="Nombre, campaña, conjunto…" value="'+esc(filters.search)+'"></label><label>Período<select data-filter="month">'+option('','Todo 2026')+[...d.months].sort().reverse().map(value=>option(value,new Date(value+'-02T12:00:00Z').toLocaleDateString('es-CO',{month:'long',year:'numeric',timeZone:'UTC'}))).join('')+'</select></label><label>Modelo<select data-filter="model">'+option('','Todos los modelos')+[...d.models].sort().map(value=>option(value,value)).join('')+'</select></label><label>Ordenar por<select data-filter="sort">'+[['spend','Mayor inversión'],['forms','Más formularios'],['messages','Más conversaciones'],['recent','Imagen más reciente']].map(([value,label])=>option(value,label)).join('')+'</select></label><label class="campaign-media-toggle"><input type="checkbox" data-filter="images"> Solo con imagen</label><button type="button" class="campaign-media-reset">Limpiar</button></div><p class="campaign-media-note">Formularios y conversaciones son resultados separados. La vista muestra la imagen más reciente disponible de cada anuncio.</p><div class="campaign-media-grid"></div><div class="campaign-media-pagination"></div>';
+ root.innerHTML='<div class="campaign-media-heading"><div><span class="campaign-media-eyebrow">META ADS · DATA CITROEN AÑO</span><h3>Biblioteca de anuncios</h3><p>Las piezas de tus campañas, junto a sus resultados.</p></div><span class="campaign-media-source">'+(snapshot.detail.media_version===1?'Enlaces Meta sincronizados':'Enlaces del Sheet · 28 oct. 2026')+'</span></div><div class="campaign-media-summary"></div><div class="campaign-media-filters"><label class="campaign-media-search">Buscar anuncio o campaña<input type="search" data-filter="search" placeholder="Nombre, campaña, conjunto…" value="'+esc(filters.search)+'"></label><label>Período<select data-filter="month">'+option('','Todo 2026')+[...d.months].sort().reverse().map(value=>option(value,new Date(value+'-02T12:00:00Z').toLocaleDateString('es-CO',{month:'long',year:'numeric',timeZone:'UTC'}))).join('')+'</select></label><label>Modelo<select data-filter="model">'+option('','Todos los modelos')+[...d.models].sort().map(value=>option(value,value)).join('')+'</select></label><label>Ordenar por<select data-filter="sort">'+[['spend','Mayor inversión'],['forms','Más formularios'],['messages','Más conversaciones'],['recent','Imagen más reciente']].map(([value,label])=>option(value,label)).join('')+'</select></label><label class="campaign-media-toggle"><input type="checkbox" data-filter="images"> Solo con imagen</label><button type="button" class="campaign-media-reset">Limpiar</button></div><p class="campaign-media-note">Formularios y conversaciones son resultados separados. Las imágenes proceden de los enlaces de Meta Ads en Google Sheets. Si un enlace caduca, la ficha conserva los resultados y permite abrir sus detalles.</p><div class="campaign-media-grid"></div><div class="campaign-media-pagination"></div>';
  root.querySelectorAll('[data-filter]').forEach(control=>{
   const field=control.dataset.filter;if(field==='images')control.checked=filters.images;else control.value=filters[field];
   control.addEventListener(field==='search'?'input':'change',()=>{filters[field]=field==='images'?control.checked:control.value;page=1;drawResults();});
