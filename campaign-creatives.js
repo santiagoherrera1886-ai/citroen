@@ -41,18 +41,25 @@ function previewImage(image,item,failure){
  const primary=item.image||item.thumbnail;
  image.referrerPolicy='no-referrer';
  image.decoding='async';
+ const frame=image.closest('.campaign-media-view,.campaign-media-stage');
+ if(frame)frame.dataset.imageState=primary?'loading':'missing';
  if(!primary){
   image.hidden=true;
   if(failure)failure.hidden=false;
   return;
  }
- image.onload=()=>{image.hidden=false;if(failure)failure.hidden=true};
+ image.onload=()=>{
+  image.hidden=false;
+  if(frame)frame.dataset.imageState='loaded';
+  if(failure)failure.hidden=true;
+ };
  image.onerror=()=>{
   if(item.thumbnail&&image.getAttribute('src')!==item.thumbnail){
    image.src=item.thumbnail;
    return;
   }
   image.hidden=true;
+  if(frame)frame.dataset.imageState='missing';
   if(failure)failure.hidden=false;
  };
  image.src=primary;
@@ -104,8 +111,14 @@ async function mount(target,options={}){
  root=target;
  if(snapshot){if(snapshot.detail.media_version!==1&&!seed)await seedCatalog();render();return;}
  target.innerHTML='<p class="builder-empty" role="status">Cargando anuncios e imágenes…</p>';
- try{const [data]=await Promise.all([window.CITROEN_CAMPAIGN_FEED.load(),seedCatalog()]);snapshot=data;render();}
- catch{if(root?.isConnected)root.innerHTML='<p class="builder-empty">No se pudo cargar la biblioteca. Recarga el Resumen para reintentar.</p>';}
+ try{
+  const data=await window.CITROEN_CAMPAIGN_FEED.load();
+  snapshot=data;
+  if(data?.detail?.media_version!==1)await seedCatalog();
+  render();
+ }catch{
+  if(root?.isConnected)root.innerHTML='<p class="builder-empty">No se pudo cargar la biblioteca. Recarga Anuncios reales para reintentar.</p>';
+ }
 }
 document.addEventListener('citroen:campaign-data',event=>{if(event.detail){snapshot=event.detail;render();}});
 window.CITROEN_CAMPAIGN_CREATIVES={mount};
