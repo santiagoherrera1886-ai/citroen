@@ -53,8 +53,7 @@ function watchSummary(){
 function cleanURL(s){if(window.CITROEN_SHARED_MEDIA?.isManaged(s))return s;try{const u=new URL(s);return u.protocol==='https:'&&!u.username&&!u.password?u.href:'';}catch{return typeof s==='string'&&/^data:image\/(?:jpeg|png|webp);base64,/.test(s)&&s.length<120000?s:'';}}
 function make(id,title,edit=false){const section=mk('section',{id,class:'page-section builder-page'});section.innerHTML='<div class="builder-section-head"><div><span class="builder-eyebrow">CITROËN · WORKSPACE</span><h2>'+esc(title)+'</h2></div><div class="builder-head-actions" id="'+id+'Actions"></div></div><div id="'+id+'Body"></div>';return section;}
 function navTo(id){
- const showCreatives=id==='citroen-creatives';
- if(['auditoria','meta','citroen-creatives'].includes(id))id='resumen';
+ if(['auditoria','meta'].includes(id))id='resumen';
  if(!$(id))return;
  current=id;
  document.querySelectorAll('.nav-link').forEach(b=>b.classList.toggle('active',b.dataset.target===id));
@@ -66,7 +65,6 @@ function navTo(id){
  const viewport=document.querySelector('.content');if(viewport){viewport.scrollTop=0;viewport.scrollLeft=0;}
  document.dispatchEvent(new CustomEvent('citroen:builder-page-changed',{detail:{id,title:id==='resumen'?'Resumen':$(id)?.querySelector('h2')?.textContent||id}}));
  render();
- if(showCreatives)$('citroen-creatives')?.scrollIntoView({block:'start',behavior:'instant'});
 }
 function pageNav(id,label){const btn=mk('button',{type:'button',class:'nav-link builder-nav', 'data-target':id},'<span class="builder-nav-icon">◇</span> '+esc(label));btn.onclick=()=>navTo(id);return btn;}
 function initSections(){
@@ -75,10 +73,15 @@ function initSections(){
   if(!$(id))main.insertBefore(make(id,label),main.querySelector(':scope > footer'));
   if(!nav.querySelector('[data-target="'+id+'"]'))nav.appendChild(pageNav(id,label));
  }
- const creatives=make('citroen-creatives','Creativos');
- creatives.className='summary-creatives';
- creatives.setAttribute('aria-label','Creativos de tus campañas');
- $('resumen').appendChild(creatives);
+ const creatives=make('citroen-creatives','Anuncios reales');
+ creatives.classList.add('campaign-gallery-page');
+ creatives.setAttribute('aria-label','Biblioteca de anuncios reales de Citroën');
+ main.insertBefore(creatives,main.querySelector(':scope > footer'));
+ if(!nav.querySelector('[data-target="citroen-creatives"]')){
+   const target=nav.querySelector('[data-target="citroen-compare"]');
+   nav.insertBefore(pageNav('citroen-creatives','Anuncios reales'),target||null);
+ }
+ $('openCreativeLibrary')?.addEventListener('click',()=>navTo('citroen-creatives'));
  const a=mk('div',{class:'builder-menu'},'<div class="builder-menu-title">MIS PÁGINAS</div><div id="builderPageLinks"></div>');
  nav.appendChild(a);
  const dock=mk('div',{class:'builder-global-actions',id:'builderGlobalActions',hidden:''});
@@ -698,7 +701,7 @@ function renderCreatives(){
  const root=$('citroen-creativesBody');
  root.querySelector('.campaign-team-creatives')?.remove();
  if(!window.CITROEN_CAMPAIGN_CREATIVES)root.replaceChildren();
- if(window.CITROEN_CAMPAIGN_CREATIVES&&!root.querySelector('#campaignCreativeLibrary')){const live=mk('div',{id:'campaignCreativeLibrary'});root.replaceChildren(live);window.CITROEN_CAMPAIGN_CREATIVES.mount(live,{pageSize:6});}
+ if(window.CITROEN_CAMPAIGN_CREATIVES&&!root.querySelector('#campaignCreativeLibrary')){const live=mk('div',{id:'campaignCreativeLibrary'});root.replaceChildren(live);window.CITROEN_CAMPAIGN_CREATIVES.mount(live,{pageSize:24});}
  if(!state.creatives.length){if(!window.CITROEN_CAMPAIGN_CREATIVES)root.innerHTML='<div class="builder-empty-page">Todavía no hay creativos publicados. Desde Diseño podrás agregar imágenes de piezas y sus notas.</div>';return;}
  root.insertAdjacentHTML('beforeend','<section class="campaign-team-creatives"><h3>Creativos del equipo</h3><div class="builder-creatives-grid">'+state.creatives.map(c=>'<article class="builder-creative"><div class="builder-creative-image">'+(c.image?'<img alt="'+esc(c.title)+'" src="'+esc(c.image)+'">':'<div class="builder-empty">Imagen pendiente</div>')+'</div><div class="builder-creative-caption"><strong>'+esc(c.title)+'</strong><small>'+esc(c.format||'Otro')+' · '+esc(c.campaign||'Sin campaña')+'</small><p>'+esc(c.notes||'')+'</p>'+(authorized()?'<button type="button" data-creative-edit="'+esc(c.id)+'">Editar creativo</button>':'')+'</div></article>').join('')+'</div></section>');
  root.querySelectorAll('[data-creative-edit]').forEach(b=>b.onclick=()=>editCreative(state.creatives.find(c=>c.id===b.dataset.creativeEdit)));
@@ -896,7 +899,7 @@ function render(){
  // Only mount the active report: avoid rebuilding dozens of SVG charts on every change.
  const activePage=state.pages.find(p=>'report-'+p.id===current);
  if(activePage)renderPage(activePage);
- if(current==='resumen')renderCreatives();
+ if(current==='citroen-creatives')renderCreatives();
  if(current==='citroen-insights')renderInsights();
  if(current==='citroen-compare')window.CITROEN_COMPARISON_LAB?.mount($('citroen-compareBody'),data);
  if(current==='citroen-alerts')window.CITROEN_ALERT_CENTER?.mount($('citroen-alertsBody'));
