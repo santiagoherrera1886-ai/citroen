@@ -56,7 +56,7 @@
   const badge=$('novScenarioState');
   if(badge)badge.textContent=dirty?'ESCENARIO MODIFICADO · NO APROBADO':'REFERENCIA OCTUBRE · NO APROBADO';
  }
- function reflect(){
+ function reflect(rebuildRows=true){
   if(!draft)return;
   const v=calc();
   $('novTotalBudget').value=String(v.novBudget);
@@ -73,7 +73,7 @@
     const share=v.novBudget?m.budget/v.novBudget:0;
     return '<div class="cit-nov-mixline"><span class="cit-nov-mixname">'+esc(m.name)+'</span><div class="cit-nov-track"><div style="width:'+(share*100).toFixed(2)+'%"></div></div><b>'+currency(m.budget)+'</b></div>';
   }).join('');
-  $('novModelRows').innerHTML=v.items.map(m=>{
+  if(rebuildRows)$('novModelRows').innerHTML=v.items.map(m=>{
     const pct=v.novBudget?m.budget/v.novBudget*100:0;
     return '<tr><td><strong>'+esc(m.name)+'</strong></td><td>'+currency(m.budget===undefined?0:m.budget)+'</td>'+
       '<td><label class="cit-nov-budget-cell"><span class="sr-only">Presupuesto noviembre '+esc(m.name)+'</span><input data-nov-model="'+esc(m.name)+'" type="number" inputmode="numeric" min="0" max="5000000000" step="100000" value="'+m.budget+'"></label></td>'+
@@ -97,7 +97,7 @@
   let sum=0;
   for(let i=0;i<names.length;i++){
    const n=names[i];
-   const amount=i===names.length-1?target-sum:Math.round(target*draft.budgets[n]/current);
+   const amount=i===names.length-1?target-sum:Math.floor(target*draft.budgets[n]/current);
    draft.budgets[n]=budgetNumber(amount);sum+=draft.budgets[n];
   }
   // Exact sum after rounding, without introducing extra media budget.
@@ -124,6 +124,11 @@
   }catch(e){$('novLoading').textContent='No fue posible cargar la referencia de octubre: '+e.message;return;}
   $('novMode').onchange=e=>{draft.mode=e.target.value;dirty=true;reflect()};
   $('novTotalBudget').addEventListener('change',e=>scale(e.target.value));
+  $('novModelRows').addEventListener('input',e=>{
+   const field=e.target.closest('input[data-nov-model]');if(!field)return;
+   if(!Object.hasOwn(draft.budgets,field.dataset.novModel))return;
+   draft.budgets[field.dataset.novModel]=budgetNumber(field.value);dirty=true;reflect(false);
+  });
   $('novModelRows').addEventListener('change',e=>{
    const field=e.target.closest('[data-nov-model]');if(!field)return;
    if(!Object.hasOwn(draft.budgets,field.dataset.novModel))return;
