@@ -182,3 +182,6 @@
 @media(prefers-reduced-motion:reduce){
  .campaign-media-stage[data-image-state="loading"]{animation:none}
 }
+
+.campaign-archive-banner{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:4px 0 17px;padding:11px 15px;border:1px solid #d5e7ef;border-radius:12px;background:#f1f8fc;color:#53778e;font:700 11px/1.5 Manrope,sans-serif}
+.campaign-archive-banner a{margin-left:auto;font-weight:850;color:#e54559;text-decoration:underline;text-underline-offset:3px}
