@@ -59,6 +59,9 @@ function persist(){
 }
 function sync(){persist();document.dispatchEvent(new Event("citroen:metric-settings"));updateUI();}
 window.CITROEN_METRIC_EDITOR={
+ select:key=>choose(key),
+ getSelection:()=>selected,
+ refresh:()=>updateUI(),
  export:()=>JSON.parse(JSON.stringify(preferences)),
  selected:()=>selected,
  replace:data=>{preferences=normalized(data);sync();},
