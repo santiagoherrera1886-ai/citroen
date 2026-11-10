@@ -22,15 +22,17 @@ const filter=rows=>{
 };
 const opt=(value,label)=>`<option value="${esc(value)}">${esc(label)}</option>`;
 const configured=(kind,slot,fallback)=>{const prefs=window.CITROEN_METRIC_OVERRIDES||{};return kind==='slot'?(prefs.slots&&prefs.slots[slot])||fallback:(prefs.native&&prefs.native[kind])||fallback;};
-const metricNames={planned:'Inversión planeada',spend:'Inversión Meta',forms:'Formularios',messages:'Conversaciones',impressions:'Impresiones',reach:'Alcance estimado*',clicks:'Clics en enlace',all_clicks:'Clics totales',ctr:'CTR de enlace',cpm:'CPM calculado',cpl:'Costo / formulario*',cost_message:'Costo / conversación*'};
-const metricNotes={planned:'Presupuesto proyectado · plan multicanal',spend:'Gasto Meta Ads · COP supuesto',forms:'Leads de formulario · sin conversaciones',messages:'Eventos de conversación · no leads únicos',impressions:'Impresiones entregadas · Meta Ads',reach:'Estimación Sainsbury · no alcance único observado',clicks:'Clics en enlace · Meta Ads',all_clicks:'Clics totales de Meta Ads',ctr:'Clics de enlace / impresiones',cpm:'Gasto Meta por 1.000 impresiones',cpl:'Gasto Meta / formularios; incluye otros objetivos',cost_message:'Gasto Meta / conversaciones; incluye otros objetivos'};
-const metricMoney=new Set(['planned','spend','cpm','cpl','cost_message']);
+const metricNames={planned:'Inversión planeada',spend:'Inversión Meta',leads_total:'Leads',cpl_general:'CPL general',forms:'Formularios',messages:'Conversaciones',impressions:'Impresiones',reach:'Alcance estimado*',clicks:'Clics en enlace',all_clicks:'Clics totales',ctr:'CTR de enlace',cpm:'CPM calculado',cpl:'Costo / formulario*',cost_message:'Costo / conversación*'};
+const metricNotes={planned:'Presupuesto proyectado · plan multicanal',spend:'Gasto Meta Ads · COP supuesto',leads_total:'Formularios + conversaciones · eventos no únicos',cpl_general:'Gasto Meta / total de eventos · no únicos',forms:'Leads de formulario · sin conversaciones',messages:'Eventos de conversación · no leads únicos',impressions:'Impresiones entregadas · Meta Ads',reach:'Estimación Sainsbury · no alcance único observado',clicks:'Clics en enlace · Meta Ads',all_clicks:'Clics totales de Meta Ads',ctr:'Clics de enlace / impresiones',cpm:'Gasto Meta por 1.000 impresiones',cpl:'Gasto Meta / formularios; incluye otros objetivos',cost_message:'Gasto Meta / conversaciones; incluye otros objetivos'};
+const metricMoney=new Set(['planned','spend','cpm','cpl','cpl_general','cost_message']);
 function metricTotal(rows,key,plan){
  if(key==='planned')return plan;
  const v=i=>add(rows,i),spend=v(0),forms=v(1),messages=v(2),impressions=v(3),clicks=v(4);
  if(key==='spend')return spend;
  if(key==='forms')return forms;
  if(key==='messages')return messages;
+ if(key==='leads_total')return forms+messages;
+ if(key==='cpl_general')return forms+messages>0?spend/(forms+messages):null;
  if(key==='impressions')return impressions;
  if(key==='reach')return window.CITROEN_REACH_MATH?.estimate(rows.map(r=>r.v[6]||0),window.CITROEN_REACH_MATH.currentUniverse())??null;
  if(key==='clicks')return clicks;
@@ -70,11 +72,11 @@ function actualData(d,detail){
 }
 function setKpis(rows){
  const planned=state.territory?null:months.filter(m=>(!state.month||state.month===m)&&(!hasDailyRange()||rows.some(r=>r.month===m))).reduce((a,m)=>a+(planValue(m,'investment')||0),0);
- const defaults=['planned','spend','forms','messages','cpl','impressions'];
- const icons=['▥','◫','♙','▤','◎','▥'];
+ const defaults=['planned','spend','leads_total','cpl_general','impressions'];
+ const icons=['▥','◫','♙','◎','▥'];
  $('c3Kpis').innerHTML=defaults.map((fallback,i)=>{
   const key=configured('slot',i,fallback),value=metricTotal(rows,key,planned);
-  const title=key===fallback?(['Inversión planeada','Ejecutado · Meta','Formularios','Conversaciones','Costo / formulario*','Impresiones'][i]):metricNames[key]||metricNames[fallback];
+  const title=key===fallback?(['Inversión planeada','Ejecutado · Meta','Leads','CPL general','Impresiones'][i]):metricNames[key]||metricNames[fallback];
   const note=key==='planned'&&state.territory?'Sin plan territorial comparable':metricNotes[key]||'Meta Ads';
   const number=fmtMetric(value,key),compact=$('c3Dashboard')?.classList.contains('studio-edit-on')&&['planned','spend'].includes(key)&&typeof value==='number'&&Math.abs(value)>=1000000?'$ '+short(value):number;
   return '<article class="c3-kpi" data-metric-slot="'+i+'" tabindex="0" title="'+esc(number)+' · En Diseño, selecciona y arrastra para mover"><div class="c3-kpi-ico">'+icons[i]+'</div><div><h4>'+esc(title)+'</h4><strong title="'+esc(number)+'">'+esc(compact)+'</strong><small class="muted">'+esc(note)+'</small></div></article>';
@@ -91,7 +93,7 @@ function comparison(rows){
  const selected=configured('compareMetric','metric',state.metric);state.metric=selected;
  const theme=window.CITROEN_STYLE_EDITOR?.get("n:c3ComparePanel")||{},chartMode=theme.chartType||"bar",showLabels=theme.showLabels===true;
   const periods=months.filter(m=>(!state.month||state.month===m)&&(!hasDailyRange()||rows.some(r=>r.month===m)));
- const series=periods.map(m=>{const d=rows.filter(r=>r.month===m),k=state.metric,which=k==='investment'?'spend':k==='leads'?'forms':k;return {month:m,label:labels[months.indexOf(m)],planned:['investment','leads','cpl'].includes(k)?planValue(m,k):null,actual:metricTotal(d,which,null)};});
+ const series=periods.map(m=>{const d=rows.filter(r=>r.month===m),k=state.metric,which=k==='investment'?'spend':k==='leads'?'leads_total':k==='cpl'?'cpl_general':k;return {month:m,label:labels[months.indexOf(m)],planned:['investment','leads','cpl'].includes(k)?planValue(m,k):null,actual:metricTotal(d,which,null)};});
  const max=Math.max(1,...series.flatMap(s=>[s.planned||0,s.actual||0]));
  const w=840,h=219,l=51,r=16,t=22,b=32,pw=w-l-r,ph=h-t-b,step=pw/series.length,bw=Math.min(20,step*.28);
  const y=v=>t+ph-(Math.max(0,v||0)/max)*ph;
@@ -141,8 +143,8 @@ function comparison(rows){
  cpm:'CPM = gasto Meta / impresiones × 1.000.',
  cost_message:'Gasto Meta / conversaciones; no representa CPL de negocio.',
  investment:state.territory?'El plan no se puede desagregar por esta geografía inferida. Se muestra ejecución Meta únicamente.':'Barras azules: plan general. Rojas: Meta ejecutado. Línea: proporción Meta/plan, NO cumplimiento total. El último mes puede estar incompleto.',
- leads:'Azul: metas comerciales del plan si son completas. Rojo: formularios de Meta. Las definiciones son distintas y no equivalen a cumplimiento. El último mes puede estar incompleto.',
- cpl:'Azul: CPL planificado (portafolio: cinco modelos sin Berlingo). Rojo: gasto total Meta / formularios; incluye WhatsApp y no es un CPL comercial comparable.'
+ leads:'Azul: metas comerciales del plan si son completas. Rojo: formularios + conversaciones de Meta. Son eventos no desduplicados y no equivalen a cumplimiento comercial. El último mes puede estar incompleto.',
+ cpl:'Azul: CPL planificado (cinco modelos sin Berlingo). Rojo: CPL general = gasto Meta / (formularios + conversaciones). Es orientativo, no representa contactos únicos ni un CPL comercial comparable.'
  };
  $('c3CompareNote').textContent=state.metric==='reach'&&!window.CITROEN_REACH_MATH?.currentUniverse()
   ?'Sin universo de audiencia configurado: no se muestra estimación Sainsbury. Configúralo en Propiedades del gráfico.'
@@ -157,12 +159,12 @@ function funnel(rows){
  ].map(v=>'<div class="c3-funnel-step '+v[2]+'"><span><b>'+v[0]+'</b><small>'+v[1]+'</small></span></div>').join('')+'</div><div class="c3-funnel-rate">'+[
   [isReach?'Clics / alcance estimado*':'CTR de enlace',ratio(clicks,base)],['Formularios / clics*',ratio(forms,clicks)],['Conversaciones / clics*',ratio(messages,clicks)]
  ].map(v=>'<div><span>'+v[0]+'</span><b>'+v[1]+'</b></div>').join('')+'</div>';
- $('c3FunnelPanel').querySelector('.c3-funnel-foot').textContent=isReach?'*Sainsbury es estimación, no usuarios únicos observados. Requiere universo configurado. Clics/alcance estimado no es CTR.':'Formularios y conversaciones son resultados paralelos: no se deben sumar como leads únicos.';
+ $('c3FunnelPanel').querySelector('.c3-funnel-foot').textContent=isReach?'*Sainsbury es estimación, no usuarios únicos observados. Requiere universo configurado. Clics/alcance estimado no es CTR.':'El KPI Leads consolida formularios + conversaciones como eventos, no personas únicas.';
 }
 function models(rows){
  $('c3Models').innerHTML=cars.map(m=>{
- const selected=rows.filter(r=>norm(r.model)===norm(m.model)),form=add(selected,1),spend=add(selected,0),modelMetric=configured('modelsMetric','metric','forms'),metricValue=metricTotal(selected,modelMetric,null);
- return `<article class="c3-model-card"><div class="c3-model-top"><div><h4>${m.name}</h4><p>${m.desc}</p></div><button class="c3-model-visit" type="button" data-model="${esc(m.model)}" aria-label="Filtrar ${m.name}">›</button></div><div class="c3-model-photo"><span>${m.model}</span><img loading="lazy" src="${esc(m.src)}" data-backup="${esc(m.backup)}" alt="${m.name} — fotografía real"></div><div class="c3-model-data"><div><b>${fmtMetric(metricValue,modelMetric)}</b><span>${esc(metricNames[modelMetric]||'Formularios')}</span><small>${modelMetric==='reach'?'Sainsbury · estimado':'Meta 2026'}</small></div><div><b>${form>0?money(spend/form):'—'}</b><span>Gasto / form.</span><small>Indicativo*</small></div></div></article>`;
+ const selected=rows.filter(r=>norm(r.model)===norm(m.model)),leadEvents=add(selected,1)+add(selected,2),spend=add(selected,0),modelMetric=configured('modelsMetric','metric','leads_total'),metricValue=metricTotal(selected,modelMetric,null);
+ return `<article class="c3-model-card"><div class="c3-model-top"><div><h4>${m.name}</h4><p>${m.desc}</p></div><button class="c3-model-visit" type="button" data-model="${esc(m.model)}" aria-label="Filtrar ${m.name}">›</button></div><div class="c3-model-photo"><span>${m.model}</span><img loading="lazy" src="${esc(m.src)}" data-backup="${esc(m.backup)}" alt="${m.name} — fotografía real"></div><div class="c3-model-data"><div><b>${fmtMetric(metricValue,modelMetric)}</b><span>${esc(metricNames[modelMetric]||'Formularios')}</span><small>${modelMetric==='reach'?'Sainsbury · estimado':'Meta 2026'}</small></div><div><b>${leadEvents>0?money(spend/leadEvents):'—'}</b><span>CPL general</span><small>Eventos no únicos*</small></div></div></article>`;
  }).join('');
  for(const btn of $('c3Models').querySelectorAll('[data-model]'))btn.onclick=()=>{state.model=btn.dataset.model;$('c3Model').value=state.model;render();$('c3ComparePanel').scrollIntoView({behavior:'smooth',block:'center'});};
  for(const img of $('c3Models').querySelectorAll('img'))img.onerror=()=>{if(img.dataset.backup){img.src=img.dataset.backup;img.dataset.backup='';}else img.style.display='none';};
@@ -174,16 +176,16 @@ function campaigns(){
  if(th)th.textContent=metricNames[key]||'Inversión';
  $('c3Campaigns').innerHTML=rows.length?rows.map(r=>{
   const name=r.campaign.replace(/^\d{4}_colombia_citroen_/i,'');
-  return '<tr><td title="'+esc(r.campaign)+'">'+esc(name.slice(0,33))+(name.length>33?'…':'')+'</td><td>'+esc(r.model)+'</td><td>'+fmtMetric(metricTotal([r],key,null),key)+'</td><td>'+num(r.v[1])+'</td><td>'+(r.v[1]>0?money(r.v[0]/r.v[1]):'—')+'</td></tr>';
+  return '<tr><td title="'+esc(r.campaign)+'">'+esc(name.slice(0,33))+(name.length>33?'…':'')+'</td><td>'+esc(r.model)+'</td><td>'+fmtMetric(metricTotal([r],key,null),key)+'</td><td>'+num((r.v[1]||0)+(r.v[2]||0))+'</td><td>'+((r.v[1]||0)+(r.v[2]||0)>0?money(r.v[0]/((r.v[1]||0)+(r.v[2]||0))):'—')+'</td></tr>';
  }).join(''):'<tr><td colspan="5">Sin campañas para esta selección.</td></tr>';
 }
 function insights(rows){
  if(!rows.length){$('c3Insights').innerHTML='<p>Sin información para los filtros seleccionados.</p>';return;}
- const bag=new Map();for(const r of rows){const x=bag.get(r.model)||0;bag.set(r.model,x+r.v[1]);}
+ const bag=new Map();for(const r of rows){const x=bag.get(r.model)||0;bag.set(r.model,x+(r.v[1]||0)+(r.v[2]||0));}
  const lead=[...bag].sort((a,b)=>b[1]-a[1])[0];
  const sections=[
- ['Modelo con más formularios',`${lead[0]} registra ${num(lead[1])} formularios en esta selección.`],
- ['Conversaciones diferenciadas',`${num(add(rows,2))} conversaciones y ${num(add(rows,1))} formularios: no son contactos únicos sumables.`],
+ ['Modelo con más leads consolidados',`${lead[0]} registra ${num(lead[1])} eventos entre formularios y conversaciones.`],
+ ['Composición de leads',`${num(add(rows,1))} formularios + ${num(add(rows,2))} conversaciones = ${num(add(rows,1)+add(rows,2))} eventos. No son personas únicas.`],
  ['Análisis de cumplimiento',state.territory?'Sin meta regional homologada; los territorios de Meta se infieren de la nomenclatura.':'Meta Ads es parte del plan multicanal. La brecha no indica presupuesto pendiente.']
  ];
  $('c3Insights').innerHTML=sections.map((x,i)=>`<div class="c3-insight"><span class="n">${i+1}</span><div><b>${esc(x[0])}</b><span>${esc(x[1])}</span></div></div>`).join('');
@@ -205,7 +207,7 @@ function installActual(plan,daily,detail){
  $('c3Model').innerHTML=opt('','Todos los modelos')+[...new Set([...plan.models.map(r=>r[1]),...state.rows.map(r=>r.model)])].sort().map(m=>opt(m,m)).join('');
  $('c3Territory').innerHTML=opt('','Todos los territorios')+[...new Set(state.rows.map(r=>r.territory))].sort().map(t=>opt(t,t)).join('');
  for(const [id,key] of [['c3Month','month'],['c3Model','model'],['c3Territory','territory']]){if([...$(id).options].some(o=>o.value===state[key]))$(id).value=state[key];else state[key]='';}
- const footnote=$('campaignSourceFootnote');if(footnote)footnote.textContent='FUENTES · Proyecciones enero–octubre 2026 de 10 libros Excel · '+daily.source+' · '+daily.date_min+' a '+daily.date_max+' · '+daily.rows_source+' registros. Territorios inferidos de los nombres; moneda asumida COP. Formularios y conversaciones son eventos distintos.';
+ const footnote=$('campaignSourceFootnote');if(footnote)footnote.textContent='FUENTES · Proyecciones enero–octubre 2026 de 10 libros Excel · '+daily.source+' · '+daily.date_min+' a '+daily.date_max+' · '+daily.rows_source+' registros. Territorios inferidos de los nombres; moneda asumida COP. Leads consolidados = formularios + conversaciones; no son personas únicas.';
  state.ready=true;render();
 }
 function wire(){

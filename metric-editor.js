@@ -1,13 +1,15 @@
 /* Editor lateral de campos de Citroen. Datos tomados del plan y de Meta Ads; no se generan cifras. */
 (function(){
 "use strict";
-const STORAGE="citroen_metric_preferences_v2";
-const LEGACY_STORAGE="citroen_metric_preferences_v1";
+const STORAGE="citroen_metric_preferences_v3";
+const LEGACY_STORAGE="citroen_metric_preferences_v2";
 const DEFAULT_UNIVERSE=15000000; // Universo aprobado para Citroen (personas).
 const defaults={slots:{},native:{},universe:DEFAULT_UNIVERSE};
 const definitions=[
  {id:"planned",label:"Inversión planeada",subtitle:"Plan de medios 2026",group:"Proyecciones",source:"plan"},
  {id:"spend",label:"Inversión",subtitle:"Gasto ejecutado Meta Ads",group:"Meta Ads"},
+ {id:"leads_total",label:"Leads",subtitle:"Formularios + conversaciones · eventos no únicos",group:"Meta Ads"},
+ {id:"cpl_general",label:"CPL general",subtitle:"Inversión ÷ (formularios + conversaciones)",group:"Indicadores calculados"},
  {id:"forms",label:"Formularios",subtitle:"Leads on-Facebook",group:"Meta Ads"},
  {id:"messages",label:"Conversaciones",subtitle:"Conversaciones iniciadas",group:"Meta Ads"},
  {id:"impressions",label:"Impresiones",subtitle:"Veces que se mostraron anuncios",group:"Meta Ads"},
@@ -20,12 +22,12 @@ const definitions=[
  {id:"cost_message",label:"Costo / conversación",subtitle:"Inversión ÷ conversaciones",group:"Indicadores calculados"}
 ];
 const byId=Object.fromEntries(definitions.map(d=>[d.id,d]));
-const defaultsSlots=["planned","spend","forms","messages","cpl","impressions"];
+const defaultsSlots=["planned","spend","leads_total","cpl_general","impressions"];
 const nativeMap={
  c3ComparePanel:{title:"Planeado vs. ejecutado",field:"compareMetric",defaultValue:"investment",allowed:["investment","leads","cpl","impressions","reach","clicks","all_clicks","messages","ctr","cpm","cost_message"]},
  c3FunnelPanel:{title:"Funnel de conversión",field:"funnelMetric",defaultValue:"impressions",allowed:["impressions","reach"]},
- c3ModelsPanel:{title:"Desempeño por modelo",field:"modelsMetric",defaultValue:"forms",allowed:["spend","forms","messages","impressions","reach","clicks","all_clicks","ctr","cpm","cpl","cost_message"]},
- c3CampaignPanel:{title:"Campañas principales",field:"campaignsMetric",defaultValue:"spend",allowed:["spend","forms","messages","impressions","reach","clicks","all_clicks","ctr","cpm","cpl","cost_message"]},
+ c3ModelsPanel:{title:"Desempeño por modelo",field:"modelsMetric",defaultValue:"leads_total",allowed:["spend","leads_total","cpl_general","forms","messages","impressions","reach","clicks","all_clicks","ctr","cpm","cpl","cost_message"]},
+ c3CampaignPanel:{title:"Campañas principales",field:"campaignsMetric",defaultValue:"spend",allowed:["spend","leads_total","cpl_general","forms","messages","impressions","reach","clicks","all_clicks","ctr","cpm","cpl","cost_message"]},
  c3InsightsPanel:{title:"Hallazgos clave",field:null,allowed:[]}
 };
 const alias={investment:"Inversión",leads:"Leads de formulario",cpl:"CPL proyectado / gasto por formulario"};
@@ -33,7 +35,7 @@ const html=s=>String(s==null?"":s).replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt
 const $=id=>document.getElementById(id);
 function normalized(input){
  const data=input&&typeof input==="object"?input:{};
- const slots={};for(const [key,v] of Object.entries(data.slots||{}))if(/^[0-5]$/.test(key)&&byId[v])slots[key]=v;
+ const slots={};for(const [key,v] of Object.entries(data.slots||{}))if(/^[0-4]$/.test(key)&&byId[v])slots[key]=v;
  const native={};for(const [key,v] of Object.entries(data.native||{})){
   const target=Object.values(nativeMap).find(x=>x.field===key);
   if(target&&target.allowed.includes(v))native[key]=v;
@@ -47,7 +49,11 @@ function stored(){
   if(current)return normalized(JSON.parse(current));
   const previous=localStorage.getItem(LEGACY_STORAGE);
   // Migrar campos y tarjetas existentes pero establecer el nuevo universo aprobado de 15 M.
-  if(previous)return normalized({...JSON.parse(previous),universe:DEFAULT_UNIVERSE});
+  if(previous){
+   const old=JSON.parse(previous),slots={...(old.slots||{})};
+   slots[2]="leads_total";slots[3]="cpl_general";slots[4]="impressions";delete slots[5];
+   return normalized({...old,slots,universe:old.universe||DEFAULT_UNIVERSE});
+  }
  }catch(err){console.warn("Preferencias de métricas no disponibles",err);}
  return normalized(defaults);
 }
@@ -180,7 +186,7 @@ function wire(){
   preferences.native.compareMetric=btn.dataset.c3Metric;sync();
  }));
  document.addEventListener("citroen:studio-layout",()=>{
-  if($("c3Dashboard").classList.contains("studio-edit-on")&&!selected)selected="k:5";
+  if($("c3Dashboard").classList.contains("studio-edit-on")&&!selected)selected="k:4";
   updateUI();
  });
  document.addEventListener("citroen:studio-created",e=>{if(e.detail&&e.detail.key)choose(e.detail.key);});
