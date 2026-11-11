@@ -93,7 +93,7 @@
   <div class="c3-header">
     <div><div class="c3-kicker">DASHBOARD ESTRATÉGICO <span>/ PERFORMANCE INTELLIGENCE</span></div><h1>Marketing &amp; movilidad</h1><p>Performance, medios y negocio automotriz · Colombia</p></div>
     <div class="c3-header-controls">
-      <label class="c3-select"><span class="sr-only">Período</span><select id="c3Month"><option value="">2026 · Ene–Oct</option></select></label>
+      <label class="c3-select"><span class="sr-only">Período</span><select id="c3Month"><option value="">2026 · Ene–Nov</option></select></label>
       <label class="c3-select"><span class="sr-only">Territorio</span><select id="c3Territory"><option value="">Todos los territorios</option></select></label>
       <label class="c3-select"><span class="sr-only">Modelo</span><select id="c3Model"><option value="">Todos los modelos</option></select></label>
       
@@ -250,8 +250,8 @@
 <section id="planeacion" class="page-section planning-section">
   <div class="section-header">
     <div><div class="section-overline">MEDIA PLANNING / 2026</div><h2>Planeación de medios Citroën</h2>
-    <p>Diez planes oficiales auditados (enero–octubre). Noviembre se presenta aparte como escenario editable no aprobado.</p></div>
-    <div class="cit-nov-header-actions"><button type="button" id="novOpen" class="cit-nov-open">✦ Proyección noviembre</button><button class="secondary-button" id="planExport"><svg><use href="#i-download"/></svg> Exportar desglose</button></div>
+    <p>Planeación enero–octubre auditada y noviembre integrado desde el archivo de presupuesto suministrado. Las metas son proyecciones, no resultados ejecutados.</p></div>
+    <div class="cit-nov-header-actions"><button type="button" id="novOpen" class="cit-nov-open">✦ Plan noviembre</button><button class="secondary-button" id="planExport"><svg><use href="#i-download"/></svg> Exportar desglose</button></div>
   </div>
   <div class="planning-intro"><div class="plan-intro-icon">ë</div>
     <div><b>Proyectado ≠ ejecutado</b><p>La inversión y los leads planificados se mantienen separados de los datos de ejecución. Berlingo se cuenta una sola vez.</p></div>
@@ -259,60 +259,49 @@
 
   <section id="novForecast" class="cit-nov" aria-labelledby="novTitle" data-loaded="false">
     <header class="cit-nov-heading">
-      <div><div class="cit-nov-overline">FORECAST LAB / NOVIEMBRE 2026</div>
-        <h3 id="novTitle">Un nuevo mes, <em>una proyección ajustable.</em></h3>
-        <p>Usa octubre como referencia auditada para explorar noviembre por modelo. Esta simulación no es un presupuesto aprobado ni inversión ejecutada.</p></div>
-      <div class="cit-nov-state" id="novScenarioState">ESCENARIO · NO APROBADO</div>
+      <div><div class="cit-nov-overline">PLAN DE MEDIOS / NOVIEMBRE 2026</div>
+        <h3 id="novTitle">Noviembre, <em>con presupuesto y metas del Excel.</em></h3>
+        <p>Distribución aportada para el 1–30 de noviembre de 2026. No es gasto ejecutado ni una estimación a partir de octubre.</p></div>
+      <div class="cit-nov-state" id="novScenarioState">PLAN RECIBIDO · NO EJECUTADO</div>
     </header>
-    <div class="cit-nov-loading" id="novLoading" role="status">Cargando los seis modelos del plan auditado de octubre…</div>
+    <div class="cit-nov-loading" id="novLoading" role="status">Conciliando modelo, presupuesto y metas de noviembre…</div>
     <div class="cit-nov-body" id="novBody" hidden>
-      <div class="cit-nov-controlbar">
-        <label for="novTotalBudget">Presupuesto a simular · noviembre (COP)
-          <input type="number" id="novTotalBudget" inputmode="numeric" min="0" max="5000000000" step="100000" aria-describedby="novBudgetHelp">
-        </label>
-        <label for="novMode">Escenario de eficiencia
-          <select id="novMode"><option value="prudente">Conservador · costo +15%</option><option value="base">Base · mismo costo de octubre</option><option value="eficiente">Optimista · costo −15%</option></select>
-        </label>
-        <div class="cit-nov-annotation" id="novBudgetHelp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 10v6m0-9v1"/></svg><span>Presupuesto inicial: el plan de octubre ($80 millones). Cambia el total o cada modelo; las proyecciones se recalculan con el costo por resultado objetivo del plan anterior.</span></div>
-      </div>
       <div class="cit-nov-kpis" aria-live="polite">
-        <div class="cit-nov-kpi highlight"><small>INVERSIÓN SIMULADA · NOVIEMBRE</small><strong id="novBudgetValue">—</strong><span>Proyección · no ejecutado</span></div>
-        <div class="cit-nov-kpi"><small>RESULTADOS ESTIMADOS*</small><strong id="novResultValue">—</strong><span>Objetivos orientativos, no conversiones reales</span></div>
-        <div class="cit-nov-kpi"><small>COSTO POR RESULTADO ESTIMADO*</small><strong id="novCprValue">—</strong><span id="novResultsFactor">Referencia octubre</span></div>
-        <div class="cit-nov-kpi"><small>INVERSIÓN VS. OCTUBRE</small><strong id="novVariationValue">—</strong><span>Variación de presupuesto simulada</span></div>
+        <div class="cit-nov-kpi highlight"><small>INVERSIÓN META · NOVIEMBRE</small><strong id="novBudgetValue">—</strong><span>Presupuesto planificado · no ejecutado</span></div>
+        <div class="cit-nov-kpi"><small>META DE RESULTADOS*</small><strong id="novResultValue">—</strong><span>Formularios y conversaciones objetivos</span></div>
+        <div class="cit-nov-kpi"><small>CPL PROYECTADO GENERAL*</small><strong id="novCprValue">—</strong><span>Inversión Meta / resultados objetivo</span></div>
+        <div class="cit-nov-kpi"><small>OTROS MEDIOS (NO META)</small><strong id="novVariationValue">—</strong><span>Takata $2 M + LinkedIn $2 M</span></div>
       </div>
       <div class="cit-nov-details">
         <article class="cit-nov-card">
-          <div class="cit-nov-card-heading"><h4>Referencia auditada · octubre</h4><span class="cit-nov-tag">10/2026 · FUENTE ORIGINAL</span></div>
-          <div class="cit-nov-ref"><span>Inversión prevista</span><strong id="novBaseBudget">—</strong></div>
-          <div class="cit-nov-ref"><span>Resultados objetivo informados*</span><strong id="novBaseResults">—</strong></div>
-          <div class="cit-nov-ref"><span>Variación presupuestal</span><strong id="novBudgetDelta">—</strong></div>
-          <p class="cit-nov-foot">Los seis modelos proceden del consolidado de octubre, sin cambiar ni duplicar su histórico.</p>
+          <div class="cit-nov-card-heading"><h4>Marco presupuestal de noviembre</h4><span class="cit-nov-tag">TOTAL $90 M</span></div>
+          <div class="cit-nov-ref"><span>Meta Ads · incorporado al plan</span><strong>$86.000.000</strong></div>
+          <div class="cit-nov-ref"><span>Takata · proyección separada</span><strong>$2.000.000</strong></div>
+          <div class="cit-nov-ref"><span>LinkedIn · proyección separada</span><strong>$2.000.000</strong></div>
+          <p class="cit-nov-foot">Se incorporan únicamente $86 millones de Meta a los comparativos; los $4 millones de otras líneas no se duplican.</p>
         </article>
         <article class="cit-nov-card">
-          <div class="cit-nov-card-heading"><h4>Distribución simulada por modelo</h4><span class="cit-nov-tag">RECALCULABLE</span></div>
-          <div id="novMix" class="cit-nov-modelmix" aria-label="Inversión estimada por modelo"></div>
-          <p class="cit-nov-foot">Al ajustar el presupuesto total se preserva la proporción entre modelos, salvo cambios individuales.</p>
+          <div class="cit-nov-card-heading"><h4>Distribución de Meta por modelo</h4><span class="cit-nov-tag">6 MODELOS</span></div>
+          <div id="novMix" class="cit-nov-modelmix" aria-label="Inversión de noviembre por modelo"></div>
+          <p class="cit-nov-foot">C3 Max, Aircross Max, C3, Aircross, Basalt y Berlingo. Total concilia con la hoja ESTRUCTURA.</p>
         </article>
       </div>
       <article class="cit-nov-card" style="margin-top:14px">
-        <div class="cit-nov-card-heading"><h4>Detalle noviembre · 6 modelos</h4><span class="cit-nov-tag">NO SUMA AL PLAN OFICIAL</span></div>
+        <div class="cit-nov-card-heading"><h4>Detalle de metas · noviembre 2026</h4><span class="cit-nov-tag">FUENTE: XLSX RECIBIDO</span></div>
         <div class="cit-nov-table-frame"><table class="cit-nov-table">
-          <thead><tr><th>MODELO</th><th>BASE OCTUBRE</th><th>PRESUPUESTO NOV. EDITABLE</th><th>SHARE</th><th>RESULTADOS ESTIMADOS*</th><th>COSTO ESTIMADO*</th></tr></thead>
+          <thead><tr><th>MODELO</th><th>PRESUPUESTO META</th><th>SHARE</th><th>META RESULTADOS*</th><th>CPL PROYECTADO*</th><th>REFERENCIA EXCEL</th></tr></thead>
           <tbody id="novModelRows"></tbody>
         </table></div>
-        <p class="cit-nov-foot">* Los objetivos históricos mezclan potencialmente formularios y conversaciones; la cifra no representa leads únicos ni ventas. El costo es referencial del plan, no CPL real de una plataforma.</p>
+        <p class="cit-nov-foot">* Las metas corresponden a resultados de campaña (formularios y conversaciones según configuración). No son leads comerciales únicos ni ventas. Berlingo se cuenta una sola vez.</p>
       </article>
       <div class="cit-nov-actions">
-        <div class="left"><button type="button" id="novReset">Restablecer referencia</button><button type="button" id="novExport">Descargar CSV del escenario</button></div>
-        <button type="button" id="novSave" class="primary">Guardar escenario en este navegador</button>
+        <div class="left"><button type="button" id="novExport">Exportar detalle de noviembre (CSV)</button></div>
       </div>
-      <div class="cit-nov-warning"><b>Estado: escenario no aprobado.</b> Noviembre no tiene todavía un archivo de planeación oficial validado. Los planes enero–octubre y el gasto real permanecen intactos. Guardar aquí únicamente conserva esta simulación local.</div>
-      <div id="novMessage" class="cit-nov-message" role="status" hidden></div>
+      <div class="cit-nov-warning"><b>Trazabilidad:</b> archivo «ESTRUCTURA PERFORMANCE CITROEN NOVIEMBRE 2026 V1 2.xlsx» · BOT SEGUIMIENTO NOVIEMBRE V.1 y ESTRUCTURA. El presupuesto y los resultados reales de Meta se mantienen en una fuente distinta.</div>
     </div>
   </section>
   <div class="plan-filters">
-    <label>MES <select id="planMonth"><option value="">Enero – Octubre</option></select></label>
+    <label>MES <select id="planMonth"><option value="">Enero – Noviembre</option></select></label>
     <label>MODELO <select id="planModel"><option value="">Todo el portafolio</option></select></label>
     <label>REGIÓN DECLARADA <select id="planRegion"><option value="">Todas las regiones</option></select></label>
     <label>TIPO DEL PLAN <select id="planType"><option value="">Todos los tipos</option></select></label>
@@ -484,14 +473,15 @@
 <script src="./app.js?v=20261021b" defer></script>
 <script src="./data/proyecciones_2026.js" defer></script>
 <script src="./data/revision_2026.js?v=20261026" defer></script>
-<script src="./planning.js?v=20261021-audit-v2" defer></script>
+<script src="./data/noviembre_2026.js?v=20261111-plan1" defer></script>
+<script src="./planning.js?v=20261111-plan1" defer></script>
 <script src="./data/auditoria_2026.js" defer></script>
 <script src="./audit.js?v=20261028-summary1" defer></script>
 <script src="./campaign-feed.js?v=20261028-media1" defer></script>
 <script src="./meta.js?v=20261028-sync1" defer></script>
 <script src="./reach-math.js?v=20261026b" defer></script>
 <script src="./looker-filter-engine.js?v=20261027-filters1" defer></script>
-<script src="./concept3.js?v=20261110-leads1" defer></script>
+<script src="./concept3.js?v=20261111-plan1" defer></script>
 <script src="./access.js?v=20261028-sheets1" defer></script>
 <script src="./quick-delete.js?v=20261027-delete1" defer></script>
 <script src="./studio.js?v=20261028-sync1" defer></script>
@@ -581,5 +571,5 @@
 <script defer src="./portal-journey.js?v=20261031-v1"></script>
 <div id="citroenRefreshResult" role="status" aria-live="polite" hidden></div>
 <script defer src="./manual-refresh.js?v=20261102"></script>
-<script defer src="./november-forecast.js?v=20261103-v2"></script>
+<script defer src="./november-forecast.js?v=20261111-plan1"></script>
 </body></html>

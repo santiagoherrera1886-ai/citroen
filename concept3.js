@@ -6,7 +6,7 @@ const cop=new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximum
 const num=x=>x==null?'—':int.format(x),money=x=>x==null?'—':cop.format(x);
 const short=x=>x==null?'—':Math.abs(x)>=1e6?(x/1e6).toLocaleString('es-CO',{maximumFractionDigits:1})+' M':Math.abs(x)>=1e3?(x/1e3).toLocaleString('es-CO',{maximumFractionDigits:1})+' mil':num(x);
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const months=['2026-01','2026-02','2026-03','2026-04','2026-05','2026-06','2026-07','2026-08','2026-09','2026-10'],labels=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct'];
+const months=['2026-01','2026-02','2026-03','2026-04','2026-05','2026-06','2026-07','2026-08','2026-09','2026-10','2026-11'],labels=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov'];
 const cars=[
  {model:'C3',name:'Citroën C3',desc:'Urbano, ágil, icónico.',url:'https://www.citroen.com.co/modelos/nueva-c3.html',src:'./assets/models/c3.webp',backup:'https://http2.mlstatic.com/D_Q_NP_2X_886228-MCO106912865482_022026-P.webp'},
  {model:'Basalt',name:'Citroën Basalt',desc:'Diseño que destaca.',url:'https://www.citroen.com.co/modelos/basalt.html',src:'./assets/models/basalt.webp',backup:'https://citroenderco.vteximg.com.br/arquivos/ids/157771/live-pack-gris-grafito-main.jpg?v=638845873268330000'},
@@ -27,6 +27,7 @@ const metricNotes={planned:'Presupuesto proyectado · plan multicanal',spend:'Ga
 const metricMoney=new Set(['planned','spend','cpm','cpl','cpl_general','cost_message']);
 function metricTotal(rows,key,plan){
  if(key==='planned')return plan;
+ if(!rows.length)return null; // Un mes sin exportación Meta no equivale a ejecución cero.
  const v=i=>add(rows,i),spend=v(0),forms=v(1),messages=v(2),impressions=v(3),clicks=v(4);
  if(key==='spend')return spend;
  if(key==='forms')return forms;
@@ -48,7 +49,7 @@ const planRows=(month,model,includeBerlingo=true)=>state.plan.models.filter(r=>r
 const planValue=(month,mode)=>{
  if(state.territory)return null;
  if(mode==='investment'){const r=planRows(month,state.model);return state.model?(r.length?r.reduce((a,x)=>a+x[2],0):null):(state.plan.months[months.indexOf(month)]?.[2]??null);}
- const r=planRows(month,state.model,!!state.model);if(!r.length||r.some(x=>x[3]==null))return null;
+ const r=planRows(month,state.model,!!state.model||month==='2026-11');if(!r.length||r.some(x=>x[3]==null))return null;
  const target=r.reduce((a,x)=>a+(x[3]||0),0),budget=r.reduce((a,x)=>a+x[2],0);
  return mode==='leads'?target:target>0?budget/target:null;
 };
@@ -60,6 +61,7 @@ async function loadPlan(){
  const p=JSON.parse(txt);
  if(p.schema!=='citroen-planning-2026/v1'||p.months.length!==10||p.models.length!==60)throw Error('Proyecciones incompletas.');
  if(window.CITROEN_PATCH_PLAN)await window.CITROEN_PATCH_PLAN(p);
+ if(p.months.length!==11||p.models.length!==66)throw Error('La ampliación de noviembre no concilia.');
  return p;
 }
 function actualData(d,detail){
@@ -81,7 +83,7 @@ function setKpis(rows){
   const number=fmtMetric(value,key),compact=$('c3Dashboard')?.classList.contains('studio-edit-on')&&['planned','spend'].includes(key)&&typeof value==='number'&&Math.abs(value)>=1000000?'$ '+short(value):number;
   return '<article class="c3-kpi" data-metric-slot="'+i+'" tabindex="0" title="'+esc(number)+' · En Diseño, selecciona y arrastra para mover"><div class="c3-kpi-ico">'+icons[i]+'</div><div><h4>'+esc(title)+'</h4><strong title="'+esc(number)+'">'+esc(compact)+'</strong><small class="muted">'+esc(note)+'</small></div></article>';
  }).join('');
- $('c3Context').textContent=(state.month?labels[months.indexOf(state.month)]+' 2026':'2026 · todos los meses')+' · '+(state.model||'Todos los modelos')+' · '+(state.territory||'Cobertura completa')+' · Datos hasta '+(state.dateMax||'2026-10-20')+'.';
+ $('c3Context').textContent=(state.month?labels[months.indexOf(state.month)]+' 2026':'2026 · enero a noviembre')+' · '+(state.model||'Todos los modelos')+' · '+(state.territory||'Cobertura completa')+' · Meta real hasta '+(state.dateMax||'2026-10-20')+(state.month==='2026-11'?' · noviembre: solo proyección del XLSX.':'.');
 }
 const hasDailyRange=()=>{
  const f=window.CITROEN_FILTER_ENGINE;if(!f)return false;
@@ -144,7 +146,7 @@ function comparison(rows){
  cost_message:'Gasto Meta / conversaciones; no representa CPL de negocio.',
  investment:state.territory?'El plan no se puede desagregar por esta geografía inferida. Se muestra ejecución Meta únicamente.':'Barras azules: plan general. Rojas: Meta ejecutado. Línea: proporción Meta/plan, NO cumplimiento total. El último mes puede estar incompleto.',
  leads:'Azul: metas comerciales del plan si son completas. Rojo: formularios + conversaciones de Meta. Son eventos no desduplicados y no equivalen a cumplimiento comercial. El último mes puede estar incompleto.',
- cpl:'Azul: CPL planificado (cinco modelos sin Berlingo). Rojo: CPL general = gasto Meta / (formularios + conversaciones). Es orientativo, no representa contactos únicos ni un CPL comercial comparable.'
+ cpl:'Azul: CPL planificado de cinco modelos hasta octubre; en noviembre incluye Berlingo (archivo recibido). Rojo: CPL general real = gasto Meta / (formularios + conversaciones). Los eventos no están desduplicados.'
  };
  $('c3CompareNote').textContent=state.metric==='reach'&&!window.CITROEN_REACH_MATH?.currentUniverse()
   ?'Sin universo de audiencia configurado: no se muestra estimación Sainsbury. Configúralo en Propiedades del gráfico.'
@@ -203,7 +205,7 @@ function installActual(plan,daily,detail){
  const actual=actualData(daily,detail);state.plan=plan;state.dateMax=daily.date_max;state.rows=actual.rows;state.campaigns=actual.campaigns;
  const monthNames=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
  for(const m of [...new Set(state.rows.map(r=>r.month))].sort())if(!months.includes(m)){months.push(m);labels.push(monthNames[Number(m.slice(5))-1]);}
- $('c3Month').innerHTML=opt('','2026 · todos los meses')+months.map((m,i)=>opt(m,labels[i]+' 2026')).join('');
+ $('c3Month').innerHTML=opt('','2026 · enero a noviembre')+months.map((m,i)=>opt(m,labels[i]+' 2026')).join('');
  $('c3Model').innerHTML=opt('','Todos los modelos')+[...new Set([...plan.models.map(r=>r[1]),...state.rows.map(r=>r.model)])].sort().map(m=>opt(m,m)).join('');
  $('c3Territory').innerHTML=opt('','Todos los territorios')+[...new Set(state.rows.map(r=>r.territory))].sort().map(t=>opt(t,t)).join('');
  for(const [id,key] of [['c3Month','month'],['c3Model','model'],['c3Territory','territory']]){if([...$(id).options].some(o=>o.value===state[key]))$(id).value=state[key];else state[key]='';}

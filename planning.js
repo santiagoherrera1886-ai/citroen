@@ -63,13 +63,14 @@
       ['MEDIA','TODOS','Detalle de asignaciones','Las líneas se actualizan con los libros recibidos el 26/10. Berlingo externo se agrega una vez y los totalizadores no se duplican.'],
       ['ALTA','SEP–OCT','Objetivos de WhatsApp','Los planes tienen campañas WHATSAPP; no comparar automáticamente sus conversaciones con formularios On-Facebook.']
     );
-    const total=parsed.months.reduce((v,m)=>v+m[2],0);
-    if(Math.abs(total-1086316554.45)>2)throw Error('Error de conciliación del total base.');
+    const historicalTotal=parsed.months.slice(0,10).reduce((v,m)=>v+m[2],0);
+    if(Math.abs(historicalTotal-1086316554.45)>2)throw Error('Error de conciliación de enero a octubre.');
+    if(parsed.months.length!==11||parsed.models.filter(m=>m[0]===10).length!==6||Math.abs(parsed.months[10][2]-86000000)>.01)throw Error('Noviembre no concilia con el plan suministrado.');
     return parsed;
   }
   function opts(id,values,label){$(id).innerHTML='<option value="">'+esc(label)+'</option>'+values.map(v=>'<option value="'+esc(v)+'">'+esc(v)+'</option>').join('');}
   function initFilters(){
-    opts('planMonth',data.months.map(m=>m[0]),'Enero – Octubre');
+    opts('planMonth',data.months.map(m=>m[0]),'Enero – Noviembre');
     for(const o of $('planMonth').options){const m=data.months.find(x=>x[0]===o.value);if(m)o.textContent=m[1];}
     opts('planModel',[...new Set(data.models.map(r=>r[1]))].sort(),'Todo el portafolio');
     opts('planRegion',[...new Set(data.lines.map(r=>r[5]).filter(Boolean))].sort(),'Todas las regiones');
@@ -88,11 +89,12 @@
   function kpis(filter){
     const t=totals(filter),isModel=!!filter.model;
     if($('planPreviewTotal'))$('planPreviewTotal').textContent=money(sum(data.months,2));
-    const cpl=isModel?(t.incomplete||t.leads<=0?null:t.budget/t.leads):(t.passengerLeads>0?t.passengerBudget/t.passengerLeads:null);
+    const novOnly=filter.month==='2026-11'&&!isModel;
+    const cpl=isModel?(t.incomplete||t.leads<=0?null:t.budget/t.leads):novOnly?(t.leads>0?t.budget/t.leads:null):(t.passengerLeads>0?t.passengerBudget/t.passengerLeads:null);
     const items=[
       ['PRESUPUESTO BASE',money(t.budget),isModel?'Inversión prevista · '+filter.model:'Incluye Berlingo una sola vez',true],
       ['LEADS META CONOCIDOS',num(t.leads),t.incomplete?'Parcial · sin meta Berlingo de enero':'Metas informadas por el plan'],
-      [isModel?'CPL PROYECTADO':'CPL CINCO MODELOS',money(cpl),isModel?(t.incomplete?'No calculable: falta una meta':'Inversión / leads proyectados'):'Excluye Berlingo para un alcance consistente'],
+      [isModel||novOnly?'CPL PROYECTADO GENERAL':'CPL CINCO MODELOS',money(cpl),isModel?(t.incomplete?'No calculable: falta una meta':'Inversión / resultados previstos'):novOnly?'Noviembre incluye Berlingo una sola vez':'Excluye Berlingo para un alcance consistente'],
       ['PRESUPUESTO BERLINGO',money(t.berlingoBudget),'Sin sumar dos veces el mismo presupuesto']
     ];
     $('planKpis').innerHTML=items.map(x=>'<article class="plan-kpi '+(x[3]?'accent':'')+'"><small>'+x[0]+'</small><strong>'+x[1]+'</strong><span>'+esc(x[2])+'</span></article>').join('');
