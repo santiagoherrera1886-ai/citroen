@@ -32,6 +32,11 @@
     const obj=JSON.parse(text);
     if(obj.schema!=='citroen-planning-2026/v1'||obj.models?.length!==60)throw Error('No coinciden las 60 metas modelo-mes y 551 líneas principales.');
     if(window.CITROEN_PATCH_PLAN)await window.CITROEN_PATCH_PLAN(obj);
+    // La auditoría original sigue cubriendo exclusivamente los diez libros enero–octubre.
+    // Noviembre se incorpora al plan general, pero no altera ni reescribe esta auditoría histórica.
+    obj.months=obj.months.slice(0,10);
+    obj.models=obj.models.filter(row=>row[0]<10);
+    obj.lines=obj.lines.filter(row=>row[0]<10);
     obj.models.forEach(x=>{const mi=x[0];if(mi<0||mi>9)throw Error('Mes inválido en modelo.');});
     for(let i=0;i<10;i++){
       const m=audit.months[i], p=obj.months[i], models=obj.models.filter(row=>row[0]===i);

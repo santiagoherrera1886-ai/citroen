@@ -41,6 +41,7 @@ const november={month:"2026-11",label:"Noviembre",budget,leads,cpl:budget/leads,
   metaBudget:86000000,takataBudget:2000000,linkedInBudget:2000000,totalEnvelope:90000000,
   passengerBudget:81700000,passengerLeads:11674.693772676204,berlingoBudget:4300000,
   berlingoLeads:673.8755680927754,models,lines,
+  weeklyAllocation:[['1–7 noviembre',0.35,budget*0.35],['8–15 noviembre',0.35,budget*0.35],['16–22 noviembre',0.15,budget*0.15],['23–30 noviembre',0.15,budget*0.15]],
   source:"ESTRUCTURA PERFORMANCE CITROEN NOVIEMBRE 2026 V1 2.xlsx"};
 window.CITROEN_NOVEMBER_PLAN=november;
 const priorPatch=window.CITROEN_PATCH_PLAN;

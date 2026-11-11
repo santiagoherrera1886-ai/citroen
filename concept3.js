@@ -153,6 +153,11 @@ function comparison(rows){
   :((notes[state.metric]||'Datos de Meta Ads, no ejecución global del plan.')+(hasDailyRange()?' ⚠️ Meta se filtra por días; el plan corresponde a los meses incluidos completos y NO se prorratea.':''));
 }
 function funnel(rows){
+ if(!rows.length){
+  $('c3Funnel').innerHTML='<div class="c3-chart-empty">Sin ejecución Meta registrada para este período. Las metas se muestran en Planeación.</div>';
+  $('c3FunnelPanel').querySelector('.c3-funnel-foot').textContent='Noviembre contiene presupuesto y resultados proyectados; no deben presentarse como ejecuciones.';
+  return;
+ }
  const first=configured('funnelMetric','metric','impressions'),isReach=first==='reach';
  const base=isReach?metricTotal(rows,'reach',null):add(rows,3),clicks=add(rows,4),forms=add(rows,1),messages=add(rows,2);
  const ratio=(a,b)=>b>0?(100*a/b).toLocaleString('es-CO',{maximumFractionDigits:2})+' %':'—';
@@ -209,7 +214,7 @@ function installActual(plan,daily,detail){
  $('c3Model').innerHTML=opt('','Todos los modelos')+[...new Set([...plan.models.map(r=>r[1]),...state.rows.map(r=>r.model)])].sort().map(m=>opt(m,m)).join('');
  $('c3Territory').innerHTML=opt('','Todos los territorios')+[...new Set(state.rows.map(r=>r.territory))].sort().map(t=>opt(t,t)).join('');
  for(const [id,key] of [['c3Month','month'],['c3Model','model'],['c3Territory','territory']]){if([...$(id).options].some(o=>o.value===state[key]))$(id).value=state[key];else state[key]='';}
- const footnote=$('campaignSourceFootnote');if(footnote)footnote.textContent='FUENTES · Proyecciones enero–octubre 2026 de 10 libros Excel · '+daily.source+' · '+daily.date_min+' a '+daily.date_max+' · '+daily.rows_source+' registros. Territorios inferidos de los nombres; moneda asumida COP. Leads consolidados = formularios + conversaciones; no son personas únicas.';
+ const footnote=$('campaignSourceFootnote');if(footnote)footnote.textContent='FUENTES · Proyecciones enero–octubre de 10 libros más noviembre 2026 del Excel recibido · '+daily.source+' · '+daily.date_min+' a '+daily.date_max+' · '+daily.rows_source+' registros. Territorios inferidos de los nombres; moneda asumida COP. Leads consolidados = formularios + conversaciones; no son personas únicas.';
  state.ready=true;render();
 }
 function wire(){

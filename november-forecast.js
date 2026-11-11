@@ -24,6 +24,9 @@ function init(){
   const share=m.budget/p.metaBudget;
   return '<div class="cit-nov-mixline"><span class="cit-nov-mixname">'+esc(m.name)+'</span><div class="cit-nov-track"><div style="width:'+(share*100).toFixed(2)+'%"></div></div><b>'+money(m.budget)+'</b></div>';
  }).join("");
+ $("novWeeks").innerHTML=p.weeklyAllocation.map(w=>
+  '<div class="cit-nov-mixline"><span class="cit-nov-mixname">'+esc(w[0])+'</span><div class="cit-nov-track"><div style="width:'+(w[1]*100).toFixed(1)+'%"></div></div><b>'+money(w[2])+' · '+Math.round(w[1]*100)+'%</b></div>'
+ ).join("");
  $("novModelRows").innerHTML=p.models.map(m=>{
   const share=m.budget/p.metaBudget;
   return '<tr><td><strong>'+esc(m.name)+'</strong></td><td>'+money(m.budget)+'</td><td>'+(share*100).toLocaleString("es-CO",{maximumFractionDigits:1})+'%</td><td class="cit-nov-result">'+num(m.leads)+'</td><td>'+money(m.cpl)+'</td><td><small>'+esc(m.source)+'</small></td></tr>';

@@ -437,7 +437,7 @@ async function start(){
   sourceFilters();
   ready=true;wire();draw();
   if(pendingPublishedSummary){const summary=pendingPublishedSummary;pendingPublishedSummary=null;appliedSummary(summary);}
-  alertStatus("Datos: 10 planes 2026 con correcciones de abril/mayo · Meta Ads: fecha de corte indicada en el resumen · mayo pendiente de conciliación.");
+  alertStatus("Plan enero–octubre con revisión histórica + noviembre 2026 del Excel recibido · Meta Ads real separado hasta su fecha de corte · mayo mantiene observación de conciliación.");
  }catch(err){console.error("Studio",err);alertStatus("No fue posible iniciar el constructor: "+err.message);}
 }
 document.addEventListener("DOMContentLoaded",start);
