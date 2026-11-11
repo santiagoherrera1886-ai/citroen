@@ -27,10 +27,9 @@ function rows(){
  const detail=snapshot?.detail,d=detail?.dictionaries;
  if(!d||!Array.isArray(detail.creatives))return [];
  const media=new Map();
+ for(const item of seed?.items||[])media.set('legacy:'+keyOf(item.key),{date:item.date,image:imageURL(item.image),thumbnail:imageURL(item.thumbnail)});
  if(detail.media_version===1){
   for(const item of detail.creative_media||[])media.set(keyOf(item.slice(0,4)),{date:item[4],image:imageURL(item[5]),thumbnail:imageURL(item[6])});
- }else{
-  for(const item of seed?.items||[])media.set(keyOf(item.key),{date:item.date,image:imageURL(item.image),thumbnail:imageURL(item.thumbnail)});
  }
  const groups=new Map(),query=filters.search.trim().toLocaleLowerCase('es');
  for(const values of detail.creatives){
@@ -38,7 +37,7 @@ function rows(){
   if(filters.month&&month!==filters.month||filters.model&&model!==filters.model)continue;
   if(query&&![ad,adset,campaign,account,model].join(' ').toLocaleLowerCase('es').includes(query))continue;
   const identity=[values[4],values[1],values[2],values[3]],key=keyOf(identity);
-  const mediaAsset=media.get(detail.media_version===1?key:keyOf([account,campaign,adset,ad]))||{};
+  const mediaAsset=media.get(key)||media.get('legacy:'+keyOf([account,campaign,adset,ad]))||{};
   const archived=archivedKeys.has(identity.join('.'));
   const asset=archived?{...mediaAsset,image:'/api/creative-archive?key='+identity.join('.'),archived:true}:mediaAsset;
   if(filters.images&&!asset.image&&!asset.thumbnail)continue;
@@ -120,12 +119,12 @@ function render(){
 async function mount(target,options={}){
  pageSize=options.pageSize===6?6:24;
  root=target;
- if(snapshot){await fetchArchivedKeys();if(snapshot.detail.media_version!==1&&!seed)await seedCatalog();render();return;}
+ if(snapshot){await Promise.all([fetchArchivedKeys(),seedCatalog()]);render();return;}
  target.innerHTML='<p class="builder-empty" role="status">Cargando anuncios e imágenes…</p>';
  try{
   const [data]=await Promise.all([window.CITROEN_CAMPAIGN_FEED.load(),fetchArchivedKeys()]);
   snapshot=data;
-  if(data?.detail?.media_version!==1)await seedCatalog();
+  await seedCatalog();
   render();
  }catch{
   if(root?.isConnected)root.innerHTML='<p class="builder-empty">No se pudo cargar la biblioteca. Recarga Anuncios reales para reintentar.</p>';
