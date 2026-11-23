@@ -140,31 +140,7 @@
   <div class="citroen-summary-sync" aria-label="Actualización de datos en el resumen"><div class="citroen-summary-sync-copy"><strong>Datos de Google Sheets</strong><span>Actualiza los resultados del resumen con la última sincronización recibida.</span></div><div class="citroen-refresh-controls"><button type="button" id="citroenManualRefresh" title="Consultar la última versión enviada desde Sheets"><svg><use href="#i-refresh"/></svg><span class="sync-label">Actualizar datos</span></button><span id="citroenSourceLastSync" aria-live="polite">Sheets · Verificando…</span></div></div>
   
   <div class="c3-kpi-grid" id="c3Kpis" aria-live="polite"></div>
-<section class="c3-performance-table" aria-labelledby="c3PerformanceTableTitle">
- <div class="c3-performance-head">
-  <div><span class="c3-performance-overline">CONTROL DE INVERSIÓN Y RESULTADOS</span><h2 id="c3PerformanceTableTitle">Cumplimiento de performance</h2><p>Presupuesto proyectado vs. ejecución Meta Ads, mes a mes y total del filtro.</p></div>
-  <span class="c3-performance-cutoff" id="c3PerformanceCutoff">Actualizando datos…</span>
- </div>
- <div class="c3-performance-scroll" tabindex="0" aria-label="Tabla desplazable horizontalmente">
-  <table class="c3-performance-grid">
-   <thead><tr>
-    <th scope="col">Período</th>
-    <th scope="col" title="Inversión del plan seleccionado">Inversión total <small>Proyección</small></th>
-    <th scope="col">Consumo <small>Meta Ads real</small></th>
-    <th scope="col" title="Consumo Meta / inversión del plan">% consumo</th>
-    <th scope="col" title="Formularios + conversaciones; no son leads únicos">Leads totales <small>Actuales*</small></th>
-    <th scope="col">Leads proyectados</th>
-    <th scope="col" title="Eventos de Meta / proyección de resultados">Cumplimiento <small>Leads</small></th>
-    <th scope="col">CPL actual</th>
-    <th scope="col">CPL proyectado</th>
-    <th scope="col" title="(CPL actual / CPL proyectado - 1) × 100; negativo = mejor costo">Variación <small>vs. proyección CPL</small></th>
-   </tr></thead>
-   <tbody id="c3PerformanceRows"><tr><td colspan="10">Cargando inversiones, ejecución y metas…</td></tr></tbody>
-   <tfoot id="c3PerformanceTotal"></tfoot>
-  </table>
- </div>
- <div class="c3-performance-foot" id="c3PerformanceNotes">*Los leads reportados agrupan formularios y conversaciones, no personas únicas. El consumo corresponde únicamente a Meta Ads; otras plataformas del plan no se incluyen.</div>
-</section>
+
 
   <div class="studio-inline-tools" id="studioTools" hidden>
     <div class="studio-inline-title"><span class="studio-inline-icon">✦</span><div><strong>Modo edición del resumen</strong><span>Selecciona un gráfico o indicador y cambia sus métricas desde la barra derecha. También puedes mover y redimensionar.</span></div></div>
@@ -280,7 +256,32 @@
     </article>
     <article class="c3-panel c3-insight-panel" id="c3InsightsPanel"><div class="c3-panel-heading"><h3><span class="c3-bulb">✳</span> Hallazgos clave</h3></div><div id="c3Insights" class="c3-insights"></div></article>
   </div>
-  <section class="c3-advanced-analytics" aria-labelledby="c3AdvancedTitle">
+  <section class="c3-performance-table" aria-labelledby="c3PerformanceTableTitle">
+ <div class="c3-performance-head">
+  <div><span class="c3-performance-overline">CAMPAÑAS / PERFORMANCE INTELLIGENCE</span><h2 id="c3PerformanceTableTitle">Inversión y cumplimiento por campaña</h2><p>Rendimiento de campañas Meta Ads y proyecciones referenciales de los planes 2026.</p></div>
+  <div class="c3-performance-controls"><label>Campaña<select id="c3PerformanceCampaign" aria-label="Filtrar campañas dentro de la tabla"><option value="">Todas las campañas</option></select></label><label>Ordenar<select id="c3PerformanceSort" aria-label="Orden de campañas"><option value="spend">Mayor consumo</option><option value="leads">Más leads</option><option value="name">Nombre A–Z</option></select></label></div>
+ </div>
+ <div class="c3-performance-scroll" tabindex="0" aria-label="Tabla desplazable horizontalmente">
+  <table class="c3-performance-grid">
+   <thead><tr>
+    <th scope="col">Campaña <small>Meta Ads · nombre original</small></th>
+    <th scope="col" title="Inversión del plan seleccionado">Inversión total <small>Proyección</small></th>
+    <th scope="col">Consumo <small>Meta Ads real</small></th>
+    <th scope="col" title="Consumo Meta / inversión del plan">% consumo</th>
+    <th scope="col" title="Formularios + conversaciones; no son leads únicos">Leads totales <small>Actuales*</small></th>
+    <th scope="col">Leads proyectados</th>
+    <th scope="col" title="Eventos de Meta / proyección de resultados">Cumplimiento <small>Leads</small></th>
+    <th scope="col">CPL actual</th>
+    <th scope="col">CPL proyectado</th>
+    <th scope="col" title="(CPL actual / CPL proyectado - 1) × 100; negativo = mejor costo">Variación <small>vs. proyección CPL</small></th>
+   </tr></thead>
+   <tbody id="c3PerformanceRows"><tr><td colspan="10">Conciliando campañas y resultados…</td></tr></tbody>
+   <tfoot id="c3PerformanceTotal"></tfoot>
+  </table>
+ </div>
+ <div class="c3-performance-foot" id="c3PerformanceNotes">*Leads = formularios + conversaciones, sin deduplicación. Las proyecciones por campaña se identifican como estimaciones; Meta Ads no equivale a la ejecución multicanal.</div>
+</section>
+<section class="c3-advanced-analytics" aria-labelledby="c3AdvancedTitle">
     <div class="c3-analytics-header"><div><span class="c3-analytics-eyebrow">PERFORMANCE / DEEP DIVE</span><h2 id="c3AdvancedTitle">El rendimiento, en perspectiva.</h2><p>Visualizaciones conectadas a los filtros del resumen · ejecución Meta Ads auditada.</p></div><span class="c3-coverage-tag" id="c3CoverageTag">Validando cobertura…</span></div>
     <div class="c3-analytics-grid">
       <article class="c3-analytics-card c3-analytics-wide"><div class="c3-analytics-title"><div><span>01 / EVOLUCIÓN MENSUAL</span><h3>Leads reportados y CPL general</h3></div><div class="c3-analytics-legend"><b class="c3-legend-leads"></b> Eventos de lead <b class="c3-legend-cpl"></b> CPL general</div></div><div id="c3AnnualChart" class="c3-analytics-svg-wrap" aria-live="polite"></div><p class="c3-analytics-foot">Escalas independientes: barras = formularios + conversaciones; línea = inversión / eventos. No representa leads únicos.</p></article>
