@@ -24,7 +24,7 @@
 <link rel="stylesheet" href="./campaign-gallery-page.css?v=20261104-archive1">
 <link rel="stylesheet" href="./portal-switcher.css?v=20261031">
 <link rel="stylesheet" href="./portal-journey.css?v=20261031-v1">
-<link rel="stylesheet" href="./design-v3-citroen.css?v=20261031">
+<link rel="stylesheet" href="./design-v3-citroen.css?v=20261123-editorial2">
 <link rel="stylesheet" href="./manual-refresh.css?v=20261102">
 <link rel="stylesheet" href="./november-forecast.css?v=20261103-v1">
 </head>
@@ -93,18 +93,19 @@
   <div class="c3-header">
     <div><div class="c3-kicker">DASHBOARD ESTRATÉGICO <span>/ PERFORMANCE INTELLIGENCE</span></div><h1>Marketing &amp; movilidad</h1><p>Performance, medios y negocio automotriz · Colombia</p></div>
     <div class="c3-header-controls">
-      <label class="c3-select"><span class="sr-only">Período</span><select id="c3Month"><option value="">2026 · Ene–Nov</option></select></label>
-      <label class="c3-select"><span class="sr-only">Territorio</span><select id="c3Territory"><option value="">Todos los territorios</option></select></label>
-      <label class="c3-select"><span class="sr-only">Modelo</span><select id="c3Model"><option value="">Todos los modelos</option></select></label>
+      <label class="c3-select"><span class="c3-filter-caption">PERÍODO</span><select id="c3Month" aria-label="Filtrar por período"><option value="">2026 · Año completo</option></select></label>
+      <label class="c3-select"><span class="c3-filter-caption">TERRITORIO</span><select id="c3Territory" aria-label="Filtrar por territorio"><option value="">Todos los territorios</option></select></label>
+      <label class="c3-select"><span class="c3-filter-caption">MODELO</span><select id="c3Model" aria-label="Filtrar por modelo"><option value="">Todos los modelos</option></select></label>
+      <button type="button" id="c3ResetFilters" class="c3-filter-reset" title="Limpiar los filtros del resumen y los filtros avanzados">Limpiar filtros</button>
       
-      <span class="c3-source-pill"><span class="c3-live-dot"></span> META REAL + PLAN 2026</span>
+      <span class="c3-source-pill"><span class="c3-live-dot"></span> META ADS + PLAN 2026</span>
       <button type="button" id="studioEdit" class="studio-header-edit" aria-pressed="false" hidden><span aria-hidden="true">✎</span> Editar resumen</button>
       <button type="button" id="citroenMasterOpen" class="citroen-auth-master-link" hidden>♛ Control maestro</button>
       <button type="button" id="citroenAuthLogout" class="citroen-auth-exit" hidden>Cerrar sesión</button>
     </div>
   </div>
   <div class="c3-hero">
-    <div class="c3-hero-photo" aria-hidden="true"></div>
+    <div class="c3-hero-photo" aria-hidden="true"></div><div class="c3-hero-orbit" aria-hidden="true"></div>
     <div class="c3-hero-copy"><div class="c3-hero-eyebrow">CITROËN COLOMBIA · PERFORMANCE INTELLIGENCE</div><h2>Más personas en movimiento,<br><span>más historias por contar.</span></h2>
       <p>Convierte la inversión en oportunidades reales de negocio. Una visión clara del desempeño, comparando lo planeado con lo ejecutado.</p>
       <button class="c3-primary-btn" id="c3Explore">Explorar desempeño <svg><use href="#i-arrow"/></svg></button>
@@ -231,6 +232,15 @@
     </article>
     <article class="c3-panel c3-insight-panel" id="c3InsightsPanel"><div class="c3-panel-heading"><h3><span class="c3-bulb">✳</span> Hallazgos clave</h3></div><div id="c3Insights" class="c3-insights"></div></article>
   </div>
+  <section class="c3-advanced-analytics" aria-labelledby="c3AdvancedTitle">
+    <div class="c3-analytics-header"><div><span class="c3-analytics-eyebrow">PERFORMANCE / DEEP DIVE</span><h2 id="c3AdvancedTitle">El rendimiento, en perspectiva.</h2><p>Visualizaciones conectadas a los filtros del resumen · ejecución Meta Ads auditada.</p></div><span class="c3-coverage-tag" id="c3CoverageTag">Validando cobertura…</span></div>
+    <div class="c3-analytics-grid">
+      <article class="c3-analytics-card c3-analytics-wide"><div class="c3-analytics-title"><div><span>01 / EVOLUCIÓN MENSUAL</span><h3>Leads reportados y CPL general</h3></div><div class="c3-analytics-legend"><b class="c3-legend-leads"></b> Eventos de lead <b class="c3-legend-cpl"></b> CPL general</div></div><div id="c3AnnualChart" class="c3-analytics-svg-wrap" aria-live="polite"></div><p class="c3-analytics-foot">Escalas independientes: barras = formularios + conversaciones; línea = inversión / eventos. No representa leads únicos.</p></article>
+      <article class="c3-analytics-card"><div class="c3-analytics-title"><div><span>02 / PORTAFOLIO</span><h3>Eficiencia por modelo</h3></div></div><div id="c3CplByModel" class="c3-analytics-list" aria-live="polite"></div></article>
+      <article class="c3-analytics-card"><div class="c3-analytics-title"><div><span>03 / GEOGRAFÍA</span><h3>Leads por territorio</h3></div></div><div id="c3TerritoryChart" class="c3-analytics-list" aria-live="polite"></div><p class="c3-analytics-foot">Territorio inferido de la nomenclatura, no georreporte.</p></article>
+      <article class="c3-analytics-card"><div class="c3-analytics-title"><div><span>04 / CONVERSIÓN</span><h3>Composición de los eventos</h3></div></div><div id="c3LeadsComposition" class="c3-analytics-composition" aria-live="polite"></div></article>
+    </div>
+  </section>
   <div class="c3-honesty" id="campaignSourceFootnote">FUENTES · Proyecciones enero–octubre 2026 de 10 libros Excel · Ejecución Meta Ads del 1 de enero al 20 de octubre de 2026 (3 cuentas). Los territorios se infieren de nombres de campañas. Moneda de Meta asumida COP, pendiente de verificación contable. </div>
 </div>
 </section>
@@ -482,11 +492,11 @@
 <script src="./planning.js?v=20261111-plan1" defer></script>
 <script src="./data/auditoria_2026.js" defer></script>
 <script src="./audit.js?v=20261111-nov1" defer></script>
-<script src="./campaign-feed.js?v=20261111-novsnapshot1" defer></script>
+<script src="./campaign-feed.js?v=20261123-annual2" defer></script>
 <script src="./meta.js?v=20261028-sync1" defer></script>
 <script src="./reach-math.js?v=20261026b" defer></script>
 <script src="./looker-filter-engine.js?v=20261027-filters1" defer></script>
-<script src="./concept3.js?v=20261111-periodfix1" defer></script>
+<script src="./concept3.js?v=20261123-analytics2" defer></script>
 <script src="./access.js?v=20261028-sheets1" defer></script>
 <script src="./quick-delete.js?v=20261027-delete1" defer></script>
 <script src="./studio.js?v=20261111-nov1" defer></script>
