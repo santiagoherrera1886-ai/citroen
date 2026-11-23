@@ -23,3 +23,80 @@ body:has(.concept3-shell){background:#f5f7fa;color:#172e42}
 .concept3-shell .studio-header-edit:hover,.concept3-shell .citroen-sidebar-access-button:hover{transform:translateY(-2px);filter:brightness(1.08)}
 @media(max-width:800px){.concept3-shell .c3-header h1{font-size:32px}.concept3-shell .c3-hero{border-radius:18px!important}}
 @media(prefers-reduced-motion:reduce){.concept3-shell *{transition:none!important}}
+
+
+/* November 23 · native responsive summary UI, no bitmap banner background */
+.concept3-shell .c3-header{gap:18px;align-items:flex-end;margin-bottom:17px}
+.concept3-shell .c3-header-controls{display:flex;align-items:center;gap:8px;padding:9px;background:#fff;border:1px solid #e5edf2;border-radius:18px;box-shadow:0 9px 28px #1139530c;max-width:100%}
+.concept3-shell .c3-header-controls .c3-select{height:56px;min-width:128px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:5px;padding:8px 13px;border:1px solid #e9eff4;border-radius:12px;background:#f7fafc;box-shadow:none;transition:background .2s,border-color .2s}
+.concept3-shell .c3-header-controls .c3-select:hover,.concept3-shell .c3-header-controls .c3-select:focus-within{background:#fff;border-color:#86b8d6;box-shadow:0 0 0 3px #5aabd91c}
+.concept3-shell .c3-filter-caption{display:block;font-size:9px;font-weight:800;line-height:1;letter-spacing:1px;color:#7a94a5}
+.concept3-shell .c3-select select{width:100%;max-width:192px;font-size:11px;font-weight:750;letter-spacing:0;color:#173d56;padding:0 21px 0 0;min-width:0;text-overflow:ellipsis}
+.concept3-shell .c3-filter-reset{align-self:stretch;min-height:56px;border-radius:12px;border:1px solid #d4e0e9;background:#fff;color:#35536b;font-size:10px;font-weight:800;padding:0 12px;white-space:nowrap;transition:background .2s,transform .2s}
+.concept3-shell .c3-filter-reset:hover{background:#edf5fa;color:#0e3955;transform:translateY(-1px)}
+.concept3-shell .c3-header-controls .c3-source-pill{min-height:56px;border:1px solid #d9e9ed;background:#edf6f6;color:#14706f;padding:8px 12px;white-space:nowrap;line-height:1.4;max-width:122px;font-size:9px}
+.concept3-shell .c3-header-controls .c3-live-dot{background:#15a392;box-shadow:0 0 0 3px #15a3921a;flex-shrink:0}
+.concept3-shell .c3-hero{height:286px!important;background:linear-gradient(112deg,#e5f1f7 0%,#f7fbfd 38%,#c9e5f0 68%,#a8d4e4 100%)!important;border:1px solid #cbdce7!important;box-shadow:0 19px 48px #1b49631b!important;overflow:hidden}
+.concept3-shell .c3-hero-photo{background:radial-gradient(ellipse at 78% 65%,#ffffffac 0%,transparent 57%),linear-gradient(117deg,#ffffff82 0%,transparent 62%)!important;opacity:1}
+.concept3-shell .c3-hero:before{background:repeating-linear-gradient(135deg,transparent 0 26px,#ffffff13 26px 27px)!important;opacity:.85}
+.concept3-shell .c3-hero:after{height:22%;background:linear-gradient(transparent,#a5cddc45)}
+.concept3-shell .c3-hero-orbit{position:absolute;z-index:1;width:500px;height:500px;border:1px solid #ffffff9c;box-shadow:0 0 0 42px #ffffff24,0 0 0 82px #ffffff13;top:-95px;right:-36px;border-radius:50%;transform:rotate(-14deg);pointer-events:none}
+.concept3-shell .c3-hero-copy{width:52%;padding:34px 40px}
+.concept3-shell .c3-hero-eyebrow{color:#326882;font-size:9px;margin-bottom:15px;letter-spacing:2.2px}
+.concept3-shell .c3-hero h2{color:#103b57;font-size:clamp(29px,3vw,45px);white-space:normal;letter-spacing:-.055em}
+.concept3-shell .c3-hero h2 span{color:#297a98;font-weight:650}
+.concept3-shell .c3-hero-copy p{font-size:12px;line-height:1.65;color:#456a7f;max-width:410px}
+.concept3-shell .c3-primary-btn{padding:12px 18px;border-radius:12px;box-shadow:0 8px 20px #e4494e30}
+.concept3-shell .c3-hero-vehicle{right:4%;top:4px;height:284px;width:48%;z-index:3}
+.concept3-shell .c3-hero-vehicle img{mix-blend-mode:multiply;object-fit:contain;max-height:95%;filter:drop-shadow(0 17px 12px #0e46632c)}
+.concept3-shell .c3-hero-model{top:27px;right:29px;color:#144c6d;text-align:right;align-items:flex-end}
+.concept3-shell .c3-hero-model span{color:#537c92}
+.concept3-shell .lk-summary-host .lk-controls{background:#fff;border-radius:16px;border:1px solid #e3edf2;box-shadow:0 7px 24px #193e5209;padding:12px;gap:9px}
+.concept3-shell .lk-summary-host .lk-control{background:#f7fafc;border:1px solid #e8eef4;border-radius:11px;padding:8px 10px}
+.concept3-shell .lk-summary-host .lk-control select,.concept3-shell .lk-summary-host .lk-control input{background:#fff;border:1px solid #dfebf0;border-radius:8px;color:#214761;min-height:35px}
+.concept3-shell .lk-summary-host .lk-control:focus-within{border-color:#75add0}
+.concept3-shell .lk-summary-host .lk-reset{border-radius:10px;background:#eef5f8;color:#244f6c;border:1px solid #d8e7ee}
+.c3-advanced-analytics{margin:23px 0 12px}
+.c3-analytics-header{display:flex;gap:20px;align-items:end;justify-content:space-between;margin-bottom:16px}
+.c3-analytics-header h2{font:800 clamp(22px,2.2vw,32px)/1.15 Manrope,Arial,sans-serif;letter-spacing:-1.1px;color:#123d58;margin:6px 0 8px}
+.c3-analytics-header p{margin:0;color:#758c9c;font-size:11px}
+.c3-analytics-eyebrow{color:#dc5261;font-size:10px;font-weight:900;letter-spacing:2px}
+.c3-coverage-tag{font-size:10px;white-space:nowrap;font-weight:800;color:#28728d;background:#e8f3f7;border:1px solid #cce4ee;border-radius:99px;padding:9px 12px}
+.c3-analytics-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.c3-analytics-card{padding:22px 23px;background:#fff;border:1px solid #e1eaf0;border-radius:19px;box-shadow:0 9px 29px #1843590c;min-width:0}
+.c3-analytics-card.c3-analytics-wide,.c3-analytics-card:last-child{grid-column:1/-1}
+.c3-analytics-title{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
+.c3-analytics-title span{display:block;color:#e36e7a;letter-spacing:1.3px;font-weight:900;font-size:9px}
+.c3-analytics-title h3{font:800 17px/1.3 Manrope,Arial,sans-serif;color:#193e58;margin:6px 0 0;letter-spacing:-.45px}
+.c3-analytics-legend{display:flex;align-items:center;gap:8px;color:#5d7e93;font-size:10px;font-weight:700;white-space:nowrap}
+.c3-analytics-legend b{width:8px;height:8px;display:inline-block;border-radius:50%}
+.c3-analytics-legend b.c3-legend-leads{background:#78bad8}
+.c3-analytics-legend b.c3-legend-cpl{background:#ec6172;margin-left:10px}
+.c3-analytics-svg-wrap{overflow-x:auto;scrollbar-width:thin;min-height:230px}
+.c3-analytics-svg-wrap svg{display:block;width:100%;min-width:590px;max-height:300px}
+.c3-analytics-foot{font-size:10px;color:#8296a5;line-height:1.6;margin:12px 0 0}
+.c3-analytics-list{display:grid;gap:15px}
+.c3-analytics-line{display:grid;gap:7px}
+.c3-analytics-line-main{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.c3-analytics-line-main strong{font-size:11px;color:#2e526a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:65%}
+.c3-analytics-line-main b{font-size:12px;color:#123d56}
+.c3-analytics-line-track{height:8px;background:#edf3f6;border-radius:99px;overflow:hidden}
+.c3-analytics-line-fill{height:100%;display:block;border-radius:99px;background:linear-gradient(90deg,#a7d3e6,#498eaf);min-width:1px}
+.c3-analytics-line:nth-child(2n) .c3-analytics-line-fill{background:linear-gradient(90deg,#a3dce0,#5fa9b7)}
+.c3-analytics-line-note{display:flex;justify-content:space-between;gap:6px;color:#869ba9;font-size:9px}
+.c3-analytics-empty{text-align:center;padding:36px 16px;color:#7e95a3;font-size:12px;background:#f8fafc;border-radius:12px}
+.c3-analytics-composition{display:flex;align-items:center;justify-content:center;gap:30px;min-height:155px}
+.c3-analytics-donut{width:138px;height:138px;border-radius:50%;display:grid;place-items:center;flex-shrink:0;box-shadow:inset 0 0 0 1px #ffffff30}
+.c3-analytics-donut-inner{width:95px;height:95px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fff;box-shadow:0 3px 14px #153c5611}
+.c3-analytics-donut-inner strong{font:800 23px Manrope,Arial,sans-serif;color:#18415b}
+.c3-analytics-donut-inner span{color:#8da2af;font-size:9px;font-weight:700}
+.c3-analytics-breakdown{display:grid;gap:16px;min-width:235px;flex:1;max-width:380px}
+.c3-analytics-breakdown-item{display:grid;grid-template-columns:10px 1fr auto;gap:11px;align-items:center}
+.c3-analytics-breakdown-item i{width:9px;height:9px;border-radius:50%;background:#78bad8}
+.c3-analytics-breakdown-item:last-child i{background:#ec6172}
+.c3-analytics-breakdown-item span{font-size:11px;color:#537184;line-height:1.4}
+.c3-analytics-breakdown-item strong{font:800 16px Manrope,Arial,sans-serif;color:#153e57}
+.c3-analytics-breakdown small{color:#8299a8;font-size:9px}
+@media(max-width:1320px){.concept3-shell .c3-header-controls{justify-content:flex-start}.concept3-shell .c3-header{align-items:stretch;flex-wrap:wrap}.concept3-shell .c3-hero-copy{width:57%}}
+@media(max-width:800px){.concept3-shell .c3-header-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));padding:10px;gap:8px}.concept3-shell .c3-header-controls .c3-select{min-width:0}.concept3-shell .c3-header-controls .c3-source-pill{max-width:none}.concept3-shell .c3-select select{max-width:100%}.concept3-shell .c3-hero{height:auto!important;min-height:365px}.concept3-shell .c3-hero-copy{padding:26px 23px;width:90%;min-height:345px}.concept3-shell .c3-hero h2{font-size:30px}.concept3-shell .c3-hero-vehicle{top:auto;bottom:-40px;width:73%;height:180px;right:-2%;opacity:.85}.concept3-shell .c3-hero-model{display:none}.concept3-shell .c3-hero-copy p{max-width:70%}.c3-analytics-grid{grid-template-columns:1fr}.c3-analytics-card.c3-analytics-wide,.c3-analytics-card:last-child{grid-column:auto}.c3-analytics-header{flex-direction:column;align-items:flex-start}.c3-analytics-card{padding:18px}.c3-analytics-title{align-items:flex-start;flex-direction:column;gap:7px}.c3-analytics-legend{flex-wrap:wrap}.c3-analytics-composition{gap:18px}}
+@media(max-width:520px){.concept3-shell .c3-hero-copy p{max-width:100%;padding-right:26px}.concept3-shell .c3-hero-vehicle{opacity:.42;right:-12%}.c3-analytics-composition{flex-direction:column;align-items:stretch}.c3-analytics-donut{align-self:center}.c3-analytics-breakdown{min-width:0}}
