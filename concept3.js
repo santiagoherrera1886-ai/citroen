@@ -268,7 +268,7 @@ function extraCharts(rows){
       }
       const dots=points.filter(Boolean).map(p=>`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4.2" fill="#e96478" stroke="#fff" stroke-width="2"><title>${esc(p.name)}: CPL general ${money(p.v)}</title></circle>`).join('');
       const right=[0,.5,1].map(frac=>`<text x="${W-R+10}" y="${base-frac*plotHeight+4}" fill="#d85c70" font-size="9">${money(frac*cplMax)}</text>`).join('');
-      monthly.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Comparativo mensual de eventos de lead y CPL general para ${monthsRows.length} meses"><text x="${L}" y="15" font-size="10" font-weight="700" fill="#7895a7">EVENTOS DE LEAD</text>${baseLines}${bars}${paths}${dots}${right}<line x1="${L}" y1="${base}" x2="${W-R}" y2="${base}" stroke="#d5e2e9"/></svg>`;
+      monthly.innerHTML=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Comparativo mensual de eventos de lead y CPL general para ${monthsRows.length} meses"><text x="${L}" y="15" font-size="10" font-weight="700" fill="#7895a7">EVENTOS DE LEAD</text>${baseLines}${bars}${paths}${dots}${right}<line x1="${L}" y1="${base}" x2="${W-R}" y2="${base}" stroke="#d5e2e9"/></svg>`;
     }
   }
   const drawList=(id,data,byCpl)=>{
@@ -327,6 +327,18 @@ function wire(){
  for(const btn of document.querySelectorAll('[data-c3-jump]'))btn.onclick=()=>{const nav=document.querySelector('.nav-link[data-target="'+btn.dataset.c3Jump+'"]');if(nav)nav.click();};
  for(const [id,key] of [['c3Month','month'],['c3Model','model'],['c3Territory','territory']])$(id).onchange=e=>{state[key]=e.target.value;render();};
   const reset=$('c3ResetFilters');if(reset)reset.onclick=()=>{state.month='';state.model='';state.territory='';for(const id of ['c3Month','c3Model','c3Territory'])$(id).value='';if(window.CITROEN_FILTER_ENGINE){window.CITROEN_FILTER_ENGINE.reset();window.CITROEN_FILTER_ENGINE.render('lkGlobalFilters','resumen');}render();};
+  const advanced=$('lkGlobalFilters'),advancedToggle=$('c3AdvancedToggle');
+  if(advanced&&advancedToggle){
+    advanced.hidden=true;
+    advancedToggle.setAttribute('aria-expanded','false');
+    advancedToggle.onclick=()=>{
+      const show=advanced.hidden;
+      advanced.hidden=!show;
+      advancedToggle.setAttribute('aria-expanded',String(show));
+      advancedToggle.innerHTML=show?'Ocultar filtros <span aria-hidden="true">⌃</span>':'Más filtros <span aria-hidden="true">⌄</span>';
+      if(show)window.CITROEN_FILTER_ENGINE?.render('lkGlobalFilters','resumen');
+    };
+  }
  for(const b of document.querySelectorAll('[data-c3-metric]'))b.onclick=()=>{state.metric=b.dataset.c3Metric;for(const el of document.querySelectorAll('[data-c3-metric]'))el.classList.toggle('active',el===b);render();};
  document.addEventListener('citroen:metric-settings',()=>{state.metric=configured('compareMetric','metric','investment');document.querySelectorAll('[data-c3-metric]').forEach(el=>el.classList.toggle('active',el.dataset.c3Metric===state.metric));render();});
  document.addEventListener('citroen:style-settings',()=>{if(state.ready)render();});
