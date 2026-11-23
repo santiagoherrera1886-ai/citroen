@@ -193,7 +193,7 @@ function performanceTable(){
  const cells=x=>'<td>'+money(x.budget)+'</td><td>'+money(x.spend)+'</td><td>'+badge(x.pctSpend,'budget')+'</td><td>'+num(x.leads)+'</td><td>'+num(x.target)+'</td><td>'+badge(x.pctLeads,'leads')+'</td><td>'+money(x.actualCpl)+'</td><td>'+money(x.projectedCpl)+'</td><td>'+badge(x.variance,'cpl')+'</td>';
  const limit=state.performanceLimit||25,visible=rows.slice(0,limit);
  tbody.innerHTML=visible.length?visible.map(x=>{
-  const displayModel=x.model.replace(/\\bCITROEN\\b/ig,'Citroën');
+  const displayModel=x.model.replace(/\bCITROEN\b/ig,'Citroën');
   const modelLabel=/^citro[eë]n/i.test(displayModel)?displayModel:'Citroën '+displayModel;
   return '<tr><th scope="row" class="c3-performance-campaign-cell c3-performance-model-cell"><strong>'+esc(modelLabel)+'</strong><span class="c3-table-month-note">'+x.campaigns.size+' campaña(s) Meta Ads</span></th><td class="c3-performance-location-cell"><span class="c3-location-pill">'+esc(x.location)+'</span></td>'+cells(x)+'</tr>';
  }).join(''):'<tr><td colspan="11" class="c3-table-empty">No hay registros para estos filtros.</td></tr>';
