@@ -13,7 +13,7 @@ const cars=[
  {model:'Aircross',name:'Citroën Aircross',desc:'Versatilidad en familia.',url:'https://www.citroen.com.co/modelos/nueva-aircross-suv.html',src:'./assets/models/aircross.webp',backup:'https://citroenderco.vteximg.com.br/arquivos/ids/157467-1000-500/Shine-Rojo-ruby-main.jpg?v=638635747121730000'},
  {model:'BERLINGO',name:'Citroën Berlingo',desc:'Espacio para tu negocio.',url:'https://www.citroen.com.co/modelos/nueva-berlingo-van.html',src:'./assets/models/berlingo.webp',backup:'https://citroenalcala.com/wp-content/uploads/2025/12/berlingo-van.png'}
 ];
-const state={plan:null,rows:[],campaigns:[],month:'',model:'',territory:'',dateStart:'',dateEnd:'',dateMin:'2026-01-01',dateMax:'',metric:'investment',ready:false};
+const state={plan:null,rows:[],campaigns:[],campaignDays:[],campaignArchive:null,performanceLimit:25,month:'',model:'',territory:'',dateStart:'',dateEnd:'',dateMin:'2026-01-01',dateMax:'',metric:'investment',ready:false};
 const add=(rows,i)=>rows.reduce((a,r)=>a+(r.v[i]||0),0);
 const norm=s=>String(s||'').trim().toUpperCase();
 const filter=rows=>{
@@ -472,14 +472,14 @@ function render(){
  campaigns();insights(window.CITROEN_FILTER_ENGINE?.filter(rows,'resumen','n:c3InsightsPanel')||rows);extraCharts(rows);performanceTable(rows);document.dispatchEvent(new Event('citroen:summary-rendered'));
 }
 function installActual(plan,daily,detail){
- const actual=actualData(daily,detail);state.plan=plan;state.dateMin=daily.date_min;state.dateMax=daily.date_max;state.rows=actual.rows;state.campaigns=actual.campaigns;
+ const actual=actualData(daily,detail);const current=state.campaignArchive?.date_max>=daily.date_max?unpackCampaignDays(state.campaignArchive):null;state.plan=plan;state.dateMin=current?.dateMin||daily.date_min;state.dateMax=current?.dateMax||daily.date_max;state.rows=current?.rows||actual.rows;state.campaigns=current?.campaigns||actual.campaigns;state.campaignDays=current?.campaignDays||[];
  const monthNames=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
  for(const m of [...new Set(state.rows.map(r=>r.month))].sort())if(!months.includes(m)){months.push(m);labels.push(monthNames[Number(m.slice(5))-1]);}
  $('c3Month').innerHTML=opt('','2026 · enero a noviembre')+months.map((m,i)=>opt(m,labels[i]+' 2026')).join('');
  $('c3Model').innerHTML=opt('','Todos los modelos')+[...new Set([...plan.models.map(r=>r[1]),...state.rows.map(r=>r.model)])].sort().map(m=>opt(m,m)).join('');
  $('c3Territory').innerHTML=opt('','Todos los territorios')+[...new Set(state.rows.map(r=>r.territory))].sort().map(t=>opt(t,t)).join('');
  for(const [id,key] of [['c3Month','month'],['c3Model','model'],['c3Territory','territory']]){if([...$(id).options].some(o=>o.value===state[key]))$(id).value=state[key];else state[key]='';}
- const footnote=$('campaignSourceFootnote');if(footnote)footnote.textContent='FUENTES · Proyecciones enero–octubre de 10 libros más noviembre 2026 del Excel recibido · '+daily.source+' · '+daily.date_min+' a '+daily.date_max+' · '+daily.rows_source+' registros. Territorios inferidos de los nombres; moneda asumida COP. Leads consolidados = formularios + conversaciones; no son personas únicas.';
+ const footnote=$('campaignSourceFootnote');if(footnote)footnote.textContent='FUENTES · Plan 2026 (metas por modelo) · '+(current?current.source:daily.source)+' · '+state.dateMin+' a '+state.dateMax+' · '+(current?current.count:daily.rows_source)+' registros fuente. Meta Ads: COP supuesto, formularios + conversaciones (eventos no únicos). Proyecciones por campaña referenciales, no metas oficiales.';
  state.ready=true;syncDateControl();render();
 }
 /* Remove connected white photographic backdrop from the local Aircross hero asset.
@@ -535,7 +535,7 @@ function wire(){
  $('c3Explore').onclick=()=>$('c3ComparePanel').scrollIntoView({behavior:'smooth',block:'center'});
  for(const btn of document.querySelectorAll('[data-c3-jump]'))btn.onclick=()=>{const nav=document.querySelector('.nav-link[data-target="'+btn.dataset.c3Jump+'"]');if(nav)nav.click();};
  for(const [id,key] of [['c3Month','month'],['c3Model','model'],['c3Territory','territory']])$(id).onchange=e=>{state[key]=e.target.value;render();};
-  const reset=$('c3ResetFilters');if(reset)reset.onclick=()=>{state.month='';state.model='';state.territory='';state.dateStart='';state.dateEnd='';for(const id of ['c3Month','c3Model','c3Territory'])$(id).value='';if($('c3DatePreset'))$('c3DatePreset').value='all';if($('c3DateDropdown'))$('c3DateDropdown').open=false;if(window.CITROEN_FILTER_ENGINE){window.CITROEN_FILTER_ENGINE.reset();window.CITROEN_FILTER_ENGINE.render('lkGlobalFilters','resumen');}syncDateControl();render();};
+  const reset=$('c3ResetFilters');if(reset)reset.onclick=()=>{state.month='';state.model='';state.territory='';state.dateStart='';state.dateEnd='';state.performanceLimit=25;for(const id of ['c3Month','c3Model','c3Territory'])$(id).value='';if($('c3DatePreset'))$('c3DatePreset').value='all';if($('c3DateDropdown'))$('c3DateDropdown').open=false;if(window.CITROEN_FILTER_ENGINE){window.CITROEN_FILTER_ENGINE.reset();window.CITROEN_FILTER_ENGINE.render('lkGlobalFilters','resumen');}syncDateControl();render();};
   const advanced=$('lkGlobalFilters'),advancedToggle=$('c3AdvancedToggle');
   if(advanced&&advancedToggle){
     advanced.hidden=true;
@@ -548,6 +548,7 @@ function wire(){
       if(show)window.CITROEN_FILTER_ENGINE?.render('lkGlobalFilters','resumen');
     };
   }
+ const campaignSelect=$('c3PerformanceCampaign'),campaignSort=$('c3PerformanceSort');if(campaignSelect)campaignSelect.onchange=()=>{state.performanceLimit=25;performanceTable();};if(campaignSort)campaignSort.onchange=()=>{state.performanceLimit=25;performanceTable();};
  for(const b of document.querySelectorAll('[data-c3-metric]'))b.onclick=()=>{state.metric=b.dataset.c3Metric;for(const el of document.querySelectorAll('[data-c3-metric]'))el.classList.toggle('active',el===b);render();};
  document.addEventListener('citroen:metric-settings',()=>{state.metric=configured('compareMetric','metric','investment');document.querySelectorAll('[data-c3-metric]').forEach(el=>el.classList.toggle('active',el.dataset.c3Metric===state.metric));render();});
  document.addEventListener('citroen:style-settings',()=>{if(state.ready)render();});
@@ -557,8 +558,10 @@ function wire(){
  Promise.all([
  loadPlan(),
  (window.CITROEN_CAMPAIGN_FEED?window.CITROEN_CAMPAIGN_FEED.load().then(d=>({ok:true,json:async()=>d.daily})):fetch('./data/meta_2026_daily.json',{cache:'no-store'})).then(r=>{if(!r.ok)throw Error('Reporte diario no disponible.');return r.json();}),
- (window.CITROEN_CAMPAIGN_FEED?window.CITROEN_CAMPAIGN_FEED.load().then(d=>({ok:true,json:async()=>d.detail})):fetch('./data/meta_2026_detail.json',{cache:'no-store'})).then(r=>{if(!r.ok)throw Error('Detalle de campañas no disponible.');return r.json();})
- ]).then(([plan,daily,detail])=>{
+ (window.CITROEN_CAMPAIGN_FEED?window.CITROEN_CAMPAIGN_FEED.load().then(d=>({ok:true,json:async()=>d.detail})):fetch('./data/meta_2026_detail.json',{cache:'no-store'})).then(r=>{if(!r.ok)throw Error('Detalle de campañas no disponible.');return r.json();}),
+ fetch('./data/meta_campaign_daily_2026.json?v=20261123-campaign1',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null)
+ ]).then(([plan,daily,detail,archive])=>{
+ state.campaignArchive=archive;
  installActual(plan,daily,detail);
  }).catch(e=>{console.error('Concept 3:',e);$('c3Context').textContent='No se pudieron cargar las fuentes: '+e.message;});
 }
