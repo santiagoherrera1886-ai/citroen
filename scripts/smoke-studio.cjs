@@ -5,6 +5,7 @@ const dom=new JSDOM(fs.readFileSync('index.html','utf8'),{url:'https://citroen.e
 const w=dom.window;
 w.eval(fs.readFileSync('data/proyecciones_2026.js','utf8'));
 w.eval(fs.readFileSync('data/revision_2026.js','utf8'));
+w.eval(fs.readFileSync('data/noviembre_2026.js','utf8'));
 w.DecompressionStream=class{constructor(type){assert.equal(type,'gzip');}};
 w.Blob=class{constructor(parts){this.parts=parts;}stream(){const parent=this;return {pipeThrough(){return parent;}};}};
 w.Response=class{constructor(stream){this.stream=stream;}async text(){return zlib.gunzipSync(Buffer.from(this.stream.parts[0])).toString('utf8');}};
@@ -25,8 +26,8 @@ w.document.dispatchEvent(new w.Event('DOMContentLoaded',{bubbles:true}));
  assert.ok(id('resumen').contains(id('studioCards')),'Editor canvas must be located inside Resumen');
  assert.ok(!w.document.querySelector('.nav-link[data-target="studio"]'),'Standalone editor navigation removed');
  for(const hidden of ['medios','creativos','datos'])assert.ok(!w.document.querySelector('.nav-link[data-target="'+hidden+'"]'),'Retired navigation '+hidden);
- assert.ok(id('studioStatus').textContent.includes('Datos: 10 planes'),'Sources did not load: '+id('studioStatus').textContent);
- assert.equal(id('studioMonth').options.length,11,'10 months filter');
+ assert.ok(id('studioStatus').textContent.includes('Datos: 11 planes'),'Sources did not load: '+id('studioStatus').textContent);
+ assert.equal(id('studioMonth').options.length,12,'11 months filter');
  assert.ok([...id('studioModel').options].some(o=>o.value==='Sin clasificar'),'Unclassified source records stay selectable');
  id('studioEdit').click();
  assert.equal(id('studioTools').hidden,false,'Edit mode expands controls in Resumen');
