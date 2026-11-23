@@ -6,6 +6,7 @@ const w=dom.window;
 const $=id=>w.document.getElementById(id);
 w.eval(fs.readFileSync('data/proyecciones_2026.js','utf8'));
 w.eval(fs.readFileSync('data/revision_2026.js','utf8'));
+w.eval(fs.readFileSync('data/noviembre_2026.js','utf8'));
 
 w.eval(fs.readFileSync('reach-math.js','utf8'));
 assert.equal(w.CITROEN_REACH_MATH.estimate([50,40],100),70,'Sainsbury should exclude probable overlap: 50 + 40 - 20');
