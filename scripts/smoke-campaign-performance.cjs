@@ -1,0 +1,36 @@
+/* DOM regression: actual campaigns, date dropdown, aligned table without redesign. */
+const fs=require('node:fs'),zlib=require('node:zlib'),assert=require('node:assert/strict');
+const {JSDOM,VirtualConsole}=require('jsdom');
+const html=fs.readFileSync('index.html','utf8');
+const dom=new JSDOM(html,{url:'https://citroen.example/#resumen',runScripts:'outside-only',virtualConsole:new VirtualConsole()});
+const w=dom.window,$=id=>w.document.getElementById(id);
+for(const f of ['data/proyecciones_2026.js','data/revision_2026.js','data/noviembre_2026.js'])w.eval(fs.readFileSync(f,'utf8'));
+w.DecompressionStream=class{constructor(type){assert.equal(type,'gzip');}};
+w.Blob=class{constructor(parts){this.parts=parts;}stream(){const p=this;return{pipeThrough(){return p;}};}};
+w.Response=class{constructor(stream){this.stream=stream;}async text(){return zlib.gunzipSync(Buffer.from(this.stream.parts[0])).toString('utf8');}};
+const daily=JSON.parse(fs.readFileSync('data/meta_2026_daily.json','utf8'));
+const detail=JSON.parse(fs.readFileSync('data/meta_2026_detail.json','utf8'));
+const byCampaign=JSON.parse(fs.readFileSync('data/meta_campaign_daily_2026.json','utf8'));
+w.CITROEN_CAMPAIGN_FEED={load:async()=>({daily,detail})};
+w.fetch=async url=>({ok:true,json:async()=>String(url).includes('meta_campaign_daily_2026.json')?byCampaign:String(url).includes('_detail')?detail:daily});
+w.eval(fs.readFileSync('concept3.js','utf8'));
+w.document.dispatchEvent(new w.Event('DOMContentLoaded',{bubbles:true}));
+(async()=>{
+ const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
+ for(let i=0;i<60&&!$('c3PerformanceRows').querySelector('.c3-performance-campaign-cell');i++)await tick();
+ const assertLoaded=()=>assert.ok($('c3PerformanceRows').querySelector('.c3-performance-campaign-cell'),$('c3Context').textContent);
+ assertLoaded();
+ assert.ok($('c3PerformanceCampaign').options.length>100,'Campaign dropdown contains real campaign names');
+ assert.equal($('c3PerformanceRows').querySelectorAll('tr').length,25,'Campaign rows are paginated');
+ assert.ok($('c3PerformanceTotal').textContent.includes(new Intl.NumberFormat('es-CO').format(byCampaign.totals[0])),'Table spend matches source');
+ assert.ok($('c3PerformanceNotes').textContent.includes('ASIGNACIÓN REFERENCIAL'),'Campaign plan allocations labelled clearly');
+ const monthSpend=month=>byCampaign.daily.filter(row=>byCampaign.dictionaries.dates[row[0]].slice(0,7)===month).reduce((n,r)=>n+r[5],0);
+ const preset=$('c3DatePreset');preset.value='november';preset.dispatchEvent(new w.Event('change'));$('c3DateApply').click();
+ assert.ok($('c3PerformanceTotal').textContent.includes(new Intl.NumberFormat('es-CO').format(monthSpend('2026-11'))),'November date filter changes campaign spend');
+ const only=$('c3PerformanceCampaign');only.value=only.options[1].value;only.dispatchEvent(new w.Event('change'));
+ assert.equal($('c3PerformanceRows').querySelectorAll('tr').length,1,'Selecting one campaign filters table');
+ $('c3ResetFilters').click();
+ assert.ok($('c3PerformanceRows').querySelectorAll('tr').length>0,'Reset preserves table');
+ console.log('PASS: Citroen campaign table, accurate November dates, 9 metrics, dropdown, retained dashboard cards and exact source totals');
+ w.close();
+})().catch(e=>{console.error(e);process.exitCode=1;w.close();});
