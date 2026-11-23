@@ -24,7 +24,7 @@
 <link rel="stylesheet" href="./campaign-gallery-page.css?v=20261104-archive1">
 <link rel="stylesheet" href="./portal-switcher.css?v=20261031">
 <link rel="stylesheet" href="./portal-journey.css?v=20261031-v1">
-<link rel="stylesheet" href="./design-v3-citroen.css?v=20261123-premium3">
+<link rel="stylesheet" href="./design-v3-citroen.css?v=20261123-performance4">
 <link rel="stylesheet" href="./manual-refresh.css?v=20261102">
 <link rel="stylesheet" href="./november-forecast.css?v=20261103-v1">
 </head>
@@ -114,7 +114,21 @@
       <span class="c3-filters-bar-hint">Los indicadores y gráficos responden a tu selección</span>
     </div>
     <div class="c3-filter-fields">
-      <label class="c3-select"><span class="c3-filter-caption">PERÍODO</span><select id="c3Month" aria-label="Filtrar por período"><option value="">2026 · Año completo</option></select></label>
+      <div class="c3-date-control">
+  <span class="c3-filter-caption">RANGO DE FECHAS</span>
+  <details class="c3-date-dropdown" id="c3DateDropdown">
+    <summary><span id="c3DateLabel">1 ene. – 23 nov. 2026</span><span class="c3-date-chevron" aria-hidden="true">⌄</span></summary>
+    <div class="c3-date-popover">
+      <label class="c3-date-field">Seleccionar período
+        <select id="c3DatePreset" aria-label="Rango rápido"><option value="all">Todo el período</option><option value="november">Noviembre</option><option value="october">Octubre</option><option value="last30">Últimos 30 días disponibles</option><option value="thismonth">Mes más reciente</option><option value="custom">Personalizado</option></select>
+      </label>
+      <div class="c3-date-pair"><label class="c3-date-field">Desde<input type="date" id="c3DateFrom" value="2026-01-01" min="2026-01-01" max="2026-11-30"></label><label class="c3-date-field">Hasta<input type="date" id="c3DateTo" value="2026-11-23" min="2026-01-01" max="2026-11-30"></label></div>
+      <p class="c3-date-note">Las proyecciones son mensuales; para días parciales se prorratean de manera lineal como referencia.</p>
+      <button type="button" id="c3DateApply" class="c3-date-apply">Aplicar rango <span aria-hidden="true">→</span></button>
+    </div>
+  </details>
+  <select id="c3Month" hidden aria-hidden="true" tabindex="-1"><option value="">Todos los meses</option></select>
+</div>
       <label class="c3-select"><span class="c3-filter-caption">TERRITORIO</span><select id="c3Territory" aria-label="Filtrar por territorio"><option value="">Todos los territorios</option></select></label>
       <label class="c3-select"><span class="c3-filter-caption">MODELO</span><select id="c3Model" aria-label="Filtrar por modelo"><option value="">Todos los modelos</option></select></label>
       <button type="button" id="c3ResetFilters" class="c3-filter-reset" title="Restablecer filtros principales y avanzados">Restablecer</button>
@@ -126,6 +140,31 @@
   <div class="citroen-summary-sync" aria-label="Actualización de datos en el resumen"><div class="citroen-summary-sync-copy"><strong>Datos de Google Sheets</strong><span>Actualiza los resultados del resumen con la última sincronización recibida.</span></div><div class="citroen-refresh-controls"><button type="button" id="citroenManualRefresh" title="Consultar la última versión enviada desde Sheets"><svg><use href="#i-refresh"/></svg><span class="sync-label">Actualizar datos</span></button><span id="citroenSourceLastSync" aria-live="polite">Sheets · Verificando…</span></div></div>
   
   <div class="c3-kpi-grid" id="c3Kpis" aria-live="polite"></div>
+<section class="c3-performance-table" aria-labelledby="c3PerformanceTableTitle">
+ <div class="c3-performance-head">
+  <div><span class="c3-performance-overline">CONTROL DE INVERSIÓN Y RESULTADOS</span><h2 id="c3PerformanceTableTitle">Cumplimiento de performance</h2><p>Presupuesto proyectado vs. ejecución Meta Ads, mes a mes y total del filtro.</p></div>
+  <span class="c3-performance-cutoff" id="c3PerformanceCutoff">Actualizando datos…</span>
+ </div>
+ <div class="c3-performance-scroll" tabindex="0" aria-label="Tabla desplazable horizontalmente">
+  <table class="c3-performance-grid">
+   <thead><tr>
+    <th scope="col">Período</th>
+    <th scope="col" title="Inversión del plan seleccionado">Inversión total <small>Proyección</small></th>
+    <th scope="col">Consumo <small>Meta Ads real</small></th>
+    <th scope="col" title="Consumo Meta / inversión del plan">% consumo</th>
+    <th scope="col" title="Formularios + conversaciones; no son leads únicos">Leads totales <small>Actuales*</small></th>
+    <th scope="col">Leads proyectados</th>
+    <th scope="col" title="Eventos de Meta / proyección de resultados">Cumplimiento <small>Leads</small></th>
+    <th scope="col">CPL actual</th>
+    <th scope="col">CPL proyectado</th>
+    <th scope="col" title="(CPL actual / CPL proyectado - 1) × 100; negativo = mejor costo">Variación <small>vs. proyección CPL</small></th>
+   </tr></thead>
+   <tbody id="c3PerformanceRows"><tr><td colspan="10">Cargando inversiones, ejecución y metas…</td></tr></tbody>
+   <tfoot id="c3PerformanceTotal"></tfoot>
+  </table>
+ </div>
+ <div class="c3-performance-foot" id="c3PerformanceNotes">*Los leads reportados agrupan formularios y conversaciones, no personas únicas. El consumo corresponde únicamente a Meta Ads; otras plataformas del plan no se incluyen.</div>
+</section>
 
   <div class="studio-inline-tools" id="studioTools" hidden>
     <div class="studio-inline-title"><span class="studio-inline-icon">✦</span><div><strong>Modo edición del resumen</strong><span>Selecciona un gráfico o indicador y cambia sus métricas desde la barra derecha. También puedes mover y redimensionar.</span></div></div>
@@ -505,7 +544,7 @@
 <script src="./meta.js?v=20261123-annual1" defer></script>
 <script src="./reach-math.js?v=20261026b" defer></script>
 <script src="./looker-filter-engine.js?v=20261123-compact3" defer></script>
-<script src="./concept3.js?v=20261123-premium3" defer></script>
+<script src="./concept3.js?v=20261123-performance4" defer></script>
 <script src="./access.js?v=20261028-sheets1" defer></script>
 <script src="./quick-delete.js?v=20261027-delete1" defer></script>
 <script src="./studio.js?v=20261111-nov1" defer></script>
