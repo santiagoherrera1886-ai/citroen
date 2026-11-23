@@ -24,7 +24,7 @@
 <link rel="stylesheet" href="./campaign-gallery-page.css?v=20261104-archive1">
 <link rel="stylesheet" href="./portal-switcher.css?v=20261031">
 <link rel="stylesheet" href="./portal-journey.css?v=20261031-v1">
-<link rel="stylesheet" href="./design-v3-citroen.css?v=20261123-editorial2">
+<link rel="stylesheet" href="./design-v3-citroen.css?v=20261123-premium3">
 <link rel="stylesheet" href="./manual-refresh.css?v=20261102">
 <link rel="stylesheet" href="./november-forecast.css?v=20261103-v1">
 </head>
@@ -92,12 +92,7 @@
 <div class="c3-dashboard" id="c3Dashboard">
   <div class="c3-header">
     <div><div class="c3-kicker">DASHBOARD ESTRATÉGICO <span>/ PERFORMANCE INTELLIGENCE</span></div><h1>Marketing &amp; movilidad</h1><p>Performance, medios y negocio automotriz · Colombia</p></div>
-    <div class="c3-header-controls">
-      <label class="c3-select"><span class="c3-filter-caption">PERÍODO</span><select id="c3Month" aria-label="Filtrar por período"><option value="">2026 · Año completo</option></select></label>
-      <label class="c3-select"><span class="c3-filter-caption">TERRITORIO</span><select id="c3Territory" aria-label="Filtrar por territorio"><option value="">Todos los territorios</option></select></label>
-      <label class="c3-select"><span class="c3-filter-caption">MODELO</span><select id="c3Model" aria-label="Filtrar por modelo"><option value="">Todos los modelos</option></select></label>
-      <button type="button" id="c3ResetFilters" class="c3-filter-reset" title="Limpiar los filtros del resumen y los filtros avanzados">Limpiar filtros</button>
-      
+    <div class="c3-header-controls">      
       <span class="c3-source-pill"><span class="c3-live-dot"></span> META ADS + PLAN 2026</span>
       <button type="button" id="studioEdit" class="studio-header-edit" aria-pressed="false" hidden><span aria-hidden="true">✎</span> Editar resumen</button>
       <button type="button" id="citroenMasterOpen" class="citroen-auth-master-link" hidden>♛ Control maestro</button>
@@ -105,7 +100,7 @@
     </div>
   </div>
   <div class="c3-hero">
-    <div class="c3-hero-photo" aria-hidden="true"></div><div class="c3-hero-orbit" aria-hidden="true"></div>
+    <div class="c3-hero-photo" aria-hidden="true"></div><div class="c3-hero-orbit" aria-hidden="true"></div><div class="c3-hero-watermark" aria-hidden="true">CITROËN</div>
     <div class="c3-hero-copy"><div class="c3-hero-eyebrow">CITROËN COLOMBIA · PERFORMANCE INTELLIGENCE</div><h2>Más personas en movimiento,<br><span>más historias por contar.</span></h2>
       <p>Convierte la inversión en oportunidades reales de negocio. Una visión clara del desempeño, comparando lo planeado con lo ejecutado.</p>
       <button class="c3-primary-btn" id="c3Explore">Explorar desempeño <svg><use href="#i-arrow"/></svg></button>
@@ -113,9 +108,22 @@
     <div class="c3-hero-vehicle"><img id="c3HeroCar" alt="Citroën Aircross, fotografía de vehículo real" loading="eager" decoding="async"><span class="c3-car-fallback">CITROËN<br>AIRCROSS</span></div>
     <div class="c3-hero-model"><b>C3 AIRCROSS</b><span>Espacio para<br>todas tus historias.</span></div>
   </div>
+  <div class="c3-filters-bar" id="c3FiltersBar" aria-label="Filtros principales del resumen">
+    <div class="c3-filters-bar-head">
+      <div class="c3-filters-bar-title"><span class="c3-filters-bar-icon" aria-hidden="true">⌘</span><span>Explora tus resultados</span></div>
+      <span class="c3-filters-bar-hint">Los indicadores y gráficos responden a tu selección</span>
+    </div>
+    <div class="c3-filter-fields">
+      <label class="c3-select"><span class="c3-filter-caption">PERÍODO</span><select id="c3Month" aria-label="Filtrar por período"><option value="">2026 · Año completo</option></select></label>
+      <label class="c3-select"><span class="c3-filter-caption">TERRITORIO</span><select id="c3Territory" aria-label="Filtrar por territorio"><option value="">Todos los territorios</option></select></label>
+      <label class="c3-select"><span class="c3-filter-caption">MODELO</span><select id="c3Model" aria-label="Filtrar por modelo"><option value="">Todos los modelos</option></select></label>
+      <button type="button" id="c3ResetFilters" class="c3-filter-reset" title="Restablecer filtros principales y avanzados">Restablecer</button>
+      <button type="button" id="c3AdvancedToggle" class="c3-advanced-toggle" aria-expanded="false" aria-controls="lkGlobalFilters">Más filtros <span aria-hidden="true">⌄</span></button>
+    </div>
+  </div>
   <div class="c3-context-line" id="c3Context">Conciliando presupuesto planeado y ejecución Meta Ads del período...</div>
   <div class="citroen-summary-sync" aria-label="Actualización de datos en el resumen"><div class="citroen-summary-sync-copy"><strong>Datos de Google Sheets</strong><span>Actualiza los resultados del resumen con la última sincronización recibida.</span></div><div class="citroen-refresh-controls"><button type="button" id="citroenManualRefresh" title="Consultar la última versión enviada desde Sheets"><svg><use href="#i-refresh"/></svg><span class="sync-label">Actualizar datos</span></button><span id="citroenSourceLastSync" aria-live="polite">Sheets · Verificando…</span></div></div>
-  <div class="lk-summary-host" id="lkGlobalFilters" aria-label="Controles interactivos del informe"></div>
+  <div class="lk-summary-host" id="lkGlobalFilters" aria-label="Filtros avanzados del informe" hidden></div>
   <div class="c3-kpi-grid" id="c3Kpis" aria-live="polite"></div>
 
   <div class="studio-inline-tools" id="studioTools" hidden>
@@ -495,8 +503,8 @@
 <script src="./campaign-feed.js?v=20261123-annual2" defer></script>
 <script src="./meta.js?v=20261123-annual1" defer></script>
 <script src="./reach-math.js?v=20261026b" defer></script>
-<script src="./looker-filter-engine.js?v=20261027-filters1" defer></script>
-<script src="./concept3.js?v=20261123-analytics2" defer></script>
+<script src="./looker-filter-engine.js?v=20261123-compact3" defer></script>
+<script src="./concept3.js?v=20261123-premium3" defer></script>
 <script src="./access.js?v=20261028-sheets1" defer></script>
 <script src="./quick-delete.js?v=20261027-delete1" defer></script>
 <script src="./studio.js?v=20261111-nov1" defer></script>
