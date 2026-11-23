@@ -131,13 +131,13 @@ function comparison(rows){
    const x=l+step*(i+.5);
    let ret='';
    if(s.planned!=null)ret+=`<rect x="${x-bw-3}" y="${y(s.planned)}" height="${Math.max(0,t+ph-y(s.planned))}" width="${bw}" rx="2" fill="#a9d4eb"><title>${s.label} planeado: ${state.metric==='leads'?num(s.planned):money(s.planned)}</title></rect>`;
-   if(s.actual!=null)ret+=`<rect x="${x+3}" y="${y(s.actual)}" height="${Math.max(0,t+ph-y(s.actual))}" width="${bw}" rx="2" fill="${s.month==='2026-10'?'url(#c3hatch)':'#f46b74'}"><title>${s.label} Meta: ${['investment','cpl','cpm','cost_message'].includes(state.metric)?money(s.actual):state.metric==='ctr'?fmtMetric(s.actual,'ctr'):num(s.actual)}${s.month==='2026-10'?' (parcial)':''}</title></rect>`;
-   return ret+`<text x="${x}" y="${h-7}" text-anchor="middle" font-size="11" font-weight="700" fill="#7896aa">${s.label.toUpperCase()}${s.month==='2026-10'?'*':''}</text>`;
+   if(s.actual!=null)ret+=`<rect x="${x+3}" y="${y(s.actual)}" height="${Math.max(0,t+ph-y(s.actual))}" width="${bw}" rx="2" fill="${s.month==='2026-11'?'url(#c3hatch)':'#f46b74'}"><title>${s.label} Meta: ${['investment','cpl','cpm','cost_message'].includes(state.metric)?money(s.actual):state.metric==='ctr'?fmtMetric(s.actual,'ctr'):num(s.actual)}${s.month==='2026-10'?' (parcial)':''}</title></rect>`;
+   return ret+`<text x="${x}" y="${h-7}" text-anchor="middle" font-size="11" font-weight="700" fill="#7896aa">${s.label.toUpperCase()}${s.month==='2026-11'?'*':''}</text>`;
  }).join('');
  let visual=bar;
  if(chartMode==="line"||chartMode==="area"){
   const points=(key)=>series.map((a,i)=>a[key]==null?null:[l+step*(i+.5),y(a[key])]).filter(Boolean);
-  visual=series.map((x,i)=>'<text x="'+(l+step*(i+.5))+'" y="'+(h-7)+'" text-anchor="middle" font-size="11" font-weight="700" fill="#7896aa">'+x.label.toUpperCase()+(x.month==='2026-10'?'*':'')+'</text>').join('');
+  visual=series.map((x,i)=>'<text x="'+(l+step*(i+.5))+'" y="'+(h-7)+'" text-anchor="middle" font-size="11" font-weight="700" fill="#7896aa">'+x.label.toUpperCase()+(x.month==='2026-11'?'*':'')+'</text>').join('');
   for(const [k,col] of [["planned","#a9d4eb"],["actual","#f46b74"]]){
    const pts=points(k);if(pts.length<2)continue;
    const coords=pts.map(p=>p.join(",")).join(" ");
@@ -224,6 +224,82 @@ function insights(rows){
  ];
  $('c3Insights').innerHTML=sections.map((x,i)=>`<div class="c3-insight"><span class="n">${i+1}</span><div><b>${esc(x[0])}</b><span>${esc(x[1])}</span></div></div>`).join('');
 }
+function extraCharts(rows){
+  const empty='<div class="c3-analytics-empty">No hay registros para los filtros seleccionados.</div>';
+  const groups=(key)=>{
+    const map=new Map();
+    for(const row of rows){
+      const label=String(row[key]||'Sin clasificar');
+      if(!map.has(label))map.set(label,{name:label,spend:0,forms:0,messages:0});
+      const item=map.get(label);
+      item.spend+=Number(row.v[0])||0;
+      item.forms+=Number(row.v[1])||0;
+      item.messages+=Number(row.v[2])||0;
+    }
+    return [...map.values()].map(g=>({...g,leads:g.forms+g.messages,cpl:g.forms+g.messages>0?g.spend/(g.forms+g.messages):null}));
+  };
+  const monthsRows=groups('month').sort((a,b)=>a.name.localeCompare(b.name));
+  const monthly=$('c3AnnualChart');
+  if(monthly){
+    if(!monthsRows.length)monthly.innerHTML=empty;
+    else {
+      const W=970,H=282,L=50,R=56,T=26,B=45,chartWidth=W-L-R,base=H-B,plotHeight=base-T;
+      const leadsMax=Math.max(1,...monthsRows.map(r=>r.leads));
+      const costs=monthsRows.filter(r=>r.cpl!==null).map(r=>r.cpl);
+      const cplMax=Math.max(1,...costs);
+      const colW=chartWidth/monthsRows.length,barWidth=Math.min(45,colW*.53);
+      const yLeads=v=>base-(v/leadsMax)*plotHeight;
+      const yCpl=v=>base-(v/cplMax)*plotHeight;
+      const baseLines=[0,.25,.5,.75,1].map(frac=>{
+        const yy=base-frac*plotHeight;
+        return `<line x1="${L}" y1="${yy}" x2="${W-R}" y2="${yy}" stroke="#e8eff3" stroke-width="1"/><text x="${L-10}" y="${yy+4}" text-anchor="end" fill="#7895a7" font-size="10">${num(Math.round(frac*leadsMax))}</text>`;
+      }).join('');
+      const bars=monthsRows.map((r,i)=>{
+        const x=L+(i+.5)*colW,y=yLeads(r.leads),h=base-y;
+        return `<g><rect x="${(x-barWidth/2).toFixed(1)}" y="${y.toFixed(1)}" width="${barWidth.toFixed(1)}" height="${Math.max(0,h).toFixed(1)}" rx="6" fill="#78bad8" opacity=".91"><title>${esc(r.name)}: ${num(r.leads)} eventos de lead</title></rect><text x="${x.toFixed(1)}" y="${H-20}" font-size="11" text-anchor="middle" fill="#5b788b">${esc(labels[months.indexOf(r.name)]||r.name)}</text></g>`;
+      }).join('');
+      const points=monthsRows.map((r,i)=>r.cpl===null?null:{x:L+(i+.5)*colW,y:yCpl(r.cpl),v:r.cpl,name:r.name});
+      let paths='';
+      for(let j=0;j<points.length;){
+        if(!points[j]){j++;continue;}
+        let segment=[];
+        while(j<points.length&&points[j])segment.push(points[j++]);
+        if(segment.length>1)paths+=`<polyline points="${segment.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')}" fill="none" stroke="#e96478" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>`;
+      }
+      const dots=points.filter(Boolean).map(p=>`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4.2" fill="#e96478" stroke="#fff" stroke-width="2"><title>${esc(p.name)}: CPL general ${money(p.v)}</title></circle>`).join('');
+      const right=[0,.5,1].map(frac=>`<text x="${W-R+10}" y="${base-frac*plotHeight+4}" fill="#d85c70" font-size="9">${money(frac*cplMax)}</text>`).join('');
+      monthly.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Comparativo mensual de eventos de lead y CPL general para ${monthsRows.length} meses"><text x="${L}" y="15" font-size="10" font-weight="700" fill="#7895a7">EVENTOS DE LEAD</text>${baseLines}${bars}${paths}${dots}${right}<line x1="${L}" y1="${base}" x2="${W-R}" y2="${base}" stroke="#d5e2e9"/></svg>`;
+    }
+  }
+  const drawList=(id,data,byCpl)=>{
+    const root=$(id);if(!root)return;
+    const valid=data.filter(x=>x.leads>0);
+    if(!valid.length){root.innerHTML=empty;return;}
+    const chosen=byCpl?valid.sort((a,b)=>(a.cpl??Infinity)-(b.cpl??Infinity)).slice(0,7):valid.sort((a,b)=>b.leads-a.leads).slice(0,7);
+    const max=Math.max(1,...chosen.map(x=>x.leads));
+    root.innerHTML=chosen.map(x=>`<div class="c3-analytics-line">
+      <div class="c3-analytics-line-main"><strong title="${esc(x.name)}">${esc(x.name)}</strong><b>${num(x.leads)} eventos</b></div>
+      <div class="c3-analytics-line-track"><span class="c3-analytics-line-fill" style="width:${Math.max(.5,100*x.leads/max).toFixed(1)}%"></span></div>
+      <div class="c3-analytics-line-note"><span>CPL general: ${money(x.cpl)}</span><span>Inversión: ${money(x.spend)}</span></div>
+    </div>`).join('');
+  };
+  drawList('c3CplByModel',groups('model'),true);
+  drawList('c3TerritoryChart',groups('territory'),false);
+  const composition=$('c3LeadsComposition');
+  if(composition){
+    const forms=add(rows,1),messages=add(rows,2),total=forms+messages;
+    if(!total)composition.innerHTML=empty;
+    else {
+      const portion=100*forms/total;
+      composition.innerHTML=`<div class="c3-analytics-donut" role="img" aria-label="${portion.toFixed(1)} por ciento formularios y ${(100-portion).toFixed(1)} por ciento conversaciones" style="background:conic-gradient(#78bad8 0 ${portion.toFixed(3)}%,#ec6172 ${portion.toFixed(3)}% 100%)"><div class="c3-analytics-donut-inner"><strong>${num(total)}</strong><span>EVENTOS</span></div></div><div class="c3-analytics-breakdown">
+        <div class="c3-analytics-breakdown-item"><i></i><span>Formularios<br><small>${portion.toLocaleString('es-CO',{maximumFractionDigits:1})}% del total</small></span><strong>${num(forms)}</strong></div>
+        <div class="c3-analytics-breakdown-item"><i></i><span>Conversaciones<br><small>${(100-portion).toLocaleString('es-CO',{maximumFractionDigits:1})}% del total</small></span><strong>${num(messages)}</strong></div>
+      </div>`;
+    }
+  }
+  const coverage=$('c3CoverageTag');
+  if(coverage)coverage.textContent=state.dateMax?'Fuente Meta · datos hasta '+state.dateMax:'Sin fuente actual';
+}
 function render(){
  if(!state.ready)return;
  const rows=filter(state.rows);
@@ -231,7 +307,7 @@ function render(){
  comparison(window.CITROEN_FILTER_ENGINE?.filter(rows,'resumen','n:c3ComparePanel')||rows);
  funnel(window.CITROEN_FILTER_ENGINE?.filter(rows,'resumen','n:c3FunnelPanel')||rows);
  models(window.CITROEN_FILTER_ENGINE?.filter(rows,'resumen','n:c3ModelsPanel')||rows);
- campaigns();insights(window.CITROEN_FILTER_ENGINE?.filter(rows,'resumen','n:c3InsightsPanel')||rows);document.dispatchEvent(new Event('citroen:summary-rendered'));
+ campaigns();insights(window.CITROEN_FILTER_ENGINE?.filter(rows,'resumen','n:c3InsightsPanel')||rows);extraCharts(rows);document.dispatchEvent(new Event('citroen:summary-rendered'));
 }
 function installActual(plan,daily,detail){
  const actual=actualData(daily,detail);state.plan=plan;state.dateMax=daily.date_max;state.rows=actual.rows;state.campaigns=actual.campaigns;
@@ -250,6 +326,7 @@ function wire(){
  $('c3Explore').onclick=()=>$('c3ComparePanel').scrollIntoView({behavior:'smooth',block:'center'});
  for(const btn of document.querySelectorAll('[data-c3-jump]'))btn.onclick=()=>{const nav=document.querySelector('.nav-link[data-target="'+btn.dataset.c3Jump+'"]');if(nav)nav.click();};
  for(const [id,key] of [['c3Month','month'],['c3Model','model'],['c3Territory','territory']])$(id).onchange=e=>{state[key]=e.target.value;render();};
+  const reset=$('c3ResetFilters');if(reset)reset.onclick=()=>{state.month='';state.model='';state.territory='';for(const id of ['c3Month','c3Model','c3Territory'])$(id).value='';if(window.CITROEN_FILTER_ENGINE){window.CITROEN_FILTER_ENGINE.reset();window.CITROEN_FILTER_ENGINE.render('lkGlobalFilters','resumen');}render();};
  for(const b of document.querySelectorAll('[data-c3-metric]'))b.onclick=()=>{state.metric=b.dataset.c3Metric;for(const el of document.querySelectorAll('[data-c3-metric]'))el.classList.toggle('active',el===b);render();};
  document.addEventListener('citroen:metric-settings',()=>{state.metric=configured('compareMetric','metric','investment');document.querySelectorAll('[data-c3-metric]').forEach(el=>el.classList.toggle('active',el.dataset.c3Metric===state.metric));render();});
  document.addEventListener('citroen:style-settings',()=>{if(state.ready)render();});
