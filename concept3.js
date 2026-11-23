@@ -110,53 +110,117 @@ function planFraction(m){
 }
 const formatPercent=value=>value==null||!Number.isFinite(value)?'—':value.toLocaleString('es-CO',{maximumFractionDigits:1})+' %';
 const safeRatio=(a,b)=>a==null||b==null||b<=0?null:a/b*100;
-function performanceTable(rows){
- const tbody=$('c3PerformanceRows'),tfoot=$('c3PerformanceTotal');if(!tbody||!tfoot||!state.plan)return;
- const periods=planPeriods();
- const isTerritory=Boolean(state.territory);
- const monthRows=periods.map(m=>{
-  const items=rows.filter(row=>row.month===m);
-  const spend=items.length?add(items,0):null;
-  const leads=items.length?add(items,1)+add(items,2):null;
-  const fraction=planFraction(m);
-  const originalBudget=planValue(m,'investment'),originalLeads=planValue(m,'leads');
-  const budget=isTerritory||originalBudget==null?null:originalBudget*fraction;
-  const target=isTerritory||originalLeads==null?null:originalLeads*fraction;
-  const actualCpl=leads>0?spend/leads:null;
-  const projectedCpl=target>0?budget/target:null;
-  return {m,spend,leads,budget,target,actualCpl,projectedCpl,pctSpend:safeRatio(spend,budget),pctLeads:safeRatio(leads,target),variance:safeRatio(actualCpl,projectedCpl)==null?null:100*(actualCpl/projectedCpl-1)};
+
+/* Daily Meta campaign export: source-level results, kept separate from the monthly plan.
+   Campaign projections below are allocations for comparison, NOT submitted campaign budgets. */
+function unpackCampaignDays(pack){
+ if(!pack||pack.schema!=='citroen-meta-campaign-day/2026-v1'||!Array.isArray(pack.daily)||!pack.dictionaries)return null;
+ const d=pack.dictionaries;
+ const days=pack.daily.map(r=>({
+  date:d.dates[r[0]],month:d.dates[r[0]].slice(0,7),campaign:d.campaigns[r[1]],
+  account:d.accounts[r[2]],model:d.models[r[3]],territory:d.territories[r[4]],platform:'Meta Ads',v:r.slice(5)
+ }));
+ if(!days.length||days.some(x=>!x.date||!x.campaign||x.v.length!==7))return null;
+ const sums=Array(7).fill(0);
+ for(const r of days)for(let j=0;j<7;j++)sums[j]+=(r.v[j]||0);
+ if(!sums.every((v,j)=>Math.abs(v-pack.totals[j])<=Math.max(.01,Math.abs(v)*1e-9)))return null;
+ function aggregate(keys){
+  const map=new Map();
+  for(const r of days){
+   const id=JSON.stringify(keys.map(k=>r[k]));
+   if(!map.has(id))map.set(id,{...Object.fromEntries(keys.map(k=>[k,r[k]])),platform:'Meta Ads',v:[0,0,0,0,0,0,0]});
+   const group=map.get(id);for(let j=0;j<7;j++)group.v[j]+=(r.v[j]||0);
+  }
+  return [...map.values()];
+ }
+ return {campaignDays:days,rows:aggregate(['date','month','model','territory','account']),campaigns:aggregate(['month','campaign','model','territory','account']),dateMin:pack.date_min,dateMax:pack.date_max,source:pack.source,count:pack.rows_source};
+}
+function performanceTable(){
+ const tbody=$('c3PerformanceRows'),tfoot=$('c3PerformanceTotal');
+ if(!tbody||!tfoot||!state.plan)return;
+ const daily=state.campaignDays&&state.campaignDays.length?filter(state.campaignDays):filter(state.campaigns);
+ const periods=new Set(planPeriods());
+ const items=daily.filter(r=>periods.has(r.month));
+ const spendPerModel=new Map(),byCampaign=new Map();
+ const modelKey=r=>r.month+'|'+norm(r.model);
+ const make=()=>({name:'',accounts:new Set(),models:new Set(),spend:0,leads:0,budget:0,target:0,budgetKnown:true,targetKnown:true});
+ // Allocate month-and-model planning targets proportionally to the observed
+ // campaign spend in that same model. It is a REFERENCE, not a campaign commitment.
+ for(const r of items)spendPerModel.set(modelKey(r),(spendPerModel.get(modelKey(r))||0)+(r.v[0]||0));
+ for(const r of items){
+  const key=r.campaign,entry=byCampaign.get(key)||make();
+  entry.name=key;entry.accounts.add(r.account);entry.models.add(r.model);
+  entry.spend+=(r.v[0]||0);entry.leads+=(r.v[1]||0)+(r.v[2]||0);
+  if(state.territory){entry.budgetKnown=false;entry.targetKnown=false;}
+  else{
+   const weightDen=spendPerModel.get(modelKey(r))||0;
+   const modelPlan=planRows(r.month,r.model);
+   const amount=modelPlan.length?modelPlan.reduce((s,x)=>s+(x[2]||0),0):null;
+   const target=modelPlan.length&&!modelPlan.some(x=>x[3]==null)?modelPlan.reduce((s,x)=>s+x[3],0):null;
+   if(!weightDen||amount==null){entry.budgetKnown=false;entry.targetKnown=false;}
+   else{
+    const weight=(r.v[0]||0)/weightDen*planFraction(r.month);
+    entry.budget+=amount*weight;
+    if(target==null)entry.targetKnown=false;
+    else entry.target+=target*weight;
+   }
+  }
+  byCampaign.set(key,entry);
+ }
+ let rows=[...byCampaign.values()].map(x=>{
+  const budget=x.budgetKnown?x.budget:null,target=x.targetKnown?x.target:null;
+  const actualCpl=x.leads>0?x.spend/x.leads:null,projectedCpl=budget!=null&&target>0?budget/target:null;
+  return {name:x.name,accounts:[...x.accounts],models:[...x.models],spend:x.spend,leads:x.leads,budget,target,actualCpl,projectedCpl,pctSpend:safeRatio(x.spend,budget),pctLeads:safeRatio(x.leads,target),variance:projectedCpl>0&&actualCpl!=null?100*(actualCpl/projectedCpl-1):null};
  });
- const badge=(v,goodWhen)=>{
-  if(v==null)return '<span class="c3-ratio na">—</span>';
-  const favorable=goodWhen==='negative'?v<=0:v>=100;
-  return '<span class="c3-ratio '+(favorable?'good':'warn')+'">'+formatPercent(v)+'</span>';
+ const select=$('c3PerformanceCampaign'),sort=$('c3PerformanceSort');
+ if(select){
+  const old=select.value;
+  const names=[...new Set(rows.map(x=>x.name))].sort((a,b)=>a.localeCompare(b,'es'));
+  select.innerHTML=opt('','Todas las campañas')+names.map(n=>opt(n,n.replace(/^\d{4}_colombia_citroen_/i,'').replace(/_on_conversion.*$/i,'').replace(/_/g,' ').slice(0,76))).join('');
+  select.value=names.includes(old)?old:'';
+  if(old&&!names.includes(old))state.performanceLimit=25;
+  if(select.value)rows=rows.filter(x=>x.name===select.value);
+ }
+ const ordered=sort?.value||'spend';
+ rows.sort(ordered==='name'?(a,b)=>a.name.localeCompare(b.name,'es'):ordered==='leads'?(a,b)=>b.leads-a.leads:(a,b)=>b.spend-a.spend);
+ const badge=(v,mode)=>{
+  if(v==null||!Number.isFinite(v))return '<span class="c3-ratio na">—</span>';
+  const good=mode==='cpl'?v<=0:v>=100;
+  return '<span class="c3-ratio '+(good?'good':'warn')+'">'+formatPercent(v)+'</span>';
  };
- const cells=r=>'<td>'+money(r.budget)+'</td><td>'+money(r.spend)+'</td><td>'+badge(r.pctSpend,'neutral')+'</td><td>'+num(r.leads)+'</td><td>'+num(r.target)+'</td><td>'+badge(r.pctLeads,'positive')+'</td><td>'+money(r.actualCpl)+'</td><td>'+money(r.projectedCpl)+'</td><td>'+badge(r.variance,'negative')+'</td>';
- tbody.innerHTML=monthRows.length?monthRows.map(r=>{
-  const label=labels[months.indexOf(r.m)]||r.m;
-  return '<tr><th scope="row"><strong>'+esc(label)+' 2026</strong><span class="c3-table-month-note">'+(planFraction(r.m)<.999?'Rango parcial':'Mes completo')+'</span></th>'+cells(r)+'</tr>';
- }).join(''):'<tr><td colspan="10" class="c3-table-empty">No hay meses presupuestados para los filtros seleccionados.</td></tr>';
+ const cells=x=>'<td>'+money(x.budget)+'</td><td>'+money(x.spend)+'</td><td>'+badge(x.pctSpend,'budget')+'</td><td>'+num(x.leads)+'</td><td>'+num(x.target)+'</td><td>'+badge(x.pctLeads,'leads')+'</td><td>'+money(x.actualCpl)+'</td><td>'+money(x.projectedCpl)+'</td><td>'+badge(x.variance,'cpl')+'</td>';
+ const limit=state.performanceLimit||25,visible=rows.slice(0,limit);
+ function human(s){return s.replace(/^\d{4}_colombia_citroen_/i,'').replace(/_on_conversion.*$/i,'').replace(/_/g,' ').replace(/\s+/g,' ').trim();}
+ tbody.innerHTML=visible.length?visible.map(x=>{
+  const title=human(x.name),shortTitle=title.length>84?title.slice(0,81)+'…':title;
+  const subtitle=[...x.models.slice(0,2),...x.accounts.slice(0,1)].filter(Boolean).join(' · ');
+  return '<tr><th scope="row" class="c3-performance-campaign-cell" title="'+esc(x.name)+'"><strong>'+esc(shortTitle)+'</strong><span class="c3-table-month-note">'+esc(subtitle)+'</span></th>'+cells(x)+'</tr>';
+ }).join(''):'<tr><td colspan="10" class="c3-table-empty">No hay campañas para estos filtros.</td></tr>';
  const t={
-  budget:monthRows.every(x=>x.budget!=null)?monthRows.reduce((a,x)=>a+x.budget,0):null,
-  spend:monthRows.some(x=>x.spend!=null)?monthRows.reduce((a,x)=>a+(x.spend||0),0):null,
-  leads:monthRows.some(x=>x.leads!=null)?monthRows.reduce((a,x)=>a+(x.leads||0),0):null,
-  target:monthRows.every(x=>x.target!=null)?monthRows.reduce((a,x)=>a+x.target,0):null
+  spend:rows.length?rows.reduce((s,x)=>s+x.spend,0):null,
+  leads:rows.length?rows.reduce((s,x)=>s+x.leads,0):null,
+  budget:rows.length&&rows.every(x=>x.budget!=null)?rows.reduce((s,x)=>s+x.budget,0):null,
+  target:rows.length&&rows.every(x=>x.target!=null)?rows.reduce((s,x)=>s+x.target,0):null
  };
  t.pctSpend=safeRatio(t.spend,t.budget);t.pctLeads=safeRatio(t.leads,t.target);
  t.actualCpl=t.leads>0?t.spend/t.leads:null;
- t.projectedCpl=t.target>0?t.budget/t.target:null;
+ t.projectedCpl=t.budget!=null&&t.target>0?t.budget/t.target:null;
  t.variance=t.projectedCpl>0&&t.actualCpl!=null?100*(t.actualCpl/t.projectedCpl-1):null;
- tfoot.innerHTML=monthRows.length?'<tr><th scope="row">TOTAL FILTRADO</th>'+cells(t)+'</tr>':'';
- const cutoff=$('c3PerformanceCutoff');
- if(cutoff)cutoff.textContent='Fuente Meta · hasta '+(state.dateMax||'—');
+ tfoot.innerHTML=rows.length?'<tr><th scope="row">TOTAL '+(select?.value?'CAMPAÑA':'CAMPAÑAS')+'</th>'+cells(t)+'</tr>':'';
+ const pagination=$('c3PerformancePagination');
+ if(pagination){
+  pagination.hidden=rows.length<=25;
+  const count=$('c3PerformanceCount'),more=$('c3PerformanceMore');
+  if(count)count.textContent='Mostrando '+Math.min(limit,rows.length)+' de '+rows.length+' campañas';
+  if(more){more.hidden=limit>=rows.length;more.onclick=()=>{state.performanceLimit=(state.performanceLimit||25)+25;performanceTable();};}
+ }
  const notes=$('c3PerformanceNotes');
  if(notes){
-  const partial=monthRows.some(r=>planFraction(r.m)<.999);
-  const incomplete=monthRows.some(r=>r.target==null);
-  notes.textContent='* Leads actuales = formularios + conversaciones, eventos no deduplicados. Consumo = Meta Ads; la inversión proyectada de enero a octubre incluye otros medios, de modo que % consumo es Meta / presupuesto del plan y NO cumplimiento multicanal. Variación = (CPL actual / CPL proyectado − 1) × 100; negativo significa menor costo.'+
-   (partial?' Rango parcial: presupuesto y leads proyectados prorrateados linealmente por días; referencia, no distribución oficial.':'')+
-   (incomplete?' Hay períodos con metas de leads incompletas (p. ej., Berlingo enero); el total proyectado y su cumplimiento se dejan sin calcular para evitar conclusiones falsas.':'')+
-   (isTerritory?' Sin proyección territorial verificable: se muestran solo resultados reales para el territorio seleccionado.':'');
+  notes.textContent='Leads actuales = formularios + conversaciones de Meta Ads (eventos, no personas únicas). Inversión proyectada y leads proyectados por campaña = ASIGNACIÓN REFERENCIAL del plan mensual por modelo en proporción al consumo real de cada campaña, NO presupuesto ni meta aprobados para esa campaña. % consumo = gasto Meta / referencia asignada; variación de CPL = (CPL actual / CPL referencial − 1) × 100.'+
+   (state.territory?' El plan no tiene presupuesto territorial verificado: proyecciones territoriales no disponibles.':'')+
+   (!state.campaignDays?.length?' Fuente de campaña mensual: no permite atribuir con precisión rangos diarios parciales.':'')+
+   (state.campaignDays?.length?' Detalle diario: DATA CITROEN AÑO hasta '+state.dateMax+'.':'')+
+   (rows.some(x=>x.target==null)?' Algunas metas no están disponibles en el plan original y se muestran como —.':'');
  }
 }
 function syncDateControl(){
