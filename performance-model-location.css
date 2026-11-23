@@ -1,0 +1,27 @@
+/* Tabla de performance por modelo y ubicación · Citroën */
+.c3-performance-table{border:1px solid #e0eaf1;border-radius:22px;background:#fff;box-shadow:0 8px 28px rgba(16,49,73,.045);padding:25px 28px;overflow:hidden}
+.c3-performance-head{display:flex;align-items:end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:24px}
+.c3-performance-head h2{letter-spacing:-.75px}
+.c3-performance-controls{display:flex;gap:12px;flex-wrap:wrap;align-items:end}
+.c3-performance-controls label{min-width:175px}
+.c3-performance-controls select{border:1px solid #dbe6ed;background:#f8fbfd;border-radius:11px;min-height:44px;color:#214861;font-weight:700;padding:0 12px}
+.c3-performance-scroll{overflow-x:auto;max-width:100%;border:1px solid #e6eef3;border-radius:14px}
+.c3-performance-grid{border-collapse:separate;border-spacing:0;min-width:1320px;width:100%;font-variant-numeric:tabular-nums}
+.c3-performance-grid thead th{background:#f1f6f9;color:#365772;font-size:11px;letter-spacing:.02em;padding:17px 13px;white-space:nowrap;border-bottom:1px solid #dbe7ef}
+.c3-performance-grid thead th small{color:#8aa2b3;font-size:10px}
+.c3-performance-grid tbody tr:nth-child(2n){background:#fafcfe}
+.c3-performance-grid tbody tr:hover{background:#f0f8fc}
+.c3-performance-grid tbody td,.c3-performance-grid tbody th{padding:16px 13px;border-bottom:1px solid #e9eff4}
+.c3-performance-grid tbody th.c3-performance-model-cell{min-width:180px;max-width:230px}
+.c3-performance-model-cell strong{font-size:13px!important;letter-spacing:-.1px;line-height:1.45;word-break:normal}
+.c3-performance-model-cell .c3-table-month-note{display:block;font-size:10px;color:#829aad;margin-top:4px}
+.c3-performance-location-cell{min-width:150px}
+.c3-location-pill{display:inline-flex;align-items:center;max-width:185px;white-space:normal;padding:7px 11px;background:#edf5fa;border:1px solid #dcebf3;color:#245372;border-radius:9px;font-size:11px;font-weight:750;text-transform:capitalize;line-height:1.4}
+.c3-performance-grid tbody tr:hover .c3-location-pill{background:#dcecf5}
+.c3-performance-grid thead th:first-child,.c3-performance-grid tbody th.c3-performance-model-cell{position:sticky;left:0;z-index:3;background:#fff}
+.c3-performance-grid thead th:first-child{background:#f1f6f9;z-index:5}
+.c3-performance-grid tbody tr:nth-child(2n) th.c3-performance-model-cell{background:#fafcfe}
+.c3-performance-grid tbody tr:hover th.c3-performance-model-cell{background:#f0f8fc}
+.c3-performance-grid tfoot th,.c3-performance-grid tfoot td{background:#eaf4fa;font-weight:800;border-top:2px solid #cce2ef;padding:16px 13px}
+.c3-performance-foot{line-height:1.6;color:#8298a9}
+@media(max-width:800px){.c3-performance-table{padding:18px 14px}.c3-performance-controls{width:100%}.c3-performance-controls label{flex:1;min-width:140px}.c3-performance-grid{min-width:1250px}}
