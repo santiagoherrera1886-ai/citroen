@@ -240,3 +240,15 @@ body:has(.concept3-shell){background:#f5f7fa;color:#172e42}
  .concept3-shell #c3AnnualChart{min-height:230px!important}
  .concept3-shell #c3AnnualChart svg{min-width:600px!important;min-height:230px!important}
 }
+
+
+/* Transparent vehicle cutout generated from the first-party local asset at load time. */
+.concept3-shell .c3-hero-vehicle.hero-clean img{
+ mix-blend-mode:normal!important;
+ -webkit-mask-image:none!important;mask-image:none!important;
+ filter:drop-shadow(0 27px 22px #08263675) saturate(1.15) contrast(1.06)!important;
+ width:100%;height:100%;object-fit:contain;object-position:center
+}
+.concept3-shell .c3-hero-vehicle.hero-clean{right:1%;width:47%;top:3%;height:93%}
+@media(max-width:900px){.concept3-shell .c3-hero-vehicle.hero-clean{width:50%;right:-4%;height:90%;top:4%}}
+@media(max-width:620px){.concept3-shell .c3-hero-vehicle.hero-clean{width:88%;right:-20%;height:200px;top:auto;bottom:-25px}}
