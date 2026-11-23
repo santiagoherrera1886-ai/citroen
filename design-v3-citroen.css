@@ -307,3 +307,22 @@ body:has(.concept3-shell){background:#f5f7fa;color:#172e42}
 @media(max-width:1430px){.concept3-shell .c3-filter-fields{grid-template-columns:minmax(220px,1.4fr) repeat(2,minmax(140px,1fr)) auto}.concept3-shell .c3-filter-fields .c3-advanced-toggle{grid-column:1/-1;height:46px}}
 @media(max-width:900px){.concept3-shell .c3-filter-fields{grid-template-columns:repeat(2,minmax(0,1fr))}.concept3-shell .c3-date-control{grid-column:1/-1}.concept3-shell .c3-performance-table{padding:19px 16px}.concept3-shell .c3-performance-head{align-items:flex-start;flex-direction:column;gap:8px}}
 @media(max-width:620px){.concept3-shell .c3-date-control{height:61px}.concept3-shell .c3-date-popover{left:-12px;width:min(355px,calc(100vw - 48px));padding:13px}.concept3-shell .c3-performance-grid{min-width:1130px}.concept3-shell .c3-performance-head h2{font-size:23px}.concept3-shell .c3-performance-head p{font-size:10px}.concept3-shell .c3-performance-table{margin-top:18px}}
+
+
+/* Campaign table refinements: same Citroën palette, typography and card grammar. */
+.concept3-shell .c3-performance-controls{display:flex;flex-wrap:wrap;align-items:flex-end;gap:9px}
+.concept3-shell .c3-performance-controls label{display:flex;flex-direction:column;gap:5px;color:#8098a8;font:800 9px Manrope,Arial,sans-serif;letter-spacing:.5px}
+.concept3-shell .c3-performance-controls select{height:40px;max-width:260px;min-width:155px;padding:0 12px;border-radius:10px;border:1px solid #dce8f0;background:#f7fafc;color:#254960;font:750 11px "DM Sans",Arial,sans-serif;cursor:pointer}
+.concept3-shell .c3-performance-controls select:focus{outline:2px solid #b7dce9;outline-offset:2px}
+.concept3-shell .c3-performance-grid{min-width:1500px}
+.concept3-shell .c3-performance-grid thead th:first-child,.concept3-shell .c3-performance-grid tbody .c3-performance-campaign-cell,.concept3-shell .c3-performance-grid tfoot th:first-child{min-width:300px;width:300px;max-width:320px}
+.concept3-shell .c3-performance-grid tbody .c3-performance-campaign-cell{white-space:normal;line-height:1.4;vertical-align:middle;overflow:hidden}
+.concept3-shell .c3-performance-grid tbody .c3-performance-campaign-cell strong{display:block;max-width:290px;overflow-wrap:anywhere;font-size:11px;font-weight:800;color:#234a62}
+.concept3-shell .c3-performance-grid tbody .c3-performance-campaign-cell .c3-table-month-note{font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:290px}
+.concept3-shell .c3-performance-pagination{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 4px 2px;color:#8098a8;font-size:10px}
+.concept3-shell .c3-performance-pagination[hidden]{display:none}
+.concept3-shell .c3-performance-pagination button{border:1px solid #dce9f0;border-radius:10px;background:#f5fafc;padding:9px 13px;color:#2d617b;font:800 11px Manrope,Arial,sans-serif;cursor:pointer}
+.concept3-shell .c3-performance-pagination button:hover{background:#e9f4f9;border-color:#bdd9e7}
+.concept3-shell .c3-performance-pagination button[hidden]{display:none}
+@media(max-width:950px){.concept3-shell .c3-performance-head{align-items:flex-start;flex-direction:column}.concept3-shell .c3-performance-controls{width:100%}}
+@media(max-width:540px){.concept3-shell .c3-performance-controls{display:grid;grid-template-columns:1fr 1fr}.concept3-shell .c3-performance-controls select{min-width:0;max-width:100%;width:100%}.concept3-shell .c3-performance-grid{min-width:1400px}}
