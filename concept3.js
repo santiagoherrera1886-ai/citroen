@@ -320,9 +320,55 @@ function installActual(plan,daily,detail){
  const footnote=$('campaignSourceFootnote');if(footnote)footnote.textContent='FUENTES · Proyecciones enero–octubre de 10 libros más noviembre 2026 del Excel recibido · '+daily.source+' · '+daily.date_min+' a '+daily.date_max+' · '+daily.rows_source+' registros. Territorios inferidos de los nombres; moneda asumida COP. Leads consolidados = formularios + conversaciones; no son personas únicas.';
  state.ready=true;render();
 }
+/* Remove connected white photographic backdrop from the local Aircross hero asset.
+   Only background-connected pixels are cleared: white details inside the vehicle survive. */
+function integrateHeroVehicle(img){
+ if(img.dataset.heroCleaned==='1'||img.dataset.heroProcessing==='1')return;
+ if(!/\/assets\/models\//.test(img.currentSrc||img.src))return;
+ const w=img.naturalWidth,h=img.naturalHeight;
+ if(!w||!h||w*h>2200000)return;
+ img.dataset.heroProcessing='1';
+ try{
+  const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+  const context=canvas.getContext('2d',{willReadFrequently:true});
+  if(!context)throw Error('Canvas no disponible');
+  context.drawImage(img,0,0,w,h);
+  const pixels=context.getImageData(0,0,w,h),buffer=pixels.data,total=w*h;
+  const seen=new Uint8Array(total),queue=new Int32Array(total);let head=0,tail=0;
+  const nearWhite=n=>{
+   const k=n*4,r=buffer[k],g=buffer[k+1],b=buffer[k+2];
+   const low=Math.min(r,g,b),high=Math.max(r,g,b);
+   return low>=218&&high-low<=26;
+  };
+  const push=n=>{if(!seen[n]&&nearWhite(n)){seen[n]=1;queue[tail++]=n;}};
+  for(let xx=0;xx<w;xx++){push(xx);push((h-1)*w+xx);}
+  for(let yy=0;yy<h;yy++){push(yy*w);push(yy*w+w-1);}
+  while(head<tail){
+   const n=queue[head++],x=n%w,y=(n/w)|0;
+   if(x)push(n-1);
+   if(x+1<w)push(n+1);
+   if(y)push(n-w);
+   if(y+1<h)push(n+w);
+  }
+  if(tail<total*.1)return; // Unusual image: keep source rather than harming the photo.
+  for(let i=0;i<total;i++)if(seen[i])buffer[i*4+3]=0;
+  // Feather one pixel of bright edge anti-aliasing to avoid a pasted outline.
+  for(let i=w+1;i<total-w-1;i++){
+   if(seen[i])continue;
+   if(!(seen[i-1]||seen[i+1]||seen[i-w]||seen[i+w]))continue;
+   const k=i*4,r=buffer[k],g=buffer[k+1],b=buffer[k+2];
+   const low=Math.min(r,g,b),high=Math.max(r,g,b);
+   if(low>178&&high-low<33)buffer[k+3]=Math.max(20,Math.min(255,Math.round((245-low)/67*255)));
+  }
+  context.putImageData(pixels,0,0);
+  img.dataset.heroCleaned='1';img.closest('.c3-hero-vehicle')?.classList.add('hero-clean');
+  img.src=canvas.toDataURL('image/png');
+ }catch(error){console.warn('Fondo de vehículo: conservar imagen original',error);}
+ finally{delete img.dataset.heroProcessing;}
+}
 function wire(){
  if(!$('c3Dashboard'))return;
- const hero=$('c3HeroCar');hero.src=cars[2].src;hero.onerror=()=>{if(!hero.dataset.tried){hero.dataset.tried='yes';hero.src=cars[2].backup;}else{hero.style.display='none';hero.parentElement.classList.add('no-photo');}};
+ const hero=$('c3HeroCar');hero.onload=()=>integrateHeroVehicle(hero);hero.onerror=()=>{if(!hero.dataset.tried){hero.dataset.tried='yes';hero.src=cars[2].backup;}else{hero.style.display='none';hero.parentElement.classList.add('no-photo');}};hero.src=cars[2].src;
  $('c3Explore').onclick=()=>$('c3ComparePanel').scrollIntoView({behavior:'smooth',block:'center'});
  for(const btn of document.querySelectorAll('[data-c3-jump]'))btn.onclick=()=>{const nav=document.querySelector('.nav-link[data-target="'+btn.dataset.c3Jump+'"]');if(nav)nav.click();};
  for(const [id,key] of [['c3Month','month'],['c3Model','model'],['c3Territory','territory']])$(id).onchange=e=>{state[key]=e.target.value;render();};
