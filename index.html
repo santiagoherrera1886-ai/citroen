@@ -259,13 +259,13 @@
   </div>
   <section class="c3-performance-table" aria-labelledby="c3PerformanceTableTitle">
  <div class="c3-performance-head">
-  <div><span class="c3-performance-overline">CAMPAÑAS / PERFORMANCE INTELLIGENCE</span><h2 id="c3PerformanceTableTitle">Inversión y cumplimiento por campaña</h2><p>Rendimiento de campañas Meta Ads y proyecciones referenciales de los planes 2026.</p></div>
-  <div class="c3-performance-controls"><label>Campaña<select id="c3PerformanceCampaign" aria-label="Filtrar campañas dentro de la tabla"><option value="">Todas las campañas</option></select></label><label>Ordenar<select id="c3PerformanceSort" aria-label="Orden de campañas"><option value="spend">Mayor consumo</option><option value="leads">Más leads</option><option value="name">Nombre A–Z</option></select></label></div>
+  <div><span class="c3-performance-overline">CAMPAÑAS / PERFORMANCE INTELLIGENCE</span><h2 id="c3PerformanceTableTitle">Inversión y cumplimiento por modelo y ubicación</h2><p>Comparativo territorial y de portafolio con datos Meta Ads y referencias del plan 2026.</p></div>
+  <div class="c3-performance-controls"><label>Modelo<select id="c3PerformanceModel" aria-label="Filtrar por modelo"><option value="">Todos los modelos</option></select></label><label>Ubicación<select id="c3PerformanceLocation" aria-label="Filtrar por ubicación"><option value="">Todas las ubicaciones</option></select></label><label>Ordenar<select id="c3PerformanceSort" aria-label="Orden de campañas"><option value="spend">Mayor consumo</option><option value="leads">Más leads</option><option value="name">Nombre A–Z</option></select></label></div>
  </div>
  <div class="c3-performance-scroll" tabindex="0" aria-label="Tabla desplazable horizontalmente">
   <table class="c3-performance-grid">
    <thead><tr>
-    <th scope="col">Campaña <small>Meta Ads · nombre original</small></th>
+    <th scope="col">Modelo <small>Portafolio Citroën</small></th><th scope="col">Ubicación <small>Según nomenclatura de campaña</small></th>
     <th scope="col" title="Inversión del plan seleccionado">Inversión total <small>Proyección</small></th>
     <th scope="col">Consumo <small>Meta Ads real</small></th>
     <th scope="col" title="Consumo Meta / inversión del plan">% consumo</th>
@@ -276,12 +276,12 @@
     <th scope="col">CPL proyectado</th>
     <th scope="col" title="(CPL actual / CPL proyectado - 1) × 100; negativo = mejor costo">Variación <small>vs. proyección CPL</small></th>
    </tr></thead>
-   <tbody id="c3PerformanceRows"><tr><td colspan="10">Conciliando campañas y resultados…</td></tr></tbody>
+   <tbody id="c3PerformanceRows"><tr><td colspan="11">Conciliando modelos y territorios…</td></tr></tbody>
    <tfoot id="c3PerformanceTotal"></tfoot>
   </table>
  </div>
- <div class="c3-performance-pagination" id="c3PerformancePagination" hidden><span id="c3PerformanceCount">Mostrando campañas</span><button type="button" id="c3PerformanceMore">Ver 25 campañas más <span aria-hidden="true">↓</span></button></div>
- <div class="c3-performance-foot" id="c3PerformanceNotes">*Leads = formularios + conversaciones, sin deduplicación. Las proyecciones por campaña se identifican como estimaciones; Meta Ads no equivale a la ejecución multicanal.</div>
+ <div class="c3-performance-pagination" id="c3PerformancePagination" hidden><span id="c3PerformanceCount">Mostrando modelos y ubicaciones</span><button type="button" id="c3PerformanceMore">Ver 25 filas más <span aria-hidden="true">↓</span></button></div>
+ <div class="c3-performance-foot" id="c3PerformanceNotes">*Leads = formularios + conversaciones (eventos sin deduplicación). La ubicación se infiere de la nomenclatura de campañas, no de geolocalización. Las referencias presupuestales no son metas territoriales oficiales.</div>
 </section>
 <section class="c3-advanced-analytics" aria-labelledby="c3AdvancedTitle">
     <div class="c3-analytics-header"><div><span class="c3-analytics-eyebrow">PERFORMANCE / DEEP DIVE</span><h2 id="c3AdvancedTitle">El rendimiento, en perspectiva.</h2><p>Visualizaciones conectadas a los filtros del resumen · ejecución Meta Ads auditada.</p></div><span class="c3-coverage-tag" id="c3CoverageTag">Validando cobertura…</span></div>
@@ -547,7 +547,7 @@
 <script src="./meta.js?v=20261123-annual1" defer></script>
 <script src="./reach-math.js?v=20261026b" defer></script>
 <script src="./looker-filter-engine.js?v=20261123-compact3" defer></script>
-<script src="./concept3.js?v=20261123-campaign8" defer></script>
+<script src="./concept3.js?v=20261123-model-territory1" defer></script>
 <script src="./access.js?v=20261028-sheets1" defer></script>
 <script src="./quick-delete.js?v=20261027-delete1" defer></script>
 <script src="./studio.js?v=20261111-nov1" defer></script>
