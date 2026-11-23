@@ -100,3 +100,143 @@ body:has(.concept3-shell){background:#f5f7fa;color:#172e42}
 @media(max-width:1320px){.concept3-shell .c3-header-controls{justify-content:flex-start}.concept3-shell .c3-header{align-items:stretch;flex-wrap:wrap}.concept3-shell .c3-hero-copy{width:57%}}
 @media(max-width:800px){.concept3-shell .c3-header-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));padding:10px;gap:8px}.concept3-shell .c3-header-controls .c3-select{min-width:0}.concept3-shell .c3-header-controls .c3-source-pill{max-width:none}.concept3-shell .c3-select select{max-width:100%}.concept3-shell .c3-hero{height:auto!important;min-height:365px}.concept3-shell .c3-hero-copy{padding:26px 23px;width:90%;min-height:345px}.concept3-shell .c3-hero h2{font-size:30px}.concept3-shell .c3-hero-vehicle{top:auto;bottom:-40px;width:73%;height:180px;right:-2%;opacity:.85}.concept3-shell .c3-hero-model{display:none}.concept3-shell .c3-hero-copy p{max-width:70%}.c3-analytics-grid{grid-template-columns:1fr}.c3-analytics-card.c3-analytics-wide,.c3-analytics-card:last-child{grid-column:auto}.c3-analytics-header{flex-direction:column;align-items:flex-start}.c3-analytics-card{padding:18px}.c3-analytics-title{align-items:flex-start;flex-direction:column;gap:7px}.c3-analytics-legend{flex-wrap:wrap}.c3-analytics-composition{gap:18px}}
 @media(max-width:520px){.concept3-shell .c3-hero-copy p{max-width:100%;padding-right:26px}.concept3-shell .c3-hero-vehicle{opacity:.42;right:-12%}.c3-analytics-composition{flex-direction:column;align-items:stretch}.c3-analytics-donut{align-self:center}.c3-analytics-breakdown{min-width:0}}
+
+
+/* Citroen / Premium Summary · 23 Nov 2026 · purposeful responsive layout */
+.concept3-shell .c3-header{align-items:center!important;min-height:86px;margin:0 0 12px;gap:20px}
+.concept3-shell .c3-header-controls{background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important;gap:8px}
+.concept3-shell .c3-header-controls .c3-source-pill{min-height:36px!important;max-width:none!important;border-radius:100px;background:#e6f3f4;border:1px solid #c9e8e9;padding:8px 14px;color:#1c7182;font-size:10px;letter-spacing:.25px}
+.concept3-shell .c3-header h1{font-size:clamp(30px,3.1vw,48px);line-height:1.1}
+.concept3-shell .c3-hero{
+ height:360px!important;min-height:360px!important;border-radius:25px!important;
+ background:linear-gradient(105deg,#081e30 0%,#0b344c 31%,#155a73 56%,#b7d6df 81%,#d5e8ec 100%)!important;
+ border:1px solid #163f54!important;box-shadow:0 23px 54px #07334c2c!important;isolation:isolate
+}
+.concept3-shell .c3-hero-photo{background:radial-gradient(ellipse at 75% 28%,#ffffff9e 0%,transparent 43%),linear-gradient(93deg,transparent 10%,#a5d0dd23 73%,#fff5)!important;opacity:1!important}
+.concept3-shell .c3-hero:before{content:"";z-index:1;background:linear-gradient(90deg,#07223742,transparent 60%),repeating-linear-gradient(115deg,transparent 0 47px,#ffffff10 47px 48px)!important}
+.concept3-shell .c3-hero:after{height:100%;background:linear-gradient(0deg,#02182736,transparent 45%)!important}
+.concept3-shell .c3-hero-orbit{right:-145px;top:-135px;width:580px;height:580px;border-color:#ffffff70;box-shadow:0 0 0 51px #ffffff19,0 0 0 102px #ffffff0b}
+.concept3-shell .c3-hero-watermark{
+ position:absolute;z-index:1;right:-45px;bottom:-38px;color:#fff;
+ font:900 clamp(84px,9.4vw,160px)/1 Manrope,Arial,sans-serif;letter-spacing:-.095em;
+ opacity:.14;white-space:nowrap;pointer-events:none;user-select:none
+}
+.concept3-shell .c3-hero-copy{position:relative;z-index:5;width:57%;height:100%;padding:39px 20px 34px 43px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start}
+.concept3-shell .c3-hero-eyebrow{font-size:10px;letter-spacing:2.15px;color:#9dd7e8;margin:0 0 17px;font-weight:800}
+.concept3-shell .c3-hero h2{color:#fff!important;font:850 clamp(32px,3.1vw,52px)/1.045 Manrope,Arial,sans-serif;letter-spacing:-.06em!important;margin:0 0 17px;white-space:normal!important;max-width:680px}
+.concept3-shell .c3-hero h2 span{color:#91d8e5!important;font-weight:650}
+.concept3-shell .c3-hero-copy p{font:500 12.5px/1.65 "DM Sans",Arial,sans-serif;color:#c6dce6!important;max-width:440px;margin:0}
+.concept3-shell .c3-primary-btn{margin:23px 0 0!important;flex-shrink:0;min-height:41px;border-radius:11px;background:#f34e60;color:#fff;box-shadow:0 8px 25px #091b2466;padding:11px 18px;transition:transform .2s,background .2s}
+.concept3-shell .c3-primary-btn:hover{background:#ff6172;transform:translateY(-2px)}
+.concept3-shell .c3-hero-vehicle{position:absolute;top:17px;right:0;height:340px;width:48%;z-index:3;display:flex;align-items:center;justify-content:center;pointer-events:none;overflow:visible}
+.concept3-shell .c3-hero-vehicle img{
+ display:block;width:100%;height:100%;max-height:none!important;object-fit:contain;
+ mix-blend-mode:multiply!important;filter:contrast(1.12) saturate(1.1) drop-shadow(0 20px 12px #052b4355);
+ -webkit-mask-image:radial-gradient(ellipse 73% 71% at 51% 55%,#000 42%,#000a 67%,transparent 97%);
+ mask-image:radial-gradient(ellipse 73% 71% at 51% 55%,#000 42%,#000a 67%,transparent 97%)
+}
+.concept3-shell .c3-hero-model{display:none!important}
+.concept3-shell .c3-context-line{font-size:11px;padding:14px 3px 9px;color:#6d8799}
+.concept3-shell .c3-filters-bar{position:relative;margin:18px 0 12px;padding:18px 20px 20px;border-radius:19px;background:#fff;border:1px solid #e0e9ef;box-shadow:0 9px 31px #133e5911}
+.concept3-shell .c3-filters-bar-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.concept3-shell .c3-filters-bar-title{display:flex;align-items:center;gap:10px;font:800 14px Manrope,Arial,sans-serif;color:#1c435b;letter-spacing:-.3px}
+.concept3-shell .c3-filters-bar-icon{width:28px;height:28px;display:grid;place-items:center;border-radius:9px;background:#e8f3f8;color:#2b7e9c;font-size:17px}
+.concept3-shell .c3-filters-bar-hint{font-size:10px;color:#869ba9}
+.concept3-shell .c3-filter-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto auto;align-items:stretch;gap:10px;min-width:0}
+.concept3-shell .c3-filter-fields .c3-select{
+ display:flex;flex-direction:column;align-items:stretch;justify-content:center;gap:7px;
+ height:66px;min-width:0;max-width:none;padding:11px 15px;border-radius:12px;
+ background:#f7fafc;border:1px solid #e0eaf0;box-shadow:none;transition:all .2s
+}
+.concept3-shell .c3-filter-fields .c3-select:hover,.concept3-shell .c3-filter-fields .c3-select:focus-within{background:#fff;border-color:#87b8d1;box-shadow:0 0 0 3px #74b7d515}
+.concept3-shell .c3-filter-fields .c3-filter-caption{font-size:9px;font-weight:800;letter-spacing:1.25px;color:#829aab}
+.concept3-shell .c3-filter-fields .c3-select select{width:100%;max-width:none;min-width:0;font-size:13px;line-height:1.3;letter-spacing:0;font-weight:800;color:#1d425b;cursor:pointer}
+.concept3-shell .c3-filter-fields .c3-filter-reset{height:66px;min-height:0;border-radius:12px;border:1px solid #deebf1;background:#fff;color:#40627a;font:800 11px Manrope,Arial,sans-serif;padding:0 15px;transition:all .2s}
+.concept3-shell .c3-filter-fields .c3-filter-reset:hover{background:#eef6fa;border-color:#bfd9e5}
+.concept3-shell .c3-advanced-toggle{height:66px;min-height:0;border-radius:12px;border:1px solid #254c61;background:#102f44;color:white;white-space:nowrap;font:800 11px Manrope,Arial,sans-serif;padding:0 17px;transition:background .2s}
+.concept3-shell .c3-advanced-toggle span{display:inline-block;margin-left:10px;transition:transform .2s}
+.concept3-shell .c3-advanced-toggle[aria-expanded=true] span{transform:rotate(180deg)}
+.concept3-shell .c3-advanced-toggle:hover{background:#24556f}
+#lkGlobalFilters[hidden]{display:none!important}
+.concept3-shell #lkGlobalFilters:not([hidden]):not(:empty){margin:0 0 18px!important;padding:13px!important;border:1px solid #deebf0;border-radius:16px;background:#f7fafc!important;box-shadow:none}
+.concept3-shell #lkGlobalFilters .lk-controls{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr)) auto!important;align-items:stretch!important;gap:12px!important;position:relative;padding:0!important;border:0!important;box-shadow:none!important;background:transparent!important}
+.concept3-shell #lkGlobalFilters .lk-control{min-width:0!important;max-width:none!important;height:70px;flex:none!important;position:relative;padding:10px 12px!important;background:#fff;border:1px solid #dfeaf0;border-radius:11px;overflow:visible}
+.concept3-shell #lkGlobalFilters .lk-control:focus-within{border-color:#7bb4d3;box-shadow:0 0 0 3px #a3d2e822}
+.concept3-shell #lkGlobalFilters .lk-control-head{font-size:10px;letter-spacing:.15px;color:#2e5268;gap:6px;flex-shrink:0;white-space:nowrap}
+.concept3-shell #lkGlobalFilters .lk-control-head small{font-size:9px;color:#93a6b3;font-weight:600}
+.concept3-shell #lkGlobalFilters .lk-control select,.concept3-shell #lkGlobalFilters .lk-control input[type=date],.concept3-shell #lkGlobalFilters .lk-control input[type=search],.concept3-shell #lkGlobalFilters .lk-control input[type=number]{height:34px;min-height:34px;border:1px solid #e1edf2;background:#f8fafc;font-size:11px;border-radius:8px;padding:7px 9px;max-width:100%;min-width:0}
+.concept3-shell #lkGlobalFilters .lk-control:has(.lk-pair){min-width:0!important}
+.concept3-shell #lkGlobalFilters .lk-control .lk-pair{gap:7px}
+.concept3-shell #lkGlobalFilters .lk-control .lk-pair input{min-width:0!important}
+.concept3-shell #lkGlobalFilters .lk-reset{min-width:96px;align-self:stretch;margin:0;border-radius:11px;background:#edf5f8;color:#33586f;border:1px solid #dce9f0;font:800 11px Manrope,Arial,sans-serif}
+.concept3-shell #lkGlobalFilters .lk-reset:hover{background:#e3eef4}
+.concept3-shell #lkGlobalFilters .lk-multiselect{position:relative;width:100%;z-index:10}
+.concept3-shell #lkGlobalFilters .lk-multiselect[open]{z-index:100}
+.concept3-shell #lkGlobalFilters .lk-multiselect summary{display:flex;justify-content:space-between;align-items:center;gap:10px;list-style:none;cursor:pointer;height:34px;border-radius:8px;border:1px solid #e1edf2;background:#f8fafc;padding:7px 10px;font-weight:800;color:#20435b;font-size:11px;white-space:nowrap}
+.concept3-shell #lkGlobalFilters .lk-multiselect summary::-webkit-details-marker{display:none}
+.concept3-shell #lkGlobalFilters .lk-multi-selected{overflow:hidden;text-overflow:ellipsis}
+.concept3-shell #lkGlobalFilters .lk-multi-chevron{font-size:17px;color:#668699;transition:transform .2s}
+.concept3-shell #lkGlobalFilters .lk-multiselect[open] .lk-multi-chevron{transform:rotate(180deg)}
+.concept3-shell #lkGlobalFilters .lk-multi-popover{
+ position:absolute;z-index:200;top:calc(100% + 9px);left:0;width:max(100%,225px);max-width:min(340px,80vw);
+ padding:14px;box-shadow:0 16px 40px #17394b2d;border:1px solid #d8e9ef;
+ background:#fff;border-radius:13px
+}
+.concept3-shell #lkGlobalFilters .lk-multi-instruction{display:block;color:#8199a7;font-size:10px;margin:0 0 11px}
+.concept3-shell #lkGlobalFilters .lk-list{max-height:240px;overflow-y:auto;min-width:0;max-width:none;gap:3px}
+.concept3-shell #lkGlobalFilters .lk-list label{display:flex;align-items:center;gap:9px;padding:8px;border-radius:8px;font-size:11px;color:#365b70;transition:background .15s}
+.concept3-shell #lkGlobalFilters .lk-list label:hover{background:#eef6fa}
+.concept3-shell #lkGlobalFilters .lk-list input[type=checkbox]{width:16px;height:16px;margin:0;accent-color:#dd5261;flex-shrink:0}
+.concept3-shell #lkGlobalFilters .lk-list label span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.concept3-shell .c3-advanced-analytics{margin-top:32px}
+.concept3-shell .c3-analytics-card{min-height:0!important;height:auto!important}
+.concept3-shell .c3-analytics-card.c3-analytics-wide{min-height:0!important;height:auto!important}
+.concept3-shell #c3AnnualChart{display:block!important;overflow-x:auto!important;overflow-y:hidden!important;width:100%!important;min-height:295px!important;height:auto!important;padding:6px 0 4px}
+.concept3-shell #c3AnnualChart svg{
+ display:block!important;width:100%!important;min-width:630px!important;max-width:none!important;
+ height:auto!important;min-height:282px!important;max-height:none!important;aspect-ratio:970/282!important;margin:0!important;
+ position:static!important;transform:none!important;overflow:visible!important
+}
+.concept3-shell .c3-analytics-svg-wrap{min-height:0!important}
+.concept3-shell .c3-analytics-title{margin-bottom:15px}
+.concept3-shell .c3-analytics-line-track{height:10px}
+@media(max-width:1430px){
+ .concept3-shell .c3-hero-copy{width:56%;padding-left:32px}
+ .concept3-shell .c3-hero h2{font-size:clamp(28px,3.5vw,43px)}
+ .concept3-shell .c3-hero-vehicle{width:50%}
+ .concept3-shell .c3-filter-fields{grid-template-columns:repeat(3,minmax(0,1fr)) auto}
+ .concept3-shell .c3-advanced-toggle{grid-column:1/-1;height:46px}
+}
+@media(max-width:900px){
+ .concept3-shell .c3-hero{height:340px!important;min-height:340px!important}
+ .concept3-shell .c3-hero-copy{width:66%;padding:26px 15px 28px 26px}
+ .concept3-shell .c3-hero h2{font-size:clamp(27px,4vw,37px)}
+ .concept3-shell .c3-hero-vehicle{width:48%;height:300px;top:24px;right:-6%}
+ .concept3-shell .c3-filter-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .concept3-shell .c3-filter-fields .c3-filter-reset,.concept3-shell .c3-advanced-toggle{grid-column:auto;height:50px}
+ .concept3-shell #lkGlobalFilters .lk-controls{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .concept3-shell #lkGlobalFilters .lk-reset{min-height:42px}
+}
+@media(max-width:620px){
+ .concept3-shell .c3-header{align-items:flex-start;flex-wrap:wrap;gap:9px}
+ .concept3-shell .c3-header-controls{width:auto}
+ .concept3-shell .c3-hero{height:425px!important;min-height:425px!important}
+ .concept3-shell .c3-hero-copy{width:100%;height:auto;min-height:330px;justify-content:flex-start;padding:27px 22px}
+ .concept3-shell .c3-hero-eyebrow{white-space:normal;font-size:8.5px;margin-bottom:15px}
+ .concept3-shell .c3-hero h2{font-size:30px;max-width:360px;line-height:1.11}
+ .concept3-shell .c3-hero-copy p{font-size:11px;max-width:310px;line-height:1.5}
+ .concept3-shell .c3-primary-btn{margin-top:17px!important}
+ .concept3-shell .c3-hero-vehicle{width:88%;height:200px;top:auto;bottom:-25px;right:-20%;opacity:.36}
+ .concept3-shell .c3-hero-watermark{font-size:80px}
+ .concept3-shell .c3-filters-bar{padding:15px 13px}
+ .concept3-shell .c3-filters-bar-head{align-items:flex-start;flex-direction:column;gap:4px}
+ .concept3-shell .c3-filter-fields{gap:8px}
+ .concept3-shell .c3-filter-fields .c3-select{height:61px;padding:10px 11px}
+ .concept3-shell .c3-filter-fields .c3-select:first-child{grid-column:1/-1}
+ .concept3-shell .c3-filter-fields .c3-select select{font-size:11px}
+ .concept3-shell .c3-filter-fields .c3-filter-reset,.concept3-shell .c3-advanced-toggle{font-size:10px;height:46px;padding:0 8px}
+ .concept3-shell #lkGlobalFilters .lk-controls{grid-template-columns:1fr!important}
+ .concept3-shell #lkGlobalFilters .lk-control{height:auto;min-height:68px}
+ .concept3-shell #c3AnnualChart{min-height:230px!important}
+ .concept3-shell #c3AnnualChart svg{min-width:600px!important;min-height:230px!important}
+}
