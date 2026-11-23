@@ -252,3 +252,58 @@ body:has(.concept3-shell){background:#f5f7fa;color:#172e42}
 .concept3-shell .c3-hero-vehicle.hero-clean{right:1%;width:47%;top:3%;height:93%}
 @media(max-width:900px){.concept3-shell .c3-hero-vehicle.hero-clean{width:50%;right:-4%;height:90%;top:4%}}
 @media(max-width:620px){.concept3-shell .c3-hero-vehicle.hero-clean{width:88%;right:-20%;height:200px;top:auto;bottom:-25px}}
+
+
+/* Performance control / polished date dropdown & wide reconciliation table */
+.concept3-shell .c3-filter-fields{grid-template-columns:minmax(220px,1.3fr) repeat(2,minmax(150px,1fr)) auto auto}
+.concept3-shell .c3-date-control{min-width:0;height:66px;padding:10px 14px;display:flex;flex-direction:column;justify-content:center;gap:7px;background:#f7fafc;border:1px solid #dfeaf0;border-radius:12px;position:relative;z-index:40}
+.concept3-shell .c3-date-control:has(details[open]){background:#fff;border-color:#7aadc9;box-shadow:0 0 0 3px #80bdd51b;z-index:80}
+.concept3-shell .c3-date-control .c3-filter-caption{display:block;font-size:9px;font-weight:800;color:#829aab;letter-spacing:1.2px;line-height:1}
+.concept3-shell .c3-date-dropdown{position:relative;min-width:0}
+.concept3-shell .c3-date-dropdown summary{display:flex;align-items:center;gap:8px;justify-content:space-between;list-style:none;color:#1a435c;font:800 12px/1.2 Manrope,Arial,sans-serif;cursor:pointer;overflow:hidden;white-space:nowrap}
+.concept3-shell .c3-date-dropdown summary::-webkit-details-marker{display:none}
+.concept3-shell .c3-date-dropdown summary span:first-child{overflow:hidden;text-overflow:ellipsis}
+.concept3-shell .c3-date-chevron{font-size:17px;color:#69889c;transition:transform .2s;flex-shrink:0}
+.concept3-shell .c3-date-dropdown[open] .c3-date-chevron{transform:rotate(180deg)}
+.concept3-shell .c3-date-popover{position:absolute;top:calc(100% + 17px);left:-14px;z-index:999;width:min(380px,85vw);padding:19px;border:1px solid #dbe8ef;border-radius:16px;background:#fff;box-shadow:0 21px 54px #12344a35;display:grid;gap:15px}
+.concept3-shell .c3-date-field{display:flex;flex-direction:column;gap:7px;color:#607d91;font:800 10px Manrope,Arial,sans-serif;letter-spacing:.05em}
+.concept3-shell .c3-date-field select,.concept3-shell .c3-date-field input{height:43px;width:100%;min-width:0;padding:10px;border:1px solid #d8e5ee;border-radius:10px;background:#f7fafc;color:#244b65;font:750 12px "DM Sans",Arial,sans-serif;outline:none}
+.concept3-shell .c3-date-field select:focus,.concept3-shell .c3-date-field input:focus{border-color:#74adcd;box-shadow:0 0 0 3px #81c2df25}
+.concept3-shell .c3-date-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.concept3-shell .c3-date-note{color:#7b93a4;font-size:10px;line-height:1.55;margin:0}
+.concept3-shell .c3-date-validation{font-size:11px;color:#c63d50;margin:0;min-height:0}
+.concept3-shell .c3-date-apply{border:0;background:#113a55;color:#fff;border-radius:10px;font:800 12px Manrope,Arial,sans-serif;min-height:44px;padding:11px 15px;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+.concept3-shell .c3-date-apply:hover{background:#235d7a}
+.concept3-shell .c3-performance-table{margin:24px 0 20px;background:#fff;border:1px solid #e0e9ee;border-radius:20px;padding:24px 25px 18px;box-shadow:0 13px 35px #1b3e500d;max-width:100%;min-width:0;overflow:hidden}
+.concept3-shell .c3-performance-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:21px}
+.concept3-shell .c3-performance-overline{display:block;font:850 10px Manrope,Arial,sans-serif;color:#d95562;letter-spacing:1.9px;margin-bottom:9px}
+.concept3-shell .c3-performance-head h2{font:850 clamp(22px,2.1vw,29px)/1.18 Manrope,Arial,sans-serif;letter-spacing:-.05em;color:#163e57;margin:0 0 7px}
+.concept3-shell .c3-performance-head p{font-size:11px;color:#8098a8;line-height:1.5;margin:0}
+.concept3-shell .c3-performance-cutoff{font-size:10px;color:#316e85;border-radius:100px;border:1px solid #cfe4ec;background:#eaf4f8;padding:9px 11px;white-space:nowrap;font-weight:800}
+.concept3-shell .c3-performance-scroll{width:100%;max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;border:1px solid #e7eef2;border-radius:13px}
+.concept3-shell .c3-performance-grid{border-collapse:separate;border-spacing:0;width:100%;min-width:1250px;font-variant-numeric:tabular-nums;font-size:11px;color:#2d4a5c}
+.concept3-shell .c3-performance-grid thead th{position:sticky;top:0;z-index:1;text-align:right;padding:17px 15px;vertical-align:middle;background:#f1f6f9;border-bottom:1px solid #dae7ee;color:#33576e;font:800 10px/1.35 Manrope,Arial,sans-serif;white-space:nowrap}
+.concept3-shell .c3-performance-grid thead th:first-child{text-align:left;position:sticky;left:0;z-index:3;min-width:125px}
+.concept3-shell .c3-performance-grid thead th small{display:block;color:#809cab;font:650 9px/1.4 "DM Sans",Arial,sans-serif;margin-top:3px}
+.concept3-shell .c3-performance-grid tbody th,.concept3-shell .c3-performance-grid tfoot th{position:sticky;left:0;z-index:2;text-align:left;background:#fff;min-width:125px;white-space:nowrap}
+.concept3-shell .c3-performance-grid tbody th,.concept3-shell .c3-performance-grid tbody td{padding:13px 15px;border-bottom:1px solid #edf2f5;white-space:nowrap;text-align:right;font-size:11px;font-weight:700}
+.concept3-shell .c3-performance-grid tbody th{padding:11px 15px;text-align:left;color:#1e4661}
+.concept3-shell .c3-performance-grid tbody tr:nth-child(even){background:#fbfdfe}
+.concept3-shell .c3-performance-grid tbody tr:nth-child(even) th{background:#fbfdfe}
+.concept3-shell .c3-performance-grid tbody tr:hover,.concept3-shell .c3-performance-grid tbody tr:hover th{background:#f0f8fc}
+.concept3-shell .c3-performance-grid td:nth-child(2),.concept3-shell .c3-performance-grid td:nth-child(3){font-weight:850;color:#20485f}
+.concept3-shell .c3-table-month-note{display:block;margin-top:3px;font-size:9px;color:#9aacb8;font-weight:600}
+.concept3-shell .c3-ratio{display:inline-flex;align-items:center;justify-content:center;min-width:64px;border-radius:7px;padding:5px 7px;font:800 10px "DM Sans",Arial,sans-serif}
+.concept3-shell .c3-ratio.good{color:#14796e;background:#e8f6f1}
+.concept3-shell .c3-ratio.warn{color:#ae5c3b;background:#fff4ed}
+.concept3-shell .c3-ratio.na{color:#90a4b2;background:#f2f5f7}
+.concept3-shell .c3-performance-grid tfoot th,.concept3-shell .c3-performance-grid tfoot td{padding:17px 15px;background:#133a53!important;color:#fff;font-weight:850;white-space:nowrap;text-align:right}
+.concept3-shell .c3-performance-grid tfoot th{text-align:left;z-index:3}
+.concept3-shell .c3-performance-grid tfoot .c3-ratio.good{background:#155d5a;color:#c5ffe9}
+.concept3-shell .c3-performance-grid tfoot .c3-ratio.warn{background:#6a4a37;color:#ffe3c4}
+.concept3-shell .c3-performance-grid tfoot .c3-ratio.na{background:#35536a;color:#d4e2eb}
+.concept3-shell .c3-performance-foot{margin:14px 1px 0;font-size:10px;line-height:1.7;color:#7890a2}
+.concept3-shell .c3-performance-grid .c3-table-empty{text-align:center!important;padding:26px!important;color:#8097a7!important}
+@media(max-width:1430px){.concept3-shell .c3-filter-fields{grid-template-columns:minmax(220px,1.4fr) repeat(2,minmax(140px,1fr)) auto}.concept3-shell .c3-filter-fields .c3-advanced-toggle{grid-column:1/-1;height:46px}}
+@media(max-width:900px){.concept3-shell .c3-filter-fields{grid-template-columns:repeat(2,minmax(0,1fr))}.concept3-shell .c3-date-control{grid-column:1/-1}.concept3-shell .c3-performance-table{padding:19px 16px}.concept3-shell .c3-performance-head{align-items:flex-start;flex-direction:column;gap:8px}}
+@media(max-width:620px){.concept3-shell .c3-date-control{height:61px}.concept3-shell .c3-date-popover{left:-12px;width:min(355px,calc(100vw - 48px));padding:13px}.concept3-shell .c3-performance-grid{min-width:1130px}.concept3-shell .c3-performance-head h2{font-size:23px}.concept3-shell .c3-performance-head p{font-size:10px}.concept3-shell .c3-performance-table{margin-top:18px}}
