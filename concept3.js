@@ -141,48 +141,50 @@ function performanceTable(){
  const daily=state.campaignDays&&state.campaignDays.length?filter(state.campaignDays):filter(state.campaigns);
  const periods=new Set(planPeriods());
  const items=daily.filter(r=>periods.has(r.month));
- const spendPerModel=new Map(),byCampaign=new Map();
+ const spendPerModel=new Map(), groups=new Map();
  const modelKey=r=>r.month+'|'+norm(r.model);
- const make=()=>({name:'',accounts:new Set(),models:new Set(),spend:0,leads:0,budget:0,target:0,budgetKnown:true,targetKnown:true});
- // Allocate month-and-model planning targets proportionally to the observed
- // campaign spend in that same model. It is a REFERENCE, not a campaign commitment.
+ const make=()=>({model:'',location:'',campaigns:new Set(),spend:0,leads:0,budget:0,target:0,budgetKnown:true,targetKnown:true});
+ // Group recorded campaign events by car model and campaign-nomenclature territory.
+ // Monthly model plans are allocated proportionally by Meta spend: reference, not geographic plan.
  for(const r of items)spendPerModel.set(modelKey(r),(spendPerModel.get(modelKey(r))||0)+(r.v[0]||0));
  for(const r of items){
-  const key=r.campaign,entry=byCampaign.get(key)||make();
-  entry.name=key;entry.accounts.add(r.account);entry.models.add(r.model);
+  const model=String(r.model||'Sin modelo').trim(),location=String(r.territory||'Sin ubicación identificada').trim();
+  const key=norm(model)+'|'+norm(location),entry=groups.get(key)||make();
+  entry.model=model;entry.location=location;entry.campaigns.add(r.campaign);
   entry.spend+=(r.v[0]||0);entry.leads+=(r.v[1]||0)+(r.v[2]||0);
   if(state.territory){entry.budgetKnown=false;entry.targetKnown=false;}
   else{
-   const weightDen=spendPerModel.get(modelKey(r))||0;
+   const denominator=spendPerModel.get(modelKey(r))||0;
    const modelPlan=planRows(r.month,r.model);
-   const amount=modelPlan.length?modelPlan.reduce((s,x)=>s+(x[2]||0),0):null;
+   const budget=modelPlan.length?modelPlan.reduce((s,x)=>s+(x[2]||0),0):null;
    const target=modelPlan.length&&!modelPlan.some(x=>x[3]==null)?modelPlan.reduce((s,x)=>s+x[3],0):null;
-   if(!weightDen||amount==null){entry.budgetKnown=false;entry.targetKnown=false;}
+   if(!denominator||budget==null){entry.budgetKnown=false;entry.targetKnown=false;}
    else{
-    const weight=(r.v[0]||0)/weightDen*planFraction(r.month);
-    entry.budget+=amount*weight;
-    if(target==null)entry.targetKnown=false;
-    else entry.target+=target*weight;
+    const weight=(r.v[0]||0)/denominator*planFraction(r.month);
+    entry.budget+=budget*weight;
+    if(target==null)entry.targetKnown=false;else entry.target+=target*weight;
    }
   }
-  byCampaign.set(key,entry);
+  groups.set(key,entry);
  }
- let rows=[...byCampaign.values()].map(x=>{
+ let rows=[...groups.values()].map(x=>{
   const budget=x.budgetKnown?x.budget:null,target=x.targetKnown?x.target:null;
   const actualCpl=x.leads>0?x.spend/x.leads:null,projectedCpl=budget!=null&&target>0?budget/target:null;
-  return {name:x.name,accounts:[...x.accounts],models:[...x.models],spend:x.spend,leads:x.leads,budget,target,actualCpl,projectedCpl,pctSpend:safeRatio(x.spend,budget),pctLeads:safeRatio(x.leads,target),variance:projectedCpl>0&&actualCpl!=null?100*(actualCpl/projectedCpl-1):null};
+  return {...x,budget,target,actualCpl,projectedCpl,pctSpend:safeRatio(x.spend,budget),pctLeads:safeRatio(x.leads,target),variance:projectedCpl>0&&actualCpl!=null?100*(actualCpl/projectedCpl-1):null};
  });
- const select=$('c3PerformanceCampaign'),sort=$('c3PerformanceSort');
- if(select){
-  const old=select.value;
-  const names=[...new Set(rows.map(x=>x.name))].sort((a,b)=>a.localeCompare(b,'es'));
-  select.innerHTML=opt('','Todas las campañas')+names.map(n=>opt(n,n.replace(/^\d{4}_colombia_citroen_/i,'').replace(/_on_conversion.*$/i,'').replace(/_/g,' ').slice(0,76))).join('');
-  select.value=names.includes(old)?old:'';
-  if(old&&!names.includes(old))state.performanceLimit=25;
-  if(select.value)rows=rows.filter(x=>x.name===select.value);
- }
+ const modelSelect=$('c3PerformanceModel'),locationSelect=$('c3PerformanceLocation'),sort=$('c3PerformanceSort');
+ const syncOptions=(select,values,placeholder)=>{
+  if(!select)return;
+  const previous=select.value;
+  select.innerHTML=opt('',placeholder)+values.sort((a,b)=>a.localeCompare(b,'es')).map(x=>opt(x,x)).join('');
+  select.value=values.includes(previous)?previous:'';
+ };
+ syncOptions(modelSelect,[...new Set(rows.map(x=>x.model))],'Todos los modelos');
+ if(modelSelect?.value)rows=rows.filter(x=>x.model===modelSelect.value);
+ syncOptions(locationSelect,[...new Set(rows.map(x=>x.location))],'Todas las ubicaciones');
+ if(locationSelect?.value)rows=rows.filter(x=>x.location===locationSelect.value);
  const ordered=sort?.value||'spend';
- rows.sort(ordered==='name'?(a,b)=>a.name.localeCompare(b.name,'es'):ordered==='leads'?(a,b)=>b.leads-a.leads:(a,b)=>b.spend-a.spend);
+ rows.sort(ordered==='name'?(a,b)=>(a.model+' '+a.location).localeCompare(b.model+' '+b.location,'es'):ordered==='leads'?(a,b)=>b.leads-a.leads:(a,b)=>b.spend-a.spend);
  const badge=(v,mode)=>{
   if(v==null||!Number.isFinite(v))return '<span class="c3-ratio na">—</span>';
   const good=mode==='cpl'?v<=0:v>=100;
@@ -190,12 +192,11 @@ function performanceTable(){
  };
  const cells=x=>'<td>'+money(x.budget)+'</td><td>'+money(x.spend)+'</td><td>'+badge(x.pctSpend,'budget')+'</td><td>'+num(x.leads)+'</td><td>'+num(x.target)+'</td><td>'+badge(x.pctLeads,'leads')+'</td><td>'+money(x.actualCpl)+'</td><td>'+money(x.projectedCpl)+'</td><td>'+badge(x.variance,'cpl')+'</td>';
  const limit=state.performanceLimit||25,visible=rows.slice(0,limit);
- function human(s){return s.replace(/^\d{4}_colombia_citroen_/i,'').replace(/_on_conversion.*$/i,'').replace(/_/g,' ').replace(/\s+/g,' ').trim();}
  tbody.innerHTML=visible.length?visible.map(x=>{
-  const title=human(x.name),shortTitle=title.length>84?title.slice(0,81)+'…':title;
-  const subtitle=[...x.models.slice(0,2),...x.accounts.slice(0,1)].filter(Boolean).join(' · ');
-  return '<tr><th scope="row" class="c3-performance-campaign-cell" title="'+esc(x.name)+'"><strong>'+esc(shortTitle)+'</strong><span class="c3-table-month-note">'+esc(subtitle)+'</span></th>'+cells(x)+'</tr>';
- }).join(''):'<tr><td colspan="10" class="c3-table-empty">No hay campañas para estos filtros.</td></tr>';
+  const displayModel=x.model.replace(/\\bCITROEN\\b/ig,'Citroën');
+  const modelLabel=/^citro[eë]n/i.test(displayModel)?displayModel:'Citroën '+displayModel;
+  return '<tr><th scope="row" class="c3-performance-campaign-cell c3-performance-model-cell"><strong>'+esc(modelLabel)+'</strong><span class="c3-table-month-note">'+x.campaigns.size+' campaña(s) Meta Ads</span></th><td class="c3-performance-location-cell"><span class="c3-location-pill">'+esc(x.location)+'</span></td>'+cells(x)+'</tr>';
+ }).join(''):'<tr><td colspan="11" class="c3-table-empty">No hay registros para estos filtros.</td></tr>';
  const t={
   spend:rows.length?rows.reduce((s,x)=>s+x.spend,0):null,
   leads:rows.length?rows.reduce((s,x)=>s+x.leads,0):null,
@@ -206,21 +207,21 @@ function performanceTable(){
  t.actualCpl=t.leads>0?t.spend/t.leads:null;
  t.projectedCpl=t.budget!=null&&t.target>0?t.budget/t.target:null;
  t.variance=t.projectedCpl>0&&t.actualCpl!=null?100*(t.actualCpl/t.projectedCpl-1):null;
- tfoot.innerHTML=rows.length?'<tr><th scope="row">TOTAL '+(select?.value?'CAMPAÑA':'CAMPAÑAS')+'</th>'+cells(t)+'</tr>':'';
+ tfoot.innerHTML=rows.length?'<tr><th scope="row" colspan="2">TOTAL MODELOS / UBICACIONES</th>'+cells(t)+'</tr>':'';
  const pagination=$('c3PerformancePagination');
  if(pagination){
   pagination.hidden=rows.length<=25;
   const count=$('c3PerformanceCount'),more=$('c3PerformanceMore');
-  if(count)count.textContent='Mostrando '+Math.min(limit,rows.length)+' de '+rows.length+' campañas';
+  if(count)count.textContent='Mostrando '+Math.min(limit,rows.length)+' de '+rows.length+' combinaciones modelo–ubicación';
   if(more){more.hidden=limit>=rows.length;more.onclick=()=>{state.performanceLimit=(state.performanceLimit||25)+25;performanceTable();};}
  }
  const notes=$('c3PerformanceNotes');
  if(notes){
-  notes.textContent='Leads actuales = formularios + conversaciones de Meta Ads (eventos, no personas únicas). Inversión proyectada y leads proyectados por campaña = ASIGNACIÓN REFERENCIAL del plan mensual por modelo en proporción al consumo real de cada campaña, NO presupuesto ni meta aprobados para esa campaña. % consumo = gasto Meta / referencia asignada; variación de CPL = (CPL actual / CPL referencial − 1) × 100.'+
-   (state.territory?' El plan no tiene presupuesto territorial verificado: proyecciones territoriales no disponibles.':'')+
-   (!state.campaignDays?.length?' Fuente de campaña mensual: no permite atribuir con precisión rangos diarios parciales.':'')+
-   (state.campaignDays?.length?' Detalle diario: DATA CITROEN AÑO hasta '+state.dateMax+'.':'')+
-   (rows.some(x=>x.target==null)?' Algunas metas no están disponibles en el plan original y se muestran como —.':'');
+  notes.textContent='Leads = formularios + conversaciones (eventos, no personas únicas). Ubicación inferida de nomenclatura de campañas, no de entrega geográfica de Meta Ads. Inversión y leads proyectados son ASIGNACIONES REFERENCIALES del plan mensual por modelo distribuidas proporcionalmente al gasto Meta, NO metas territoriales aprobadas.'+
+   (state.territory?' El filtro territorial no tiene metas oficiales atribuibles.':'')+
+   (!state.campaignDays?.length?' Fuente mensual: los rangos diarios parciales no pueden atribuirse con exactitud.':'')+
+   (state.campaignDays?.length?' Fuente diaria hasta '+state.dateMax+'.':'')+
+   (rows.some(x=>x.target==null)?' Algunas metas se muestran como — por falta de referencia.':'');
  }
 }
 function syncDateControl(){
@@ -555,7 +556,7 @@ function wire(){
       if(show)window.CITROEN_FILTER_ENGINE?.render('lkGlobalFilters','resumen');
     };
   }
- const campaignSelect=$('c3PerformanceCampaign'),campaignSort=$('c3PerformanceSort');if(campaignSelect)campaignSelect.onchange=()=>{state.performanceLimit=25;performanceTable();};if(campaignSort)campaignSort.onchange=()=>{state.performanceLimit=25;performanceTable();};
+ const modelSelect=$('c3PerformanceModel'),locationSelect=$('c3PerformanceLocation'),campaignSort=$('c3PerformanceSort');for(const select of [modelSelect,locationSelect,campaignSort])if(select)select.onchange=()=>{state.performanceLimit=25;performanceTable();};
  for(const b of document.querySelectorAll('[data-c3-metric]'))b.onclick=()=>{state.metric=b.dataset.c3Metric;for(const el of document.querySelectorAll('[data-c3-metric]'))el.classList.toggle('active',el===b);render();};
  document.addEventListener('citroen:metric-settings',()=>{state.metric=configured('compareMetric','metric','investment');document.querySelectorAll('[data-c3-metric]').forEach(el=>el.classList.toggle('active',el.dataset.c3Metric===state.metric));render();});
  document.addEventListener('citroen:style-settings',()=>{if(state.ready)render();});
