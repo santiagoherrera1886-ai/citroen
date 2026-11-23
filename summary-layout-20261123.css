@@ -1,0 +1,77 @@
+/* Citroën · Resumen ejecutivo / distribución de ancho completo · 2026-11-23
+   Solo composición visual; no modifica filtros, métricas, fuentes ni interacciones. */
+@media (min-width: 1101px) {
+  #studioCards.c3-summary-grid {
+    display:grid!important;
+    grid-template-columns:repeat(12,minmax(0,1fr))!important;
+    align-items:stretch;
+    column-gap:18px!important;
+    row-gap:18px!important;
+  }
+  #studioCards > #c3ComparePanel {grid-column:1/-1!important;grid-row:auto!important;}
+  #studioCards > #c3FunnelPanel {grid-column:1/span 4!important;grid-row:auto!important;}
+  #studioCards > #c3ModelsPanel {grid-column:5/-1!important;grid-row:auto!important;}
+  #studioCards > #c3CampaignPanel {grid-column:1/span 9!important;grid-row:auto!important;}
+  #studioCards > #c3InsightsPanel {grid-column:10/-1!important;grid-row:auto!important;}
+  #studioCards > .studio-card:not(#c3ComparePanel):not(#c3FunnelPanel):not(#c3ModelsPanel):not(#c3CampaignPanel):not(#c3InsightsPanel) {grid-column:span 6!important;}
+}
+#studioCards {width:100%;max-width:none;gap:18px!important;margin-bottom:22px!important;}
+#studioCards > .c3-panel {
+  border:1px solid #dfe8f0;
+  border-radius:18px;
+  box-shadow:0 8px 28px rgba(19,50,74,.045);
+  padding:22px 24px;
+  min-width:0;
+}
+#studioCards > .c3-panel .c3-panel-heading {gap:16px;margin-bottom:16px;align-items:center;}
+#studioCards > .c3-panel .c3-panel-heading h3 {font-size:18px;font-weight:800;letter-spacing:-.55px;color:#173b56;}
+#studioCards > .c3-panel .c3-panel-heading p {font-size:12px;line-height:1.5;color:#7790a5;}
+#c3ComparePanel {min-height:470px;display:flex;flex-direction:column;}
+#c3ComparePanel .c3-legend {margin:6px 0 16px;gap:22px;font-size:12px;}
+#c3ComparePanel .c3-chart-controls {padding:4px;border:1px solid #e5edf3;border-radius:11px;}
+#c3ComparePanel .c3-chart-controls button {font-size:12px;padding:9px 18px;}
+#c3ComparePanel .c3-comparison-chart {height:340px!important;min-height:340px;width:100%;flex:1;overflow:visible;}
+#c3ComparePanel .c3-comparison-chart svg {display:block;width:100%;height:100%;}
+#c3ComparePanel .c3-chart-footnote {font-size:11px;line-height:1.6;border-top:1px solid #edf2f6;padding-top:12px;margin-top:14px;}
+#c3FunnelPanel, #c3ModelsPanel {min-height:345px;}
+#c3FunnelPanel .c3-funnel-body {grid-template-columns:minmax(0,1.3fr) minmax(132px,.9fr);gap:16px;min-height:240px;}
+#c3FunnelPanel .c3-funnel-step {min-height:51px;}
+#c3FunnelPanel .c3-funnel-step b {font-size:18px;}
+#c3FunnelPanel .c3-funnel-step small {font-size:10px;}
+#c3FunnelPanel .c3-funnel-foot {font-size:10px;line-height:1.55;}
+#c3ModelsPanel .c3-models-grid {grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;}
+#c3ModelsPanel .c3-model-card {padding:15px 12px;border-radius:13px;border-color:#dfeaf2;background:#fff;}
+#c3ModelsPanel .c3-model-top h4 {font-size:12px;}
+#c3CampaignPanel {min-height:280px;}
+#c3CampaignPanel .c3-campaign-table {min-width:0;}
+#c3CampaignPanel .c3-campaign-table th {font-size:11px;padding:12px 13px;white-space:nowrap;}
+#c3CampaignPanel .c3-campaign-table td {font-size:11px;padding:13px;max-width:340px;}
+#c3InsightsPanel {background:#fffafb;border-color:#f4dfe4;}
+#c3InsightsPanel .c3-insights {display:block!important;}
+#c3InsightsPanel .c3-insight {border-right:0;border-bottom:1px solid #f1e4e7;padding:13px 0;}
+#c3InsightsPanel .c3-insight:last-child {border-bottom:0;}
+@media (min-width:1101px) and (max-width:1370px) {
+  #studioCards > #c3FunnelPanel {grid-column:1/span 5!important;}
+  #studioCards > #c3ModelsPanel {grid-column:6/-1!important;}
+  #c3FunnelPanel .c3-funnel-body {grid-template-columns:minmax(0,1fr) 125px;gap:9px;}
+  #c3ModelsPanel .c3-models-grid {gap:8px;}
+}
+@media (max-width:1100px) {
+  #studioCards.c3-summary-grid {display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:14px!important;}
+  #studioCards > #c3ComparePanel, #studioCards > #c3ModelsPanel, #studioCards > #c3CampaignPanel {grid-column:1/-1!important;}
+  #studioCards > #c3FunnelPanel, #studioCards > #c3InsightsPanel {grid-column:span 1!important;}
+  #studioCards > .studio-card {grid-column:span 1!important;}
+  #c3ComparePanel .c3-comparison-chart {height:300px!important;min-height:300px;}
+}
+@media (max-width:720px) {
+  #studioCards.c3-summary-grid {grid-template-columns:minmax(0,1fr)!important;gap:12px!important;}
+  #studioCards > .c3-panel, #studioCards > .studio-card {grid-column:1/-1!important;padding:17px!important;}
+  #studioCards > .c3-panel .c3-panel-heading {align-items:flex-start;flex-wrap:wrap;}
+  #c3ComparePanel {min-height:360px;}
+  #c3ComparePanel .c3-comparison-chart {height:240px!important;min-height:240px;}
+  #c3ComparePanel .c3-legend {gap:9px;font-size:10px;}
+  #c3ComparePanel .c3-chart-controls button {padding:7px 11px;font-size:10px;}
+  #c3ModelsPanel .c3-models-grid {grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;}
+  #c3FunnelPanel .c3-funnel-body {grid-template-columns:minmax(0,1fr) 125px;}
+  #c3CampaignPanel .c3-campaign-table {min-width:540px;}
+}
