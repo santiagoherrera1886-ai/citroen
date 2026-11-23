@@ -17,7 +17,7 @@
     const map=new Map();for(const r of rows){let k=r[field]||'Sin clasificar';map.set(k,(map.get(k)||0)+r.metrics[index]);}
     return [...map].map(([name,value])=>({name,value})).sort((a,b)=>b.value-a.value);
   };
-  const monthsLabels={'2026-01':'Enero','2026-02':'Febrero','2026-03':'Marzo','2026-04':'Abril','2026-05':'Mayo','2026-06':'Junio','2026-07':'Julio','2026-08':'Agosto','2026-09':'Septiembre','2026-10':'Octubre'};
+  const monthsLabels={'2026-01':'Enero','2026-02':'Febrero','2026-03':'Marzo','2026-04':'Abril','2026-05':'Mayo','2026-06':'Junio','2026-07':'Julio','2026-08':'Agosto','2026-09':'Septiembre','2026-10':'Octubre','2026-11':'Noviembre'};
   function formatOf(ad){
     const s=String(ad||'').toLowerCase();
     if(s.includes('carrusel'))return 'Carrusel';
@@ -56,7 +56,7 @@
   function timeline(rows,filter){
     const items=Object.keys(monthsLabels).filter(x=>!filter.month||filter.month===x).map(month=>({month,value:sum(rows.filter(r=>r.month===month),0)}));
     const max=Math.max(...items.map(x=>x.value),1);
-    $('metaTrend').innerHTML='<div class="meta-month-chart">'+items.map(x=>`<div class="meta-month ${x.month==='2026-10'?'partial':''}"><span class="value">${compact(x.value)}</span><div class="bar" style="height:${Math.max(4,Math.round(x.value/max*155))}px"></div><small>${monthsLabels[x.month].slice(0,3)}</small></div>`).join('')+`</div><div class="meta-hint">Datos desde ${escapeHtml(dailyFile.date_min)} hasta ${escapeHtml(dailyFile.date_max)}. El último mes puede estar incompleto.</div>`;
+    $('metaTrend').innerHTML='<div class="meta-month-chart">'+items.map(x=>`<div class="meta-month ${x.month==='2026-11'?'partial':''}"><span class="value">${compact(x.value)}</span><div class="bar" style="height:${Math.max(4,Math.round(x.value/max*155))}px"></div><small>${monthsLabels[x.month].slice(0,3)}</small></div>`).join('')+`</div><div class="meta-hint">Datos desde ${escapeHtml(dailyFile.date_min)} hasta ${escapeHtml(dailyFile.date_max)}. El último mes puede estar incompleto.</div>`;
   }
   function charts(dailyRows,creativeRows){
     $('metaModels').innerHTML=bars(addGroup(dailyRows,'model',0),'C3, C3 MAX, Aircross, Aircross MAX, Basalt y Berlingo se identifican mediante los nombres de campaña.');
