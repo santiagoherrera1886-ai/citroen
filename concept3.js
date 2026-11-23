@@ -226,7 +226,7 @@ function performanceTable(){
 function syncDateControl(){
  const start=$('c3DateFrom'),end=$('c3DateTo'),label=$('c3DateLabel');if(!start||!end||!label)return;
  start.min=state.dateMin;end.min=state.dateMin;
- start.value=state.dateStart||state.dateMin;end.value=state.dateEnd||state.dateMax;
+ start.value=state.dateStart||state.dateMin||'2026-01-01';end.value=state.dateEnd||state.dateMax||'2026-11-23';
  const fmt=s=>new Intl.DateTimeFormat('es-CO',{timeZone:'UTC',day:'numeric',month:'short',year:'numeric'}).format(new Date(s+'T00:00:00Z'));
  label.textContent=fmt(start.value)+' — '+fmt(end.value);
 }
