@@ -545,16 +545,15 @@ function wire(){
  for(const [id,key] of [['c3Month','month'],['c3Model','model'],['c3Territory','territory']])$(id).onchange=e=>{state[key]=e.target.value;render();};
   const reset=$('c3ResetFilters');if(reset)reset.onclick=()=>{state.month='';state.model='';state.territory='';state.dateStart='';state.dateEnd='';state.performanceLimit=25;for(const id of ['c3Month','c3Model','c3Territory'])$(id).value='';if($('c3DatePreset'))$('c3DatePreset').value='all';if($('c3DateDropdown'))$('c3DateDropdown').open=false;if(window.CITROEN_FILTER_ENGINE){window.CITROEN_FILTER_ENGINE.reset();window.CITROEN_FILTER_ENGINE.render('lkGlobalFilters','resumen');}syncDateControl();render();};
   const advanced=$('lkGlobalFilters'),advancedToggle=$('c3AdvancedToggle');
-  if(advanced&&advancedToggle){
-    advanced.hidden=true;
-    advancedToggle.setAttribute('aria-expanded','false');
-    advancedToggle.onclick=()=>{
-      const show=advanced.hidden;
-      advanced.hidden=!show;
-      advancedToggle.setAttribute('aria-expanded',String(show));
-      advancedToggle.innerHTML=show?'Ocultar filtros <span aria-hidden="true">⌃</span>':'Más filtros <span aria-hidden="true">⌄</span>';
-      if(show)window.CITROEN_FILTER_ENGINE?.render('lkGlobalFilters','resumen');
-    };
+  if(advanced){
+    // Los controles permanecen siempre disponibles: ninguna interacción los oculta.
+    advanced.hidden=false;
+    window.CITROEN_FILTER_ENGINE?.render('lkGlobalFilters','resumen');
+  }
+  if(advancedToggle){
+    advancedToggle.hidden=true;
+    advancedToggle.setAttribute('aria-expanded','true');
+    advancedToggle.onclick=null;
   }
  const modelSelect=$('c3PerformanceModel'),locationSelect=$('c3PerformanceLocation'),campaignSort=$('c3PerformanceSort');for(const select of [modelSelect,locationSelect,campaignSort])if(select)select.onchange=()=>{state.performanceLimit=25;performanceTable();};
  for(const b of document.querySelectorAll('[data-c3-metric]'))b.onclick=()=>{state.metric=b.dataset.c3Metric;for(const el of document.querySelectorAll('[data-c3-metric]'))el.classList.toggle('active',el===b);render();};
