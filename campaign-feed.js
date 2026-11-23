@@ -8,7 +8,7 @@ async function api(action){
  try{const r=await fetch('/api/campaign-sync?action='+action,{cache:'no-store',signal:controller.signal});const d=await r.json();if(!r.ok||!d.ok)throw Error(d.error||'Sincronización no disponible.');return d;}finally{clearTimeout(timeout);}
 }
 
-const NOVEMBER_SNAPSHOT='./data/noviembre_2026_ejecutado.json?v=20261111-snapshot1';
+const NOVEMBER_SNAPSHOT='./data/noviembre_2026_ejecutado.json?v=20261123-annual1';
 let supplemental=false;
 function combineDocuments(original,addition){
  const d=original.dictionaries,x=addition.dictionaries;
@@ -58,8 +58,18 @@ async function includeNovember(result){
   if(!response.ok)return result;
   const data=await response.json(),extra=data?.snapshot;
   if(data?.sheet_id!==2001595094||extra?.daily?.schema!=='citroen-meta-actuals/2026-v1'||extra?.detail?.schema!==extra.daily.schema)return result;
-  if(extra.daily.rows_source!==1179||extra.daily.rows_source!==extra.detail.rows_source||extra.daily.date_min!=='2026-11-01'||extra.daily.date_max!=='2026-11-11')return result;
-  if(result.daily.date_max>=extra.daily.date_min)return result; // Sincronización ya tiene noviembre: no duplicar.
+  if(!Number.isInteger(extra.daily.rows_source)||extra.daily.rows_source<1||extra.daily.rows_source!==extra.detail.rows_source||!['2026-11-01','2026-10-21'].includes(extra.daily.date_min)||extra.daily.date_max<'2026-11-11'||extra.daily.date_max>new Date().toISOString().slice(0,10))return result;
+  if(result.daily.date_max>=extra.daily.date_max)return result; // La sincronización ya tiene este corte.
+  if(result.daily.date_max>=extra.daily.date_min){
+   // El servidor puede tener un corte intermedio: recomponer desde el respaldo anual para evitar duplicados.
+   const [daily,detail]=await Promise.all(['daily','detail'].map(async part=>{
+    const response=await fetch('./data/meta_2026_'+part+'.json',{cache:'no-store'});
+    if(!response.ok)throw Error('Respaldo histórico no disponible');
+    return response.json();
+   }));
+   if(daily.date_max>=extra.daily.date_min)return result;
+   result={daily,detail};
+  }
   const before=result.daily.totals.slice(),updated=JSON.parse(JSON.stringify(result));
   combineDocuments(updated.daily,extra.daily);
   combineDocuments(updated.detail,extra.detail);
@@ -71,7 +81,7 @@ async function includeNovember(result){
 }
 function applySnapshotStatus(){
  if(supplemental&&cached){
-  state={...state,rows:cached.daily.rows_source,dateMax:cached.daily.date_max,novemberSnapshot:true,snapshotCutoff:'2026-11-11'};
+  state={...state,rows:cached.daily.rows_source,dateMax:cached.daily.date_max,novemberSnapshot:true,snapshotCutoff:cached.daily.date_max};
  }
 }
 
@@ -104,7 +114,7 @@ function badge(){
  if(!el){el=document.createElement('p');el.id='campaignFeedStatus';el.className='campaign-feed-status';el.setAttribute('role','status');context.after(el);}
  if(context.nextElementSibling!==el)context.after(el);
  const when=state.syncedAt?new Date(state.syncedAt).toLocaleString('es-CO',{timeZone:'America/Bogota'}):'';
- el.textContent=state.novemberSnapshot?'Google Sheets · Corte noviembre hasta '+state.snapshotCutoff+' (respaldo verificado) · Sincronización automática anterior: '+when+' · Renovar para obtener días posteriores.':state.connected?'Google Sheets · Último dato: '+state.dateMax+' · Sincronizado: '+when+(state.stale?' · Sin recibir una actualización reciente':'')+(state.error?' · '+state.error:''):'Exportación guardada · Datos hasta '+(cached?.daily.date_max||'20/10/2026')+' · Conexión automática pendiente de activar en Añadir datos.'+(state.error?' '+state.error:'');
+ el.textContent=state.novemberSnapshot?'Google Sheets · Corte verificado hasta '+state.snapshotCutoff+' (respaldo anual)'+(when?' · Última sincronización automática: '+when:'')+' · Actualizar al recibir nueva ejecución.':state.connected?'Google Sheets · Último dato: '+state.dateMax+' · Sincronizado: '+when+(state.stale?' · Sin recibir una actualización reciente':'')+(state.error?' · '+state.error:''):'Exportación guardada · Datos hasta '+(cached?.daily.date_max||'20/10/2026')+' · Conexión automática pendiente de activar en Añadir datos.'+(state.error?' '+state.error:'');
 }
 document.addEventListener('citroen:campaign-status',badge);
 document.addEventListener('citroen:summary-rendered',badge);
