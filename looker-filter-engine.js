@@ -86,19 +86,31 @@ function render(host,page='resumen',card=''){
   }
   else if(d.type==='checkbox')html='<label class="lk-binary"><input type="checkbox" '+p+' data-part="value" value="true" '+((chosen.value??d.value)==='true'?'checked':'')+'> Solo registros con valor</label>';
   else if(d.type==='radio')html='<div class="lk-list lk-radio">'+['',...values].map(v=>'<label><input type="radio" name="radio-'+id+'" '+p+' data-part="value" value="'+esc(v)+'" '+((chosen.value??d.value)===v?'checked':'')+'>'+esc(v||'Todos')+'</label>').join('')+'</div>';
-  else if(d.type==='multi'||d.type==='list')html='<div class="lk-list">'+values.map(v=>'<label><input type="checkbox" '+p+' data-part="values" value="'+esc(v)+'" '+((chosen.values??d.values).includes(v)?'checked':'')+'>'+esc(v)+'</label>').join('')+'</div>';
+  else if(d.type==='multi'||d.type==='list'){
+    const selected=Array.isArray(chosen.values??d.values)?(chosen.values??d.values):[];
+    const summary=selected.length?(selected.length===1?selected[0]:selected.length+' seleccionados'):'Todos';
+    html='<details class="lk-multiselect"><summary><span class="lk-multi-selected" title="'+esc(selected.join(', '))+'">'+esc(summary)+'</span><span class="lk-multi-chevron" aria-hidden="true">⌄</span></summary><div class="lk-multi-popover"><span class="lk-multi-instruction">Selecciona una o varias opciones</span><div class="lk-list">'+values.map(v=>'<label><input type="checkbox" '+p+' data-part="values" value="'+esc(v)+'" '+(selected.includes(v)?'checked':'')+'><span>'+esc(v)+'</span></label>').join('')+'</div></div></details>';
+   }
   else if(d.type==='select')html='<select '+p+' data-part="value" aria-label="'+s+'"><option value="">Todos</option>'+values.map(v=>'<option value="'+esc(v)+'" '+((chosen.value??d.value)===v?'selected':'')+'>'+esc(v)+'</option>').join('')+'</select>';
   else html='<input type="search" '+p+' data-part="value" placeholder="'+(d.type==='advanced'?esc(d.operator):'Buscar…')+'" value="'+esc(chosen.value??d.value)+'" aria-label="'+s+'">';
   return '<div class="lk-control"><div class="lk-control-head">'+s+'<small>'+esc(FIELDS[d.field])+'</small></div>'+html+'</div>';
  }).join('')+'<button class="lk-reset" type="button" data-lk-reset>Limpiar</button></div>':'';
  el.onchange=e=>{const inp=e.target.closest('[data-lk-id]');if(!inp)return;update(inp,el);};
  el.oninput=e=>{const inp=e.target.closest('[data-lk-id]');if(inp?.type==='search')update(inp,el);};
- el.onclick=e=>{if(e.target.closest('[data-lk-reset]')){for(const d of arr)delete settings[d.id];render(el,page,card);event();}};
+ el.onclick=e=>{
+   if(e.target.closest('[data-lk-reset]')){for(const d of arr)delete settings[d.id];render(el,page,card);event();return;}
+   const opened=e.target.closest('.lk-multiselect[open]');
+   if(opened && e.target.closest('summary'))el.querySelectorAll('.lk-multiselect[open]').forEach(d=>{if(d!==opened)d.open=false;});
+  };
 }
 function update(input,host){
  const id=input.dataset.lkId,part=input.dataset.part;
  const next={...(settings[id]||{})};
- if(part==='values')next.values=Array.from(host.querySelectorAll('input[data-lk-id="'+id+'"]:checked')).map(x=>x.value);
+ if(part==='values'){
+   next.values=Array.from(host.querySelectorAll('input[data-lk-id="'+id+'"]:checked')).map(x=>x.value);
+   const control=input.closest('.lk-control'),caption=control?.querySelector('.lk-multi-selected');
+   if(caption){caption.textContent=next.values.length?(next.values.length===1?next.values[0]:next.values.length+' seleccionados'):'Todos';caption.title=next.values.join(', ');}
+  }
  else if(part==='min'||part==='max')next[part]=input.value===''?null:Number(input.value);
  else next[part]=input.type==='checkbox'?(input.checked?'true':''):input.value;
  settings[id]=next;event();
