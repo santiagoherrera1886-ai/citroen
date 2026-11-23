@@ -26,7 +26,7 @@ w.document.dispatchEvent(new w.Event('DOMContentLoaded',{bubbles:true}));
  assert.ok(id('resumen').contains(id('studioCards')),'Editor canvas must be located inside Resumen');
  assert.ok(!w.document.querySelector('.nav-link[data-target="studio"]'),'Standalone editor navigation removed');
  for(const hidden of ['medios','creativos','datos'])assert.ok(!w.document.querySelector('.nav-link[data-target="'+hidden+'"]'),'Retired navigation '+hidden);
- assert.ok(id('studioStatus').textContent.includes('Datos: 11 planes'),'Sources did not load: '+id('studioStatus').textContent);
+ assert.ok(id('studioStatus').textContent.includes('noviembre 2026 del Excel recibido'),'Sources did not load: '+id('studioStatus').textContent);
  assert.equal(id('studioMonth').options.length,12,'11 months filter');
  assert.ok([...id('studioModel').options].some(o=>o.value==='Sin clasificar'),'Unclassified source records stay selectable');
  id('studioEdit').click();
