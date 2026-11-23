@@ -1,0 +1,63 @@
+/* Citroën · filtros siempre visibles, barra editorial sin contenedores redundantes */
+.concept3-shell .c3-filters-bar{
+ display:block!important;position:relative!important;
+ padding:8px 0 10px!important;margin:10px 0 2px!important;
+ background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;
+}
+.concept3-shell .c3-filters-bar-head{margin:0 0 10px!important;gap:8px!important}
+.concept3-shell .c3-filters-bar-title{font-size:13px!important}
+.concept3-shell .c3-filters-bar-icon{display:none!important}
+.concept3-shell .c3-filters-bar-hint{font-size:11px!important}
+.concept3-shell .c3-filter-fields{
+ display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr)) auto!important;
+ gap:12px!important;align-items:end!important;padding:0!important;background:transparent!important;
+}
+.concept3-shell .c3-filter-fields .c3-date-control,
+.concept3-shell .c3-filter-fields .c3-select{
+ height:70px!important;min-width:0!important;max-width:none!important;
+ padding:10px 12px!important;margin:0!important;background:#fff!important;
+ border:1px solid #dce8ef!important;border-radius:11px!important;box-shadow:none!important;
+}
+.concept3-shell .c3-filter-fields .c3-date-control{display:flex!important;flex-direction:column!important;justify-content:center!important;gap:6px!important}
+.concept3-shell .c3-filter-fields .c3-select{gap:6px!important}
+.concept3-shell .c3-filter-fields .c3-filter-caption{font-size:10px!important;letter-spacing:.25px!important;color:#58758b!important}
+.concept3-shell .c3-filter-fields .c3-filter-reset{
+ height:47px!important;min-height:0!important;align-self:end!important;
+ padding:0 22px!important;font-size:12px!important;border-radius:10px!important;
+ background:#eef4f8!important;border:1px solid #dce8ef!important;color:#26506a!important;
+}
+.concept3-shell #c3AdvancedToggle{display:none!important}
+.concept3-shell #lkGlobalFilters{
+ display:block!important;margin:0 0 11px!important;padding:0!important;
+ background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;
+}
+.concept3-shell #lkGlobalFilters:empty{display:none!important}
+.concept3-shell #lkGlobalFilters .lk-controls{
+ display:flex!important;align-items:end!important;justify-content:flex-start!important;
+ flex-wrap:wrap!important;gap:10px!important;padding:0!important;margin:0!important;
+ background:transparent!important;border:0!important;box-shadow:none!important;border-radius:0!important;
+}
+.concept3-shell #lkGlobalFilters .lk-control{
+ flex:1 1 210px!important;max-width:350px!important;min-width:160px!important;
+ height:auto!important;min-height:67px!important;padding:9px 12px!important;
+ border:1px solid #dce8ef!important;background:#fff!important;border-radius:11px!important;
+ box-shadow:none!important;
+}
+.concept3-shell #lkGlobalFilters .lk-reset{
+ align-self:end!important;min-height:44px!important;padding:0 18px!important;
+ flex:0 0 auto!important;border-radius:10px!important;
+}
+.concept3-shell .lk-summary-host .lk-controls{background:transparent!important;box-shadow:none!important;border:0!important}
+.concept3-shell .c3-context-line{padding-top:5px!important}
+@media(max-width:1050px){
+ .concept3-shell .c3-filter-fields{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .concept3-shell .c3-filter-fields .c3-filter-reset{min-width:115px!important}
+ .concept3-shell #lkGlobalFilters .lk-control{max-width:none!important;flex:1 1 220px!important}
+}
+@media(max-width:620px){
+ .concept3-shell .c3-filter-fields{grid-template-columns:1fr!important}
+ .concept3-shell .c3-filters-bar-head{align-items:flex-start!important}
+ .concept3-shell .c3-filters-bar-hint{display:none!important}
+ .concept3-shell .c3-filter-fields .c3-filter-reset{width:100%!important}
+ .concept3-shell #lkGlobalFilters .lk-control{flex:1 1 100%!important;max-width:none!important}
+}
