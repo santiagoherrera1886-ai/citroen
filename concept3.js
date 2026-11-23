@@ -13,11 +13,11 @@ const cars=[
  {model:'Aircross',name:'Citroën Aircross',desc:'Versatilidad en familia.',url:'https://www.citroen.com.co/modelos/nueva-aircross-suv.html',src:'./assets/models/aircross.webp',backup:'https://citroenderco.vteximg.com.br/arquivos/ids/157467-1000-500/Shine-Rojo-ruby-main.jpg?v=638635747121730000'},
  {model:'BERLINGO',name:'Citroën Berlingo',desc:'Espacio para tu negocio.',url:'https://www.citroen.com.co/modelos/nueva-berlingo-van.html',src:'./assets/models/berlingo.webp',backup:'https://citroenalcala.com/wp-content/uploads/2025/12/berlingo-van.png'}
 ];
-const state={plan:null,rows:[],campaigns:[],month:'',model:'',territory:'',metric:'investment',ready:false};
+const state={plan:null,rows:[],campaigns:[],month:'',model:'',territory:'',dateStart:'',dateEnd:'',dateMin:'2026-01-01',dateMax:'',metric:'investment',ready:false};
 const add=(rows,i)=>rows.reduce((a,r)=>a+(r.v[i]||0),0);
 const norm=s=>String(s||'').trim().toUpperCase();
 const filter=rows=>{
- const basic=rows.filter(r=>(!state.month||r.month===state.month)&&(!state.model||norm(r.model)===norm(state.model))&&(!state.territory||r.territory===state.territory));
+ const basic=rows.filter(r=>(!state.month||r.month===state.month)&&(!state.model||norm(r.model)===norm(state.model))&&(!state.territory||r.territory===state.territory)&&(!state.dateStart||(r.date?r.date>=state.dateStart:r.month+'-31'>=state.dateStart))&&(!state.dateEnd||(r.date?r.date<=state.dateEnd:r.month+'-01'<=state.dateEnd)));
  return window.CITROEN_FILTER_ENGINE?.filter(basic,'resumen')||basic;
 };
 const opt=(value,label)=>`<option value="${esc(value)}">${esc(label)}</option>`;
@@ -74,7 +74,7 @@ function actualData(d,detail){
 }
 
 function planPeriods(cardId=''){
- const selected=months.filter(m=>!state.month||state.month===m);
+ const selected=months.filter(m=>(!state.month||state.month===m)&&(!state.dateStart||monthLastDay(m)>=state.dateStart)&&(!state.dateEnd||m+'-01'<=state.dateEnd));
  const engine=window.CITROEN_FILTER_ENGINE;
  if(!engine)return selected;
  const values=engine.getValues(),defs=engine.getDefinitions();
@@ -97,9 +97,107 @@ function planPeriods(cardId=''){
  },selected);
 }
 
+
+/* 2026 monthly planning is not a daily source. Partial custom ranges use calendar-day
+   proration as an explicitly disclosed estimate. Do not infer geographic budgets. */
+const monthLastDay=m=>new Date(Date.UTC(Number(m.slice(0,4)),Number(m.slice(5)),0)).toISOString().slice(0,10);
+const dateDays=(a,b)=>(Date.parse(b+'T00:00:00Z')-Date.parse(a+'T00:00:00Z'))/86400000+1;
+function planFraction(m){
+ const start=m+'-01',end=monthLastDay(m);
+ const from=state.dateStart&&state.dateStart>start?state.dateStart:start;
+ const to=state.dateEnd&&state.dateEnd<end?state.dateEnd:end;
+ return from>to?0:dateDays(from,to)/dateDays(start,end);
+}
+const formatPercent=value=>value==null||!Number.isFinite(value)?'—':value.toLocaleString('es-CO',{maximumFractionDigits:1})+' %';
+const safeRatio=(a,b)=>a==null||b==null||b<=0?null:a/b*100;
+function performanceTable(rows){
+ const tbody=$('c3PerformanceRows'),tfoot=$('c3PerformanceTotal');if(!tbody||!tfoot||!state.plan)return;
+ const periods=planPeriods();
+ const isTerritory=Boolean(state.territory);
+ const monthRows=periods.map(m=>{
+  const items=rows.filter(row=>row.month===m);
+  const spend=items.length?add(items,0):null;
+  const leads=items.length?add(items,1)+add(items,2):null;
+  const fraction=planFraction(m);
+  const originalBudget=planValue(m,'investment'),originalLeads=planValue(m,'leads');
+  const budget=isTerritory||originalBudget==null?null:originalBudget*fraction;
+  const target=isTerritory||originalLeads==null?null:originalLeads*fraction;
+  const actualCpl=leads>0?spend/leads:null;
+  const projectedCpl=target>0?budget/target:null;
+  return {m,spend,leads,budget,target,actualCpl,projectedCpl,pctSpend:safeRatio(spend,budget),pctLeads:safeRatio(leads,target),variance:safeRatio(actualCpl,projectedCpl)==null?null:100*(actualCpl/projectedCpl-1)};
+ });
+ const badge=(v,goodWhen)=>{
+  if(v==null)return '<span class="c3-ratio na">—</span>';
+  const favorable=goodWhen==='negative'?v<=0:v>=100;
+  return '<span class="c3-ratio '+(favorable?'good':'warn')+'">'+formatPercent(v)+'</span>';
+ };
+ const cells=r=>'<td>'+money(r.budget)+'</td><td>'+money(r.spend)+'</td><td>'+badge(r.pctSpend,'neutral')+'</td><td>'+num(r.leads)+'</td><td>'+num(r.target)+'</td><td>'+badge(r.pctLeads,'positive')+'</td><td>'+money(r.actualCpl)+'</td><td>'+money(r.projectedCpl)+'</td><td>'+badge(r.variance,'negative')+'</td>';
+ tbody.innerHTML=monthRows.length?monthRows.map(r=>{
+  const label=labels[months.indexOf(r.m)]||r.m;
+  return '<tr><th scope="row"><strong>'+esc(label)+' 2026</strong><span class="c3-table-month-note">'+(planFraction(r.m)<.999?'Rango parcial':'Mes completo')+'</span></th>'+cells(r)+'</tr>';
+ }).join(''):'<tr><td colspan="10" class="c3-table-empty">No hay meses presupuestados para los filtros seleccionados.</td></tr>';
+ const t={
+  budget:monthRows.every(x=>x.budget!=null)?monthRows.reduce((a,x)=>a+x.budget,0):null,
+  spend:monthRows.some(x=>x.spend!=null)?monthRows.reduce((a,x)=>a+(x.spend||0),0):null,
+  leads:monthRows.some(x=>x.leads!=null)?monthRows.reduce((a,x)=>a+(x.leads||0),0):null,
+  target:monthRows.every(x=>x.target!=null)?monthRows.reduce((a,x)=>a+x.target,0):null
+ };
+ t.pctSpend=safeRatio(t.spend,t.budget);t.pctLeads=safeRatio(t.leads,t.target);
+ t.actualCpl=t.leads>0?t.spend/t.leads:null;
+ t.projectedCpl=t.target>0?t.budget/t.target:null;
+ t.variance=t.projectedCpl>0&&t.actualCpl!=null?100*(t.actualCpl/t.projectedCpl-1):null;
+ tfoot.innerHTML=monthRows.length?'<tr><th scope="row">TOTAL FILTRADO</th>'+cells(t)+'</tr>':'';
+ const cutoff=$('c3PerformanceCutoff');
+ if(cutoff)cutoff.textContent='Fuente Meta · hasta '+(state.dateMax||'—');
+ const notes=$('c3PerformanceNotes');
+ if(notes){
+  const partial=monthRows.some(r=>planFraction(r.m)<.999);
+  const incomplete=monthRows.some(r=>r.target==null);
+  notes.textContent='* Leads actuales = formularios + conversaciones, eventos no deduplicados. Consumo = Meta Ads; la inversión proyectada de enero a octubre incluye otros medios, de modo que % consumo es Meta / presupuesto del plan y NO cumplimiento multicanal. Variación = (CPL actual / CPL proyectado − 1) × 100; negativo significa menor costo.'+
+   (partial?' Rango parcial: presupuesto y leads proyectados prorrateados linealmente por días; referencia, no distribución oficial.':'')+
+   (incomplete?' Hay períodos con metas de leads incompletas (p. ej., Berlingo enero); el total proyectado y su cumplimiento se dejan sin calcular para evitar conclusiones falsas.':'')+
+   (isTerritory?' Sin proyección territorial verificable: se muestran solo resultados reales para el territorio seleccionado.':'');
+ }
+}
+function syncDateControl(){
+ const start=$('c3DateFrom'),end=$('c3DateTo'),label=$('c3DateLabel');if(!start||!end||!label)return;
+ start.min=state.dateMin;end.min=state.dateMin;
+ start.value=state.dateStart||state.dateMin;end.value=state.dateEnd||state.dateMax;
+ const fmt=s=>new Intl.DateTimeFormat('es-CO',{timeZone:'UTC',day:'numeric',month:'short',year:'numeric'}).format(new Date(s+'T00:00:00Z'));
+ label.textContent=fmt(start.value)+' — '+fmt(end.value);
+}
+function applyDateRange(){
+ const from=$('c3DateFrom'),to=$('c3DateTo'),preset=$('c3DatePreset'),drop=$('c3DateDropdown');
+ if(!from||!to||!preset)return;
+ const rawStart=from.value,rawEnd=to.value;
+ if(!/^2026-\d{2}-\d{2}$/.test(rawStart)||!/^2026-\d{2}-\d{2}$/.test(rawEnd)||rawStart>rawEnd){
+  const error=$('c3DateValidation');if(error)error.textContent='Selecciona un rango de fechas válido, con inicio anterior al fin.';
+  return;
+ }
+ state.dateStart=preset.value==='all'?'':rawStart;
+ state.dateEnd=preset.value==='all'?'':rawEnd;
+ if(drop)drop.open=false;
+ syncDateControl();render();
+}
+function wireDateFilter(){
+ const preset=$('c3DatePreset'),from=$('c3DateFrom'),to=$('c3DateTo'),apply=$('c3DateApply');
+ if(!preset||!from||!to||!apply)return;
+ const lastDay=()=>state.dateMax||'2026-11-23';
+ const previousDay=(s,n)=>new Date(Date.parse(s+'T00:00:00Z')-n*86400000).toISOString().slice(0,10);
+ preset.onchange=()=>{
+  const max=lastDay();
+  const ranges={all:[state.dateMin,max],november:['2026-11-01',max],october:['2026-10-01','2026-10-31'],last30:[previousDay(max,29),max],thismonth:[max.slice(0,7)+'-01',max]};
+  if(ranges[preset.value]){from.value=ranges[preset.value][0];to.value=ranges[preset.value][1];}
+ };
+ const custom=()=>{preset.value='custom';const error=$('c3DateValidation');if(error)error.textContent='';};
+ from.onchange=custom;to.onchange=custom;
+ apply.onclick=applyDateRange;
+ syncDateControl();
+}
+
 function setKpis(rows){
  const visible=planPeriods();
- const planned=state.territory||!visible.length?null:visible.reduce((a,m)=>a+(planValue(m,'investment')||0),0);
+ const planned=state.territory||!visible.length?null:visible.reduce((a,m)=>a+(planValue(m,'investment')||0)*planFraction(m),0);
  const defaults=['planned','spend','leads_total','cpl_general','impressions'];
  const icons=['▥','◫','♙','◎','▥'];
  $('c3Kpis').innerHTML=defaults.map((fallback,i)=>{
@@ -109,7 +207,7 @@ function setKpis(rows){
   const number=fmtMetric(value,key),compact=$('c3Dashboard')?.classList.contains('studio-edit-on')&&['planned','spend'].includes(key)&&typeof value==='number'&&Math.abs(value)>=1000000?'$ '+short(value):number;
   return '<article class="c3-kpi" data-metric-slot="'+i+'" tabindex="0" title="'+esc(number)+' · En Diseño, selecciona y arrastra para mover"><div class="c3-kpi-ico">'+icons[i]+'</div><div><h4>'+esc(title)+'</h4><strong title="'+esc(number)+'">'+esc(compact)+'</strong><small class="muted">'+esc(note)+'</small></div></article>';
  }).join('');
- $('c3Context').textContent=(state.month?labels[months.indexOf(state.month)]+' 2026':planPeriods().length===1&&planPeriods()[0]==='2026-11'?'Noviembre 2026 · presupuesto proyectado del XLSX':'2026 · enero a noviembre')+' · '+(state.model||'Todos los modelos')+' · '+(state.territory||'Cobertura completa')+' · Meta real hasta '+(state.dateMax||'2026-10-20')+(planPeriods().length===1&&planPeriods()[0]==='2026-11'?' · aún sin ejecución Meta de noviembre.':'.');
+ $('c3Context').textContent=(state.month?labels[months.indexOf(state.month)]+' 2026':planPeriods().length===1&&planPeriods()[0]==='2026-11'?'Noviembre 2026 · presupuesto proyectado del XLSX':'2026 · enero a noviembre')+' · '+(state.model||'Todos los modelos')+' · '+(state.territory||'Cobertura completa')+' · Meta real hasta '+(state.dateMax||'2026-10-20')+(state.dateStart||state.dateEnd?' · período personalizado; metas prorrateadas.':'.');
 }
 const hasDailyRange=()=>{
  const f=window.CITROEN_FILTER_ENGINE;if(!f)return false;
@@ -121,7 +219,7 @@ function comparison(rows){
  const selected=configured('compareMetric','metric',state.metric);state.metric=selected;
  const theme=window.CITROEN_STYLE_EDITOR?.get("n:c3ComparePanel")||{},chartMode=theme.chartType||"bar",showLabels=theme.showLabels===true;
   const periods=planPeriods('n:c3ComparePanel');
- const series=periods.map(m=>{const d=rows.filter(r=>r.month===m),k=state.metric,which=k==='investment'?'spend':k==='leads'?'leads_total':k==='cpl'?'cpl_general':k;return {month:m,label:labels[months.indexOf(m)],planned:['investment','leads','cpl'].includes(k)?planValue(m,k):null,actual:metricTotal(d,which,null)};});
+ const series=periods.map(m=>{const d=rows.filter(r=>r.month===m),k=state.metric,which=k==='investment'?'spend':k==='leads'?'leads_total':k==='cpl'?'cpl_general':k;return {month:m,label:labels[months.indexOf(m)],planned:['investment','leads','cpl'].includes(k)?(k==='cpl'?planValue(m,k):planValue(m,k)==null?null:planValue(m,k)*planFraction(m)):null,actual:metricTotal(d,which,null)};});
  if(!periods.length){$('c3CompareChart').innerHTML='<div class="c3-chart-empty">No hay meses del plan en el rango seleccionado. Ajusta las fechas.</div>';return;}
  const max=Math.max(1,...series.flatMap(s=>[s.planned||0,s.actual||0]));
  const w=840,h=219,l=51,r=16,t=22,b=32,pw=w-l-r,ph=h-t-b,step=pw/series.length,bw=Math.min(20,step*.28);
@@ -177,7 +275,7 @@ function comparison(rows){
  };
  $('c3CompareNote').textContent=state.metric==='reach'&&!window.CITROEN_REACH_MATH?.currentUniverse()
   ?'Sin universo de audiencia configurado: no se muestra estimación Sainsbury. Configúralo en Propiedades del gráfico.'
-  :((notes[state.metric]||'Datos de Meta Ads, no ejecución global del plan.')+(hasDailyRange()?' ⚠️ Meta se filtra por días; el plan corresponde a los meses incluidos completos y NO se prorratea.':''));
+  :((notes[state.metric]||'Datos de Meta Ads, no ejecución global del plan.')+(hasDailyRange()?' ⚠️ Proyección mensual prorrateada linealmente a los días seleccionados (estimación, no plan diario oficial).':''));
 }
 function funnel(rows){
  if(!rows.length){
@@ -307,10 +405,10 @@ function render(){
  comparison(window.CITROEN_FILTER_ENGINE?.filter(rows,'resumen','n:c3ComparePanel')||rows);
  funnel(window.CITROEN_FILTER_ENGINE?.filter(rows,'resumen','n:c3FunnelPanel')||rows);
  models(window.CITROEN_FILTER_ENGINE?.filter(rows,'resumen','n:c3ModelsPanel')||rows);
- campaigns();insights(window.CITROEN_FILTER_ENGINE?.filter(rows,'resumen','n:c3InsightsPanel')||rows);extraCharts(rows);document.dispatchEvent(new Event('citroen:summary-rendered'));
+ campaigns();insights(window.CITROEN_FILTER_ENGINE?.filter(rows,'resumen','n:c3InsightsPanel')||rows);extraCharts(rows);performanceTable(rows);document.dispatchEvent(new Event('citroen:summary-rendered'));
 }
 function installActual(plan,daily,detail){
- const actual=actualData(daily,detail);state.plan=plan;state.dateMax=daily.date_max;state.rows=actual.rows;state.campaigns=actual.campaigns;
+ const actual=actualData(daily,detail);state.plan=plan;state.dateMin=daily.date_min;state.dateMax=daily.date_max;state.rows=actual.rows;state.campaigns=actual.campaigns;
  const monthNames=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
  for(const m of [...new Set(state.rows.map(r=>r.month))].sort())if(!months.includes(m)){months.push(m);labels.push(monthNames[Number(m.slice(5))-1]);}
  $('c3Month').innerHTML=opt('','2026 · enero a noviembre')+months.map((m,i)=>opt(m,labels[i]+' 2026')).join('');
@@ -318,7 +416,7 @@ function installActual(plan,daily,detail){
  $('c3Territory').innerHTML=opt('','Todos los territorios')+[...new Set(state.rows.map(r=>r.territory))].sort().map(t=>opt(t,t)).join('');
  for(const [id,key] of [['c3Month','month'],['c3Model','model'],['c3Territory','territory']]){if([...$(id).options].some(o=>o.value===state[key]))$(id).value=state[key];else state[key]='';}
  const footnote=$('campaignSourceFootnote');if(footnote)footnote.textContent='FUENTES · Proyecciones enero–octubre de 10 libros más noviembre 2026 del Excel recibido · '+daily.source+' · '+daily.date_min+' a '+daily.date_max+' · '+daily.rows_source+' registros. Territorios inferidos de los nombres; moneda asumida COP. Leads consolidados = formularios + conversaciones; no son personas únicas.';
- state.ready=true;render();
+ state.ready=true;syncDateControl();render();
 }
 /* Remove connected white photographic backdrop from the local Aircross hero asset.
    Only background-connected pixels are cleared: white details inside the vehicle survive. */
@@ -368,11 +466,12 @@ function integrateHeroVehicle(img){
 }
 function wire(){
  if(!$('c3Dashboard'))return;
- const hero=$('c3HeroCar');hero.onload=()=>integrateHeroVehicle(hero);hero.onerror=()=>{if(!hero.dataset.tried){hero.dataset.tried='yes';hero.src=cars[2].backup;}else{hero.style.display='none';hero.parentElement.classList.add('no-photo');}};hero.src=cars[2].src;
+ wireDateFilter();
+  const hero=$('c3HeroCar');hero.onload=()=>integrateHeroVehicle(hero);hero.onerror=()=>{if(!hero.dataset.tried){hero.dataset.tried='yes';hero.src=cars[2].backup;}else{hero.style.display='none';hero.parentElement.classList.add('no-photo');}};hero.src=cars[2].src;
  $('c3Explore').onclick=()=>$('c3ComparePanel').scrollIntoView({behavior:'smooth',block:'center'});
  for(const btn of document.querySelectorAll('[data-c3-jump]'))btn.onclick=()=>{const nav=document.querySelector('.nav-link[data-target="'+btn.dataset.c3Jump+'"]');if(nav)nav.click();};
  for(const [id,key] of [['c3Month','month'],['c3Model','model'],['c3Territory','territory']])$(id).onchange=e=>{state[key]=e.target.value;render();};
-  const reset=$('c3ResetFilters');if(reset)reset.onclick=()=>{state.month='';state.model='';state.territory='';for(const id of ['c3Month','c3Model','c3Territory'])$(id).value='';if(window.CITROEN_FILTER_ENGINE){window.CITROEN_FILTER_ENGINE.reset();window.CITROEN_FILTER_ENGINE.render('lkGlobalFilters','resumen');}render();};
+  const reset=$('c3ResetFilters');if(reset)reset.onclick=()=>{state.month='';state.model='';state.territory='';state.dateStart='';state.dateEnd='';for(const id of ['c3Month','c3Model','c3Territory'])$(id).value='';if($('c3DatePreset'))$('c3DatePreset').value='all';if($('c3DateDropdown'))$('c3DateDropdown').open=false;if(window.CITROEN_FILTER_ENGINE){window.CITROEN_FILTER_ENGINE.reset();window.CITROEN_FILTER_ENGINE.render('lkGlobalFilters','resumen');}syncDateControl();render();};
   const advanced=$('lkGlobalFilters'),advancedToggle=$('c3AdvancedToggle');
   if(advanced&&advancedToggle){
     advanced.hidden=true;
